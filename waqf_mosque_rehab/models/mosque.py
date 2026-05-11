@@ -234,7 +234,7 @@ class MosqueMosque(models.Model):
             'type': 'ir.actions.act_window',
             'name': _('Bill of Quantities — %s') % self.name,
             'res_model': 'mosque.boq',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'domain': [('mosque_id', '=', self.id)],
             'context': {'default_mosque_id': self.id},
         }
@@ -244,7 +244,7 @@ class MosqueMosque(models.Model):
             'type': 'ir.actions.act_window',
             'name': _('Payment Certificates — %s') % self.name,
             'res_model': 'mosque.certificate',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'domain': [('mosque_id', '=', self.id)],
             'context': {'default_mosque_id': self.id},
         }
