@@ -288,39 +288,44 @@
 
     <!-- Search View -->
     <record id="view_mosque_search" model="ir.ui.view">
-        <field name="name">mosque.mosque.search</field>
-        <field name="model">mosque.mosque</field>
-        <field name="arch" type="xml">
-            <search string="Search Mosques">
-                <field name="name" string="Mosque"/>
-                <field name="code"/>
-                <field name="package_id"/>
-                <field name="resident_engineer_id"/>
-                <filter string="Active Execution" name="active"
-                        domain="[('state','=','active')]"/>
-                <filter string="Mobilizing" name="mobilizing"
-                        domain="[('state','=','mobilizing')]"/>
-                <filter string="Delayed" name="delayed"
-                        domain="[('days_delay','>',0)]"/>
-                <filter string="Critical KPI (&lt;50%)" name="critical"
-                        domain="[('overall_kpi','&lt;',50)]"/>
-                <separator/>
-                <filter string="Riyadh" name="riyadh" domain="[('city','=','riyadh')]"/>
-                <filter string="Jeddah" name="jeddah" domain="[('city','=','jeddah')]"/>
-                <filter string="Taif"   name="taif"   domain="[('city','=','taif')]"/>
-                <filter string="Provinces" name="provinces"
-                        domain="[('city','not in',['riyadh','jeddah','taif'])]"/>
-                <separator/>
-                <group expand="0" string="Group By">
-                    <filter string="Package"  name="grp_package"  context="{'group_by': 'package_id'}"/>
-                    <filter string="City"     name="grp_city"     context="{'group_by': 'city'}"/>
-                    <filter string="Status"   name="grp_state"    context="{'group_by': 'state'}"/>
-                    <filter string="Engineer" name="grp_engineer" context="{'group_by': 'resident_engineer_id'}"/>
-                    <filter string="Phase"    name="grp_phase"    context="{'group_by': 'phase'}"/>
-                </group>
-            </search>
-        </field>
-    </record>
+    <field name="name">mosque.mosque.search</field>
+    <field name="model">mosque.mosque</field>
+    <field name="arch" type="xml">
+        <search string="Search Mosques">
+            <field name="name"/>
+            <field name="code"/>
+            <field name="package_id"/>
+            <field name="resident_engineer_id"/>
+
+            <filter string="Active Execution" name="filter_active"
+                    domain="[('state','=','active')]"/>
+            <filter string="Mobilizing" name="filter_mobilizing"
+                    domain="[('state','=','mobilizing')]"/>
+            <filter string="Delayed" name="filter_delayed"
+                    domain="[('days_delay','&gt;',0)]"/>
+            <filter string="Critical KPI" name="filter_critical"
+                    domain="[('overall_kpi','&lt;',50)]"/>
+
+            <separator/>
+
+            <filter string="Riyadh" name="filter_riyadh" domain="[('city','=','riyadh')]"/>
+            <filter string="Jeddah" name="filter_jeddah" domain="[('city','=','jeddah')]"/>
+            <filter string="Taif" name="filter_taif" domain="[('city','=','taif')]"/>
+            <filter string="Provinces" name="filter_provinces"
+                    domain="[('city','not in',['riyadh','jeddah','taif'])]"/>
+
+            <separator/>
+
+            <group expand="0" string="Group By">
+                <filter string="Package" name="group_package" context="{'group_by': 'package_id'}"/>
+                <filter string="City" name="group_city" context="{'group_by': 'city'}"/>
+                <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                <filter string="Engineer" name="group_engineer" context="{'group_by': 'resident_engineer_id'}"/>
+                <filter string="Phase" name="group_phase" context="{'group_by': 'phase'}"/>
+            </group>
+        </search>
+    </field>
+</record>
 
     <!-- Action -->
     <record id="action_mosque_mosque" model="ir.actions.act_window">
