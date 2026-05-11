@@ -25,8 +25,8 @@
         'web',
     ],
     'data': [
-        'security/ir.model.access.csv',
         'security/mosque_security.xml',
+        'security/ir.model.access.csv',
         'data/mosque_sequence.xml',
         'data/mosque_package_data.xml',
         'data/boq_template_data.xml',
