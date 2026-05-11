@@ -39,7 +39,7 @@ class MosqueMosque(models.Model):
     # ── Identification ────────────────────────────────────────────
     name = fields.Char(string='Mosque Name', required=True, tracking=True)
     code = fields.Char(string='Code', required=True, copy=False,
-                       default=lambda self: _('New'))
+                       default=lambda self: 'New')
     package_id = fields.Many2one('mosque.package', string='Package',
                                  required=True, tracking=True)
     phase = fields.Selection(related='package_id.phase', store=True,
@@ -132,8 +132,8 @@ class MosqueMosque(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            if vals.get('code', _('New')) == _('New'):
-                vals['code'] = self.env['ir.sequence'].next_by_code('mosque.mosque') or _('New')
+            if vals.get('code', 'New') == 'New':
+                vals['code'] = self.env['ir.sequence'].next_by_code('mosque.mosque') or 'New'
         return super().create(vals_list)
 
     # ── Progress computation ───────────────────────────────────────
