@@ -108,9 +108,9 @@
                     </span>
                     <span style="font-size:12px;color:var(--color-text-info)">
                         KPI: <field name="mosque_kpi" readonly="1" nolabel="1"/>%
-                        &nbsp;|&nbsp;
+                       |
                         Financial: <field name="mosque_financial_pct" readonly="1" nolabel="1"/>%
-                        &nbsp;|&nbsp;
+                       |
                         Delay: <field name="mosque_days_delay" readonly="1" nolabel="1"/> days
                     </span>
                 </div>
