@@ -304,81 +304,13 @@
     </record>
 
     <!-- Search View -->
-    <!-- Search View -->
     <record id="view_mosque_search" model="ir.ui.view">
         <field name="name">mosque.mosque.search</field>
         <field name="model">mosque.mosque</field>
         <field name="arch" type="xml">
-            <search string="Search Mosques">
-
+            <search>
                 <field name="name"/>
                 <field name="code"/>
-                <field name="package_id"/>
-                <field name="resident_engineer_id"/>
-
-                <!-- Filters -->
-                <filter string="Active Execution"
-                        name="active"
-                        domain="[('state','=','active')]"/>
-
-                <filter string="Mobilizing"
-                        name="mobilizing"
-                        domain="[('state','=','mobilizing')]"/>
-
-                <filter string="Delayed"
-                        name="delayed"
-                        domain="[('days_delay','&gt;',0)]"/>
-
-                <filter string="Critical KPI"
-                        name="critical"
-                        domain="[('overall_kpi','&lt;',50)]"/>
-
-                <separator/>
-
-                <!-- Cities -->
-                <filter string="Riyadh"
-                        name="riyadh"
-                        domain="[('city','=','riyadh')]"/>
-
-                <filter string="Jeddah"
-                        name="jeddah"
-                        domain="[('city','=','jeddah')]"/>
-
-                <filter string="Taif"
-                        name="taif"
-                        domain="[('city','=','taif')]"/>
-
-                <filter string="Provinces"
-                        name="provinces"
-                        domain="[('city','not in',['riyadh','jeddah','taif'])]"/>
-
-                <separator/>
-
-                <!-- Group By -->
-                <group expand="0" string="Group By">
-
-                    <filter string="Package"
-                            name="group_package"
-                            context="{'group_by':'package_id'}"/>
-
-                    <filter string="City"
-                            name="group_city"
-                            context="{'group_by':'city'}"/>
-
-                    <filter string="Status"
-                            name="group_state"
-                            context="{'group_by':'state'}"/>
-
-                    <filter string="Engineer"
-                            name="group_engineer"
-                            context="{'group_by':'resident_engineer_id'}"/>
-
-                    <filter string="Phase"
-                            name="group_phase"
-                            context="{'group_by':'phase'}"/>
-
-                </group>
-
             </search>
         </field>
     </record>
@@ -387,13 +319,8 @@
     <record id="action_mosque_mosque" model="ir.actions.act_window">
         <field name="name">Mosques</field>
         <field name="res_model">mosque.mosque</field>
-        <!-- Odoo 19 -->
         <field name="view_mode">list,kanban,form</field>
         <field name="search_view_id" ref="view_mosque_search"/>
-        <!-- Default Active Filter -->
-        <field name="context">
-            {'search_default_active': 1}
-        </field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 No mosques configured yet.
