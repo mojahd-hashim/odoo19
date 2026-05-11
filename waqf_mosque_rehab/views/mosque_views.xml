@@ -35,26 +35,34 @@
                         <button class="btn btn-link o_stat_button" type="object"
                                 name="action_view_boq" icon="fa-list">
                             <div class="o_field_widget o_stat_info">
-                                <span class="o_stat_value"><field name="boq_count"/></span>
+                                <span class="o_stat_value">
+                                    <field name="boq_count"/>
+                                </span>
                                 <span class="o_stat_text">BOQ Items</span>
                             </div>
                         </button>
                         <button class="btn btn-link o_stat_button" icon="fa-file-text-o"
                                 type="object" name="action_view_certificates">
                             <div class="o_field_widget o_stat_info">
-                                <span class="o_stat_value"><field name="certificate_count"/></span>
+                                <span class="o_stat_value">
+                                    <field name="certificate_count"/>
+                                </span>
                                 <span class="o_stat_text">Certificates</span>
                             </div>
                         </button>
                         <button class="btn btn-link o_stat_button" icon="fa-eye">
                             <div class="o_field_widget o_stat_info">
-                                <span class="o_stat_value"><field name="supervision_count"/></span>
+                                <span class="o_stat_value">
+                                    <field name="supervision_count"/>
+                                </span>
                                 <span class="o_stat_text">Supervision Reports</span>
                             </div>
                         </button>
                         <button class="btn btn-link o_stat_button" icon="fa-exchange">
                             <div class="o_field_widget o_stat_info">
-                                <span class="o_stat_value"><field name="change_order_count"/></span>
+                                <span class="o_stat_value">
+                                    <field name="change_order_count"/>
+                                </span>
                                 <span class="o_stat_text">Change Orders</span>
                             </div>
                         </button>
@@ -62,7 +70,9 @@
 
                     <div class="oe_title">
                         <label for="name"/>
-                        <h1><field name="name" placeholder="Mosque Name"/></h1>
+                        <h1>
+                            <field name="name" placeholder="Mosque Name"/>
+                        </h1>
                     </div>
 
                     <group>
@@ -255,14 +265,17 @@
                 <templates>
                     <t t-name="card">
                         <div class="d-flex justify-content-between">
-                            <strong><field name="code"/></strong>
+                            <strong>
+                                <field name="code"/>
+                            </strong>
                             <field name="state" widget="badge"/>
                         </div>
                         <field name="name" class="fw-bold text-truncate"/>
                         <div class="mt-2">
                             <div class="d-flex justify-content-between">
                                 <small class="text-muted">KPI</small>
-                                <small><field name="overall_kpi"/>%</small>
+                                <small><field name="overall_kpi"/>%
+                                </small>
                             </div>
                             <div class="progress" style="height:6px">
                                 <div class="progress-bar"
@@ -272,10 +285,14 @@
                         </div>
                         <div class="d-flex justify-content-between mt-1">
                             <small class="text-muted">Financial</small>
-                            <small><field name="financial_progress"/>%</small>
+                            <small><field name="financial_progress"/>%
+                            </small>
                         </div>
                         <div t-if="record.days_delay.value &gt; 0" class="text-danger mt-1">
-                            <i class="fa fa-warning"/> Delayed <field name="days_delay"/> days
+                            <i class="fa fa-warning"/>
+                            Delayed
+                            <field name="days_delay"/>
+                            days
                         </div>
                         <footer>
                             <field name="resident_engineer_id" widget="many2one_avatar_employee"/>
@@ -287,58 +304,103 @@
     </record>
 
     <!-- Search View -->
+    <!-- Search View -->
     <record id="view_mosque_search" model="ir.ui.view">
-    <field name="name">mosque.mosque.search</field>
-    <field name="model">mosque.mosque</field>
-    <field name="arch" type="xml">
-        <search string="Search Mosques">
-            <field name="name"/>
-            <field name="code"/>
-            <field name="package_id"/>
-            <field name="resident_engineer_id"/>
+        <field name="name">mosque.mosque.search</field>
+        <field name="model">mosque.mosque</field>
+        <field name="arch" type="xml">
+            <search string="Search Mosques">
 
-            <filter string="Active Execution" name="filter_active"
-                    domain="[('state','=','active')]"/>
-            <filter string="Mobilizing" name="filter_mobilizing"
-                    domain="[('state','=','mobilizing')]"/>
-            <filter string="Delayed" name="filter_delayed"
-                    domain="[('days_delay','&gt;',0)]"/>
-            <filter string="Critical KPI" name="filter_critical"
-                    domain="[('overall_kpi','&lt;',50)]"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="package_id"/>
+                <field name="resident_engineer_id"/>
 
-            <separator/>
+                <!-- Filters -->
+                <filter string="Active Execution"
+                        name="active"
+                        domain="[('state','=','active')]"/>
 
-            <filter string="Riyadh" name="filter_riyadh" domain="[('city','=','riyadh')]"/>
-            <filter string="Jeddah" name="filter_jeddah" domain="[('city','=','jeddah')]"/>
-            <filter string="Taif" name="filter_taif" domain="[('city','=','taif')]"/>
-            <filter string="Provinces" name="filter_provinces"
-                    domain="[('city','not in',['riyadh','jeddah','taif'])]"/>
+                <filter string="Mobilizing"
+                        name="mobilizing"
+                        domain="[('state','=','mobilizing')]"/>
 
-            <separator/>
+                <filter string="Delayed"
+                        name="delayed"
+                        domain="[('days_delay','&gt;',0)]"/>
 
-            <group expand="0" string="Group By">
-                <filter string="Package" name="group_package" context="{'group_by': 'package_id'}"/>
-                <filter string="City" name="group_city" context="{'group_by': 'city'}"/>
-                <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
-                <filter string="Engineer" name="group_engineer" context="{'group_by': 'resident_engineer_id'}"/>
-                <filter string="Phase" name="group_phase" context="{'group_by': 'phase'}"/>
-            </group>
-        </search>
-    </field>
-</record>
+                <filter string="Critical KPI"
+                        name="critical"
+                        domain="[('overall_kpi','&lt;',50)]"/>
+
+                <separator/>
+
+                <!-- Cities -->
+                <filter string="Riyadh"
+                        name="riyadh"
+                        domain="[('city','=','riyadh')]"/>
+
+                <filter string="Jeddah"
+                        name="jeddah"
+                        domain="[('city','=','jeddah')]"/>
+
+                <filter string="Taif"
+                        name="taif"
+                        domain="[('city','=','taif')]"/>
+
+                <filter string="Provinces"
+                        name="provinces"
+                        domain="[('city','not in',['riyadh','jeddah','taif'])]"/>
+
+                <separator/>
+
+                <!-- Group By -->
+                <group expand="0" string="Group By">
+
+                    <filter string="Package"
+                            name="group_package"
+                            context="{'group_by':'package_id'}"/>
+
+                    <filter string="City"
+                            name="group_city"
+                            context="{'group_by':'city'}"/>
+
+                    <filter string="Status"
+                            name="group_state"
+                            context="{'group_by':'state'}"/>
+
+                    <filter string="Engineer"
+                            name="group_engineer"
+                            context="{'group_by':'resident_engineer_id'}"/>
+
+                    <filter string="Phase"
+                            name="group_phase"
+                            context="{'group_by':'phase'}"/>
+
+                </group>
+
+            </search>
+        </field>
+    </record>
 
     <!-- Action -->
     <record id="action_mosque_mosque" model="ir.actions.act_window">
         <field name="name">Mosques</field>
         <field name="res_model">mosque.mosque</field>
+        <!-- Odoo 19 -->
         <field name="view_mode">list,kanban,form</field>
         <field name="search_view_id" ref="view_mosque_search"/>
-        <field name="context">{'search_default_active': 1}</field>
+        <!-- Default Active Filter -->
+        <field name="context">
+            {'search_default_active': 1}
+        </field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 No mosques configured yet.
             </p>
-            <p>Add your first mosque to start tracking rehabilitation progress.</p>
+            <p>
+                Add your first mosque to start tracking rehabilitation progress.
+            </p>
         </field>
     </record>
 
