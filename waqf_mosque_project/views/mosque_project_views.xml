@@ -30,7 +30,9 @@
                         icon="fa-tasks"
                         invisible="not project_id">
                     <div class="o_field_widget o_stat_info">
-                        <span class="o_stat_value"><field name="task_count"/></span>
+                        <span class="o_stat_value">
+                            <field name="task_count"/>
+                        </span>
                         <span class="o_stat_text">Tasks</span>
                     </div>
                 </button>
@@ -41,7 +43,9 @@
                         icon="fa-flag-o"
                         invisible="not project_id">
                     <div class="o_field_widget o_stat_info">
-                        <span class="o_stat_value"><field name="milestone_count"/></span>
+                        <span class="o_stat_value">
+                            <field name="milestone_count"/>
+                        </span>
                         <span class="o_stat_text">Milestones</span>
                     </div>
                 </button>
@@ -49,7 +53,7 @@
             </xpath>
 
             <!-- Add project progress bar in KPI section -->
-           <xpath expr="//group[@name='kpi_performance_group']" position="inside">
+            <xpath expr="//group[@name='kpi_performance_group']" position="inside">
                 <group>
                     <field name="project_progress" widget="progressbar"
                            string="Task Completion %"
@@ -69,7 +73,7 @@
         <field name="inherit_id" ref="project.view_project"/>
         <field name="arch" type="xml">
             <xpath expr="//list" position="inside">
-                <field name="mosque_id"           optional="show"/>
+                <field name="mosque_id" optional="show"/>
                 <field name="mosque_kpi"
                        widget="progressbar"
                        string="Mosque KPI %"
@@ -104,14 +108,17 @@
                             padding:8px 16px;
                             display:flex; gap:24px; align-items:center;">
                     <span style="font-size:13px;font-weight:500">
-                        🕌 <field name="mosque_id" readonly="1" nolabel="1"/>
+                        🕌
+                        <field name="mosque_id" readonly="1" nolabel="1"/>
                     </span>
                     <span style="font-size:12px;color:var(--color-text-info)">
-                        KPI: <field name="mosque_kpi" readonly="1" nolabel="1"/>%
-                       |
-                        Financial: <field name="mosque_financial_pct" readonly="1" nolabel="1"/>%
-                       |
-                        Delay: <field name="mosque_days_delay" readonly="1" nolabel="1"/> days
+                        KPI:<field name="mosque_kpi" readonly="1" nolabel="1"/>%
+                        |
+                        Financial:<field name="mosque_financial_pct" readonly="1" nolabel="1"/>%
+                        |
+                        Delay:
+                        <field name="mosque_days_delay" readonly="1" nolabel="1"/>
+                        days
                     </span>
                 </div>
             </xpath>
@@ -124,11 +131,16 @@
         <field name="model">project.task</field>
         <field name="inherit_id" ref="project.view_task_form2"/>
         <field name="arch" type="xml">
-            <xpath expr="//group[@name='project_sharing']" position="after">
-                <group invisible="not mosque_id">
-                    <field name="mosque_id"   readonly="1" string="Mosque"/>
-                    <field name="mosque_code" readonly="1" string="Mosque Code"/>
-                </group>
+            <xpath expr="//field[@name='project_id']" position="after">
+                <field name="mosque_id"
+                       readonly="1"
+                       string="Mosque"
+                       invisible="not mosque_id"/>
+
+                <field name="mosque_code"
+                       readonly="1"
+                       string="Mosque Code"
+                       invisible="not mosque_id"/>
             </xpath>
         </field>
     </record>
@@ -155,7 +167,8 @@
         <field name="domain">[('mosque_id', '!=', False)]</field>
         <field name="context">{
             'search_default_group_by_stage': 0,
-        }</field>
+            }
+        </field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 No mosque projects yet.
@@ -172,7 +185,8 @@
         <field name="domain">[('mosque_id', '!=', False)]</field>
         <field name="context">{
             'search_default_group_by_project': 1,
-        }</field>
+            }
+        </field>
     </record>
 
     <!-- All milestones across all mosque projects -->
@@ -183,7 +197,8 @@
         <field name="domain">[('project_id.mosque_id', '!=', False)]</field>
         <field name="context">{
             'search_default_group_by_project': 1,
-        }</field>
+            }
+        </field>
     </record>
 
 </odoo>
