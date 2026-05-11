@@ -109,7 +109,7 @@
                         </group>
                     </group>
 
-                    <group string="KPI Performance">
+                    <group name="kpi_performance_group" string="KPI Performance">
                         <group>
                             <field name="financial_progress" widget="progressbar"/>
                             <field name="time_progress" widget="progressbar"/>
