@@ -120,7 +120,6 @@
                         <page string="Bill of Quantities" name="boq">
                             <field name="boq_ids">
                                 <list string="BOQ Lines" editable="bottom">
-                                    <column_invisible>1</column_invisible>
                                     <field name="category_id"/>
                                     <field name="item_code"/>
                                     <field name="description"/>
