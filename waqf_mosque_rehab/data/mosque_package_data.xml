@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- ── Geographic Packages ─────────────────────────────────── -->
+    <record id="pkg_north_riyadh" model="mosque.package">
+        <field name="name">Package 1 — North Riyadh</field>
+        <field name="code">PKG-01</field>
+        <field name="phase">1</field>
+        <field name="sequence">1</field>
+        <field name="planned_start">2026-04-01</field>
+        <field name="planned_end">2026-06-29</field>
+        <field name="color">1</field>
+    </record>
+
+    <record id="pkg_south_central_riyadh" model="mosque.package">
+        <field name="name">Package 2 — South &amp; Central Riyadh + Jeddah + Taif</field>
+        <field name="code">PKG-02</field>
+        <field name="phase">2</field>
+        <field name="sequence">2</field>
+        <field name="planned_start">2026-07-01</field>
+        <field name="planned_end">2026-09-28</field>
+        <field name="color">2</field>
+    </record>
+
+    <record id="pkg_east_riyadh" model="mosque.package">
+        <field name="name">Package 3 — East Riyadh + Rafha</field>
+        <field name="code">PKG-03</field>
+        <field name="phase">3</field>
+        <field name="sequence">3</field>
+        <field name="planned_start">2026-10-01</field>
+        <field name="planned_end">2026-12-29</field>
+        <field name="color">3</field>
+    </record>
+
+    <record id="pkg_west_provinces" model="mosque.package">
+        <field name="name">Package 4 — West Riyadh + Provinces</field>
+        <field name="code">PKG-04</field>
+        <field name="phase">4</field>
+        <field name="sequence">4</field>
+        <field name="planned_start">2027-01-03</field>
+        <field name="planned_end">2027-04-02</field>
+        <field name="color">4</field>
+    </record>
+
+    <!-- ── BOQ Categories ─────────────────────────────────────── -->
+    <record id="cat_architectural" model="mosque.boq.category">
+        <field name="name">Architectural &amp; Structural Works</field>
+        <field name="code">ARCH</field>
+        <field name="type">architectural</field>
+        <field name="sequence">1</field>
+    </record>
+
+    <record id="cat_mechanical" model="mosque.boq.category">
+        <field name="name">Mechanical Works</field>
+        <field name="code">MECH</field>
+        <field name="type">mechanical</field>
+        <field name="sequence">2</field>
+    </record>
+
+    <record id="cat_electrical" model="mosque.boq.category">
+        <field name="name">Electrical Works</field>
+        <field name="code">ELEC</field>
+        <field name="type">electrical</field>
+        <field name="sequence">3</field>
+    </record>
+
+    <!-- ── Mosques — Package 1: North Riyadh ─────────────────── -->
+    <record id="mosque_ruh16" model="mosque.mosque">
+        <field name="code">RUH-16</field>
+        <field name="name">King Abdullah bin Abdulaziz Mosque — Al-Malqa 1</field>
+        <field name="package_id" ref="pkg_north_riyadh"/>
+        <field name="city">riyadh</field>
+        <field name="district">Al-Malqa</field>
+        <field name="planned_start">2026-04-11</field>
+        <field name="planned_end">2026-06-29</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_ruh17" model="mosque.mosque">
+        <field name="code">RUH-17</field>
+        <field name="name">King Abdullah bin Abdulaziz Mosque — Al-Malqa 2</field>
+        <field name="package_id" ref="pkg_north_riyadh"/>
+        <field name="city">riyadh</field>
+        <field name="district">Al-Malqa</field>
+        <field name="planned_start">2026-04-11</field>
+        <field name="planned_end">2026-06-29</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_ruh09" model="mosque.mosque">
+        <field name="code">RUH-09</field>
+        <field name="name">Princess Noura bint Abdullah Mosque — Al-Nakheel</field>
+        <field name="package_id" ref="pkg_north_riyadh"/>
+        <field name="city">riyadh</field>
+        <field name="district">Al-Nakheel</field>
+        <field name="planned_start">2026-04-11</field>
+        <field name="planned_end">2026-06-29</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_ruh18" model="mosque.mosque">
+        <field name="code">RUH-18</field>
+        <field name="name">King Abdullah bin Abdulaziz Mosque — Al-Talal</field>
+        <field name="package_id" ref="pkg_north_riyadh"/>
+        <field name="city">riyadh</field>
+        <field name="district">Al-Talal</field>
+        <field name="planned_start">2026-04-11</field>
+        <field name="planned_end">2026-06-29</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_ruh20" model="mosque.mosque">
+        <field name="code">RUH-20</field>
+        <field name="name">Princess Fahda bint Al-Asi Mosque — King Abdullah District</field>
+        <field name="package_id" ref="pkg_north_riyadh"/>
+        <field name="city">riyadh</field>
+        <field name="district">King Abdullah District (Al-Qasr)</field>
+        <field name="planned_start">2026-04-11</field>
+        <field name="planned_end">2026-06-29</field>
+        <field name="state">draft</field>
+    </record>
+
+    <!-- ── Mosques — Package 2 ────────────────────────────────── -->
+    <record id="mosque_ruh06" model="mosque.mosque">
+        <field name="code">RUH-06</field>
+        <field name="name">King Abdullah bin Abdulaziz Mosque — Al-Dar Al-Baydaa 1</field>
+        <field name="package_id" ref="pkg_south_central_riyadh"/>
+        <field name="city">riyadh</field>
+        <field name="district">Al-Dar Al-Baydaa</field>
+        <field name="planned_start">2026-07-11</field>
+        <field name="planned_end">2026-09-28</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_ruh07" model="mosque.mosque">
+        <field name="code">RUH-07</field>
+        <field name="name">King Abdullah bin Abdulaziz Mosque — Al-Dar Al-Baydaa 2</field>
+        <field name="package_id" ref="pkg_south_central_riyadh"/>
+        <field name="city">riyadh</field>
+        <field name="district">Al-Dar Al-Baydaa</field>
+        <field name="planned_start">2026-07-11</field>
+        <field name="planned_end">2026-09-28</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_ruh12" model="mosque.mosque">
+        <field name="code">RUH-12</field>
+        <field name="name">King Abdullah bin Abdulaziz Mosque — Al-Yamamah</field>
+        <field name="package_id" ref="pkg_south_central_riyadh"/>
+        <field name="city">riyadh</field>
+        <field name="district">Al-Yamamah</field>
+        <field name="planned_start">2026-07-11</field>
+        <field name="planned_end">2026-09-28</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_ruh08" model="mosque.mosque">
+        <field name="code">RUH-08</field>
+        <field name="name">King Abdullah bin Abdulaziz Mosque — Atiqa (Al-Shawa'er)</field>
+        <field name="package_id" ref="pkg_south_central_riyadh"/>
+        <field name="city">riyadh</field>
+        <field name="district">Atiqa — Al-Shawa'er</field>
+        <field name="planned_start">2026-07-11</field>
+        <field name="planned_end">2026-09-28</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_ruh13" model="mosque.mosque">
+        <field name="code">RUH-13</field>
+        <field name="name">King Abdullah bin Abdulaziz Mosque — Al-Shumaisi</field>
+        <field name="package_id" ref="pkg_south_central_riyadh"/>
+        <field name="city">riyadh</field>
+        <field name="district">Al-Shumaisi</field>
+        <field name="planned_start">2026-07-11</field>
+        <field name="planned_end">2026-09-28</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_ruh11" model="mosque.mosque">
+        <field name="code">RUH-11</field>
+        <field name="name">King Abdullah bin Abdulaziz Mosque — Al-Malaz</field>
+        <field name="package_id" ref="pkg_south_central_riyadh"/>
+        <field name="city">riyadh</field>
+        <field name="district">Al-Malaz</field>
+        <field name="planned_start">2026-07-11</field>
+        <field name="planned_end">2026-09-28</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_jed01" model="mosque.mosque">
+        <field name="code">JED-01</field>
+        <field name="name">King Abdullah bin Abdulaziz Mosque — Abhur, Jeddah</field>
+        <field name="package_id" ref="pkg_south_central_riyadh"/>
+        <field name="city">jeddah</field>
+        <field name="district">Abhur</field>
+        <field name="planned_start">2026-06-11</field>
+        <field name="planned_end">2026-08-29</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_jed02" model="mosque.mosque">
+        <field name="code">JED-02</field>
+        <field name="name">King Abdullah bin Abdulaziz Mosque — Al-Aziziyya, Jeddah</field>
+        <field name="package_id" ref="pkg_south_central_riyadh"/>
+        <field name="city">jeddah</field>
+        <field name="district">Al-Aziziyya</field>
+        <field name="planned_start">2026-06-11</field>
+        <field name="planned_end">2026-08-29</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_tif01" model="mosque.mosque">
+        <field name="code">TIF-01</field>
+        <field name="name">Princess Fahda (Mother of King Abdullah) Mosque — Al-Faisaliyya, Taif</field>
+        <field name="package_id" ref="pkg_south_central_riyadh"/>
+        <field name="city">taif</field>
+        <field name="district">Al-Faisaliyya</field>
+        <field name="planned_start">2026-06-11</field>
+        <field name="planned_end">2026-08-29</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_tif02" model="mosque.mosque">
+        <field name="code">TIF-02</field>
+        <field name="name">King Abdullah Scientific Research Mosque — Al-Aqiq, Taif</field>
+        <field name="package_id" ref="pkg_south_central_riyadh"/>
+        <field name="city">taif</field>
+        <field name="district">Al-Aqiq</field>
+        <field name="planned_start">2026-06-11</field>
+        <field name="planned_end">2026-08-29</field>
+        <field name="state">draft</field>
+    </record>
+
+    <!-- ── Mosques — Package 3: East Riyadh ──────────────────── -->
+    <record id="mosque_ruh01" model="mosque.mosque">
+        <field name="code">RUH-01</field>
+        <field name="name">Qati' bin Shuraim Mosque — Al-Mu'nisiyya</field>
+        <field name="package_id" ref="pkg_east_riyadh"/>
+        <field name="city">riyadh</field>
+        <field name="district">Al-Mu'nisiyya</field>
+        <field name="planned_start">2026-10-11</field>
+        <field name="planned_end">2026-12-29</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_ruh10" model="mosque.mosque">
+        <field name="code">RUH-10</field>
+        <field name="name">King Abdullah bin Abdulaziz Mosque — Al-Khalij</field>
+        <field name="package_id" ref="pkg_east_riyadh"/>
+        <field name="city">riyadh</field>
+        <field name="district">Al-Khalij</field>
+        <field name="planned_start">2026-10-11</field>
+        <field name="planned_end">2026-12-29</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_ruh03" model="mosque.mosque">
+        <field name="code">RUH-03</field>
+        <field name="name">King Abdulaziz Al Saud Mosque — Al-Rawdha</field>
+        <field name="package_id" ref="pkg_east_riyadh"/>
+        <field name="city">riyadh</field>
+        <field name="district">Al-Rawdha</field>
+        <field name="planned_start">2026-10-11</field>
+        <field name="planned_end">2026-12-29</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_ruh05" model="mosque.mosque">
+        <field name="code">RUH-05</field>
+        <field name="name">Princess Fahda bint Al-Asi Mosque — Al-Naseem Al-Gharbi</field>
+        <field name="package_id" ref="pkg_east_riyadh"/>
+        <field name="city">riyadh</field>
+        <field name="district">Al-Naseem Al-Gharbi</field>
+        <field name="planned_start">2026-10-11</field>
+        <field name="planned_end">2026-12-29</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_ruh02" model="mosque.mosque">
+        <field name="code">RUH-02</field>
+        <field name="name">King Abdullah bin Abdulaziz Mosque — Al-Safwa</field>
+        <field name="package_id" ref="pkg_east_riyadh"/>
+        <field name="city">riyadh</field>
+        <field name="district">Al-Safwa</field>
+        <field name="planned_start">2026-10-11</field>
+        <field name="planned_end">2026-12-29</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_ruh04" model="mosque.mosque">
+        <field name="code">RUH-04</field>
+        <field name="name">King Abdullah bin Abdulaziz Mosque — Al-Tawheed</field>
+        <field name="package_id" ref="pkg_east_riyadh"/>
+        <field name="city">riyadh</field>
+        <field name="district">Al-Tawheed</field>
+        <field name="planned_start">2026-10-11</field>
+        <field name="planned_end">2026-12-29</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_rfh01" model="mosque.mosque">
+        <field name="code">RFH-01</field>
+        <field name="name">Musallit Al Shuraim Mosque — Al-Qadisiyya, Rafha</field>
+        <field name="package_id" ref="pkg_east_riyadh"/>
+        <field name="city">rafha</field>
+        <field name="district">Al-Qadisiyya</field>
+        <field name="planned_start">2026-10-03</field>
+        <field name="planned_end">2026-12-31</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_rfh02" model="mosque.mosque">
+        <field name="code">RFH-02</field>
+        <field name="name">Princess Fahda bint Al-Asi Mosque — Qaryat Al Shuraim, Rafha</field>
+        <field name="package_id" ref="pkg_east_riyadh"/>
+        <field name="city">rafha</field>
+        <field name="district">Qaryat Al Shuraim</field>
+        <field name="planned_start">2026-10-03</field>
+        <field name="planned_end">2026-12-31</field>
+        <field name="state">draft</field>
+    </record>
+
+    <!-- ── Mosques — Package 4: West + Provinces ─────────────── -->
+    <record id="mosque_ruh15" model="mosque.mosque">
+        <field name="code">RUH-15</field>
+        <field name="name">King Abdullah bin Abdulaziz Mosque — Dhahrat Laban</field>
+        <field name="package_id" ref="pkg_west_provinces"/>
+        <field name="city">riyadh</field>
+        <field name="district">Dhahrat Laban</field>
+        <field name="planned_start">2027-01-13</field>
+        <field name="planned_end">2027-04-02</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_ruh14" model="mosque.mosque">
+        <field name="code">RUH-14</field>
+        <field name="name">Al-Hadi Mosque — Umm Al-Hamam</field>
+        <field name="package_id" ref="pkg_west_provinces"/>
+        <field name="city">riyadh</field>
+        <field name="district">Umm Al-Hamam</field>
+        <field name="planned_start">2027-01-13</field>
+        <field name="planned_end">2027-04-02</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_ruh19" model="mosque.mosque">
+        <field name="code">RUH-19</field>
+        <field name="name">Sheikh Muhammad bin Uthaimeen Mosque — Dhahrat Al-Badi'a</field>
+        <field name="package_id" ref="pkg_west_provinces"/>
+        <field name="city">riyadh</field>
+        <field name="district">Dhahrat Al-Badi'a</field>
+        <field name="planned_start">2027-01-13</field>
+        <field name="planned_end">2027-04-02</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_afj01" model="mosque.mosque">
+        <field name="code">AFJ-01</field>
+        <field name="name">King Abdullah bin Abdulaziz Mosque — Layla, Al-Aflaj</field>
+        <field name="package_id" ref="pkg_west_provinces"/>
+        <field name="city">aflaj</field>
+        <field name="district">Layla</field>
+        <field name="planned_start">2027-01-03</field>
+        <field name="planned_end">2027-04-02</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_yra01" model="mosque.mosque">
+        <field name="code">YRA-01</field>
+        <field name="name">King Abdullah bin Abdulaziz Mosque — Yara, Khamis Mushait</field>
+        <field name="package_id" ref="pkg_west_provinces"/>
+        <field name="city">yara</field>
+        <field name="district">Yara</field>
+        <field name="planned_start">2027-01-02</field>
+        <field name="planned_end">2027-04-01</field>
+        <field name="state">draft</field>
+    </record>
+
+    <record id="mosque_giz02" model="mosque.mosque">
+        <field name="code">GIZ-02</field>
+        <field name="name">Al-Nour Mosque — Al-Matar, Jazan</field>
+        <field name="package_id" ref="pkg_west_provinces"/>
+        <field name="city">jazan</field>
+        <field name="district">Al-Matar</field>
+        <field name="planned_start">2027-01-02</field>
+        <field name="planned_end">2027-04-01</field>
+        <field name="state">draft</field>
+    </record>
+</odoo>

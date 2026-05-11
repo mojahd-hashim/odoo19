@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══ MOSQUE ══════════════════════════════════════════════ -->
+    <record id="view_mosque_form" model="ir.ui.view">
+        <field name="name">mosque.mosque.form</field>
+        <field name="model">mosque.mosque</field>
+        <field name="arch" type="xml">
+            <form string="Mosque">
+                <header>
+                    <button name="action_mobilize" string="Mobilize"
+                            type="object" invisible="state != 'draft'"
+                            class="btn-primary"/>
+                    <button name="action_start" string="Start Execution"
+                            type="object" invisible="state != 'mobilizing'"
+                            class="btn-primary"/>
+                    <button name="action_initial_handover" string="Initial Handover"
+                            type="object" invisible="state != 'active'"
+                            class="btn-warning"/>
+                    <button name="action_final_handover" string="Final Handover"
+                            type="object" invisible="state != 'initial_hov'"
+                            class="btn-success"/>
+                    <button name="action_warranty" string="Warranty Period"
+                            type="object" invisible="state != 'final_hov'"
+                            class="btn-secondary"/>
+                    <button name="action_close" string="Close Project"
+                            type="object" invisible="state != 'warranty'"
+                            class="btn-secondary"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,mobilizing,active,initial_hov,final_hov,closed"/>
+                </header>
+                <sheet>
+                    <!-- KPI Banner -->
+                    <div class="o_field_widget o_stat_buttons">
+                        <button class="btn btn-link o_stat_button" type="object"
+                                name="action_view_boq" icon="fa-list">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value"><field name="boq_count"/></span>
+                                <span class="o_stat_text">BOQ Items</span>
+                            </div>
+                        </button>
+                        <button class="btn btn-link o_stat_button" icon="fa-file-text-o"
+                                type="object" name="action_view_certificates">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value"><field name="certificate_count"/></span>
+                                <span class="o_stat_text">Certificates</span>
+                            </div>
+                        </button>
+                        <button class="btn btn-link o_stat_button" icon="fa-eye">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value"><field name="supervision_count"/></span>
+                                <span class="o_stat_text">Supervision Reports</span>
+                            </div>
+                        </button>
+                        <button class="btn btn-link o_stat_button" icon="fa-exchange">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value"><field name="change_order_count"/></span>
+                                <span class="o_stat_text">Change Orders</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Mosque Name"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Identification">
+                            <field name="code"/>
+                            <field name="package_id"/>
+                            <field name="phase"/>
+                            <field name="qr_code" widget="copy_clipboard"/>
+                        </group>
+                        <group string="Location">
+                            <field name="city"/>
+                            <field name="district"/>
+                            <field name="latitude"/>
+                            <field name="longitude"/>
+                            <field name="geofence_radius"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Contract">
+                            <field name="contract_value"/>
+                            <field name="total_boq_value"/>
+                            <field name="certified_amount"/>
+                            <field name="change_order_value"/>
+                            <field name="permit_number"/>
+                            <field name="permit_date"/>
+                        </group>
+                        <group string="Schedule">
+                            <field name="planned_start"/>
+                            <field name="planned_end"/>
+                            <field name="actual_start"/>
+                            <field name="actual_end"/>
+                            <field name="days_delay" widget="integer_with_suffix" options="{'suffix': ' days'}"/>
+                        </group>
+                    </group>
+
+                    <group string="KPI Performance">
+                        <group>
+                            <field name="financial_progress" widget="progressbar"/>
+                            <field name="time_progress" widget="progressbar"/>
+                        </group>
+                        <group>
+                            <field name="visit_compliance" widget="progressbar"/>
+                            <field name="overall_kpi" widget="progressbar"/>
+                        </group>
+                    </group>
+
+                    <group string="Team">
+                        <field name="resident_engineer_id"/>
+                        <field name="mep_engineer_id"/>
+                        <field name="contractor"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Bill of Quantities" name="boq">
+                            <field name="boq_ids">
+                                <list string="BOQ Lines" editable="bottom">
+                                    <column_invisible>1</column_invisible>
+                                    <field name="category_id"/>
+                                    <field name="item_code"/>
+                                    <field name="description"/>
+                                    <field name="uom"/>
+                                    <field name="contracted_qty"/>
+                                    <field name="unit_price"/>
+                                    <field name="contracted_value" sum="Total Contracted"/>
+                                    <field name="executed_qty"/>
+                                    <field name="executed_value" sum="Total Executed"/>
+                                    <field name="execution_pct" widget="progressbar"/>
+                                    <field name="certified_qty"/>
+                                    <field name="remaining_qty"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Supervision Reports" name="supervision">
+                            <field name="supervision_ids">
+                                <list string="Reports">
+                                    <field name="name"/>
+                                    <field name="report_date"/>
+                                    <field name="report_type"/>
+                                    <field name="engineer_id"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'approved'"
+                                           decoration-warning="state == 'submitted'"
+                                           decoration-muted="state == 'draft'"/>
+                                    <field name="gps_validated" widget="boolean_toggle"/>
+                                    <field name="qr_validated" widget="boolean_toggle"/>
+                                    <field name="ncr_count"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Payment Certificates" name="certificates">
+                            <field name="certificate_ids">
+                                <list string="Certificates">
+                                    <field name="name"/>
+                                    <field name="cert_number"/>
+                                    <field name="period_from"/>
+                                    <field name="period_to"/>
+                                    <field name="certified_amount"/>
+                                    <field name="net_payable"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'waqf_approved'"
+                                           decoration-info="state == 'paid'"
+                                           decoration-warning="state in ['consultant_review','waqf_review']"
+                                           decoration-danger="state == 'rejected'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Change Orders" name="change_orders">
+                            <field name="change_order_ids">
+                                <list string="Change Orders">
+                                    <field name="name"/>
+                                    <field name="type"/>
+                                    <field name="reason"/>
+                                    <field name="amount"/>
+                                    <field name="days_extension"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'approved'"
+                                           decoration-warning="state == 'review'"
+                                           decoration-danger="state == 'rejected'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Field Attendance" name="attendance">
+                            <field name="attendance_ids">
+                                <list string="Visit Logs">
+                                    <field name="engineer_id"/>
+                                    <field name="visit_type"/>
+                                    <field name="check_in"/>
+                                    <field name="check_out"/>
+                                    <field name="duration"/>
+                                    <field name="distance_m"/>
+                                    <field name="is_validated" widget="boolean_toggle"/>
+                                    <field name="qr_validated" widget="boolean_toggle"/>
+                                    <field name="live_stream_url" widget="url"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes" placeholder="Internal notes..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="view_mosque_list" model="ir.ui.view">
+        <field name="name">mosque.mosque.list</field>
+        <field name="model">mosque.mosque</field>
+        <field name="arch" type="xml">
+            <list string="Mosques" decoration-danger="days_delay &gt; 0"
+                  decoration-warning="overall_kpi &lt; 70">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="package_id"/>
+                <field name="city"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'final_hov'"
+                       decoration-info="state == 'active'"
+                       decoration-warning="state == 'mobilizing'"
+                       decoration-muted="state == 'draft'"/>
+                <field name="resident_engineer_id"/>
+                <field name="financial_progress" widget="progressbar" string="Financial %"/>
+                <field name="time_progress" widget="progressbar" string="Time %"/>
+                <field name="visit_compliance" widget="progressbar" string="Visits %"/>
+                <field name="overall_kpi" widget="progressbar" string="KPI"/>
+                <field name="days_delay" optional="show"/>
+                <field name="certified_amount" optional="show"/>
+                <field name="planned_end"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Kanban View -->
+    <record id="view_mosque_kanban" model="ir.ui.view">
+        <field name="name">mosque.mosque.kanban</field>
+        <field name="model">mosque.mosque</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_small_column" default_group_by="package_id">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="state"/>
+                <field name="overall_kpi"/>
+                <field name="kpi_color"/>
+                <field name="financial_progress"/>
+                <field name="days_delay"/>
+                <field name="resident_engineer_id"/>
+                <field name="certified_amount"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex justify-content-between">
+                            <strong><field name="code"/></strong>
+                            <field name="state" widget="badge"/>
+                        </div>
+                        <field name="name" class="fw-bold text-truncate"/>
+                        <div class="mt-2">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">KPI</small>
+                                <small><field name="overall_kpi"/>%</small>
+                            </div>
+                            <div class="progress" style="height:6px">
+                                <div class="progress-bar"
+                                     t-attf-style="width: #{record.overall_kpi.value}%"
+                                     t-attf-class="bg-#{record.kpi_color.value}"/>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <small class="text-muted">Financial</small>
+                            <small><field name="financial_progress"/>%</small>
+                        </div>
+                        <div t-if="record.days_delay.value &gt; 0" class="text-danger mt-1">
+                            <i class="fa fa-warning"/> Delayed <field name="days_delay"/> days
+                        </div>
+                        <footer>
+                            <field name="resident_engineer_id" widget="many2one_avatar_employee"/>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_mosque_search" model="ir.ui.view">
+        <field name="name">mosque.mosque.search</field>
+        <field name="model">mosque.mosque</field>
+        <field name="arch" type="xml">
+            <search string="Search Mosques">
+                <field name="name" string="Mosque"/>
+                <field name="code"/>
+                <field name="package_id"/>
+                <field name="resident_engineer_id"/>
+                <filter string="Active Execution" name="active"
+                        domain="[('state','=','active')]"/>
+                <filter string="Mobilizing" name="mobilizing"
+                        domain="[('state','=','mobilizing')]"/>
+                <filter string="Delayed" name="delayed"
+                        domain="[('days_delay','>',0)]"/>
+                <filter string="Critical KPI (&lt;50%)" name="critical"
+                        domain="[('overall_kpi','&lt;',50)]"/>
+                <separator/>
+                <filter string="Riyadh" name="riyadh" domain="[('city','=','riyadh')]"/>
+                <filter string="Jeddah" name="jeddah" domain="[('city','=','jeddah')]"/>
+                <filter string="Taif"   name="taif"   domain="[('city','=','taif')]"/>
+                <filter string="Provinces" name="provinces"
+                        domain="[('city','not in',['riyadh','jeddah','taif'])]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="Package"  name="grp_package"  context="{'group_by': 'package_id'}"/>
+                    <filter string="City"     name="grp_city"     context="{'group_by': 'city'}"/>
+                    <filter string="Status"   name="grp_state"    context="{'group_by': 'state'}"/>
+                    <filter string="Engineer" name="grp_engineer" context="{'group_by': 'resident_engineer_id'}"/>
+                    <filter string="Phase"    name="grp_phase"    context="{'group_by': 'phase'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_mosque_mosque" model="ir.actions.act_window">
+        <field name="name">Mosques</field>
+        <field name="res_model">mosque.mosque</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_mosque_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No mosques configured yet.
+            </p>
+            <p>Add your first mosque to start tracking rehabilitation progress.</p>
+        </field>
+    </record>
+
+    <!-- Package Action -->
+    <record id="action_mosque_package" model="ir.actions.act_window">
+        <field name="name">Geographic Packages</field>
+        <field name="res_model">mosque.package</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

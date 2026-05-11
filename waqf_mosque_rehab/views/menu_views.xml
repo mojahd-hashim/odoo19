@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ══ ROOT MENU ══════════════════════════════════════════ -->
+    <menuitem id="menu_mosque_root"
+              name="Mosque Rehabilitation"
+              web_icon="waqf_mosque_rehab,static/description/icon.png"
+              sequence="50"/>
+
+    <!-- ── Dashboard ────────────────────────────────────────── -->
+    <menuitem id="menu_mosque_dashboard"
+              name="Executive Dashboard"
+              parent="menu_mosque_root"
+              action="action_mosque_dashboard"
+              sequence="5"/>
+
+    <!-- ── Projects ─────────────────────────────────────────── -->
+    <menuitem id="menu_mosque_project"
+              name="Projects"
+              parent="menu_mosque_root"
+              sequence="10"/>
+
+    <menuitem id="menu_mosque_mosque"
+              name="Mosques"
+              parent="menu_mosque_project"
+              action="action_mosque_mosque"
+              sequence="10"/>
+
+    <menuitem id="menu_mosque_packages"
+              name="Geographic Packages"
+              parent="menu_mosque_project"
+              action="action_mosque_package"
+              sequence="20"/>
+
+    <!-- ── BOQ ───────────────────────────────────────────────── -->
+    <menuitem id="menu_mosque_boq_root"
+              name="Bill of Quantities"
+              parent="menu_mosque_root"
+              sequence="20"/>
+
+    <menuitem id="menu_mosque_boq"
+              name="BOQ Lines"
+              parent="menu_mosque_boq_root"
+              action="action_mosque_boq"
+              sequence="10"/>
+
+    <!-- ── Supervision ───────────────────────────────────────── -->
+    <menuitem id="menu_mosque_supervision_root"
+              name="Supervision"
+              parent="menu_mosque_root"
+              sequence="30"/>
+
+    <menuitem id="menu_mosque_supervision"
+              name="Site Reports"
+              parent="menu_mosque_supervision_root"
+              action="action_mosque_supervision"
+              sequence="10"/>
+
+    <menuitem id="menu_mosque_attendance"
+              name="Field Visit Logs"
+              parent="menu_mosque_supervision_root"
+              action="action_mosque_attendance"
+              sequence="20"/>
+
+    <!-- ── Financial ─────────────────────────────────────────── -->
+    <menuitem id="menu_mosque_financial_root"
+              name="Financial"
+              parent="menu_mosque_root"
+              sequence="40"/>
+
+    <menuitem id="menu_mosque_certificates"
+              name="Payment Certificates"
+              parent="menu_mosque_financial_root"
+              action="action_mosque_certificate"
+              sequence="10"/>
+
+    <menuitem id="menu_mosque_change_orders"
+              name="Change Orders"
+              parent="menu_mosque_financial_root"
+              action="action_change_order"
+              sequence="20"/>
+
+    <!-- ── Configuration ─────────────────────────────────────── -->
+    <menuitem id="menu_mosque_config"
+              name="Configuration"
+              parent="menu_mosque_root"
+              sequence="90"
+              groups="waqf_mosque_rehab.group_mosque_admin"/>
+</odoo>

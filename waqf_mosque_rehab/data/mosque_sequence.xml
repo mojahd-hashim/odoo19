@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_mosque_mosque" model="ir.sequence">
+        <field name="name">Mosque Code</field>
+        <field name="code">mosque.mosque</field>
+        <field name="prefix">MSQ-</field>
+        <field name="padding">3</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+    </record>
+
+    <record id="seq_mosque_qr" model="ir.sequence">
+        <field name="name">Mosque QR Token</field>
+        <field name="code">mosque.qr</field>
+        <field name="prefix">QR</field>
+        <field name="padding">6</field>
+        <field name="number_next">100001</field>
+    </record>
+
+    <record id="seq_mosque_supervision" model="ir.sequence">
+        <field name="name">Supervision Report Reference</field>
+        <field name="code">mosque.supervision</field>
+        <field name="prefix">SUP/%(year)s/</field>
+        <field name="padding">4</field>
+        <field name="number_next">1</field>
+    </record>
+
+    <record id="seq_mosque_certificate" model="ir.sequence">
+        <field name="name">Payment Certificate Reference</field>
+        <field name="code">mosque.certificate</field>
+        <field name="prefix">CERT/%(year)s/</field>
+        <field name="padding">4</field>
+        <field name="number_next">1</field>
+    </record>
+
+    <record id="seq_mosque_change_order" model="ir.sequence">
+        <field name="name">Change Order Reference</field>
+        <field name="code">mosque.change.order</field>
+        <field name="prefix">CO/%(year)s/</field>
+        <field name="padding">3</field>
+        <field name="number_next">1</field>
+    </record>
+</odoo>

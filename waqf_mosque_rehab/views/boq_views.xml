@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ══ BOQ ════════════════════════════════════════════════ -->
+    <record id="action_mosque_boq" model="ir.actions.act_window">
+        <field name="name">Bill of Quantities</field>
+        <field name="res_model">mosque.boq</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_grp_mosque': 1}</field>
+    </record>
+
+    <record id="view_boq_list" model="ir.ui.view">
+        <field name="name">mosque.boq.list</field>
+        <field name="model">mosque.boq</field>
+        <field name="arch" type="xml">
+            <list string="BOQ" editable="bottom"
+                  decoration-warning="execution_pct &gt;= 90"
+                  decoration-success="execution_pct == 100">
+                <field name="mosque_id" optional="hide"/>
+                <field name="category_id"/>
+                <field name="item_code"/>
+                <field name="description"/>
+                <field name="uom"/>
+                <field name="contracted_qty" sum="Total"/>
+                <field name="unit_price"/>
+                <field name="contracted_value" sum="Total Value"/>
+                <field name="executed_qty" sum="Executed"/>
+                <field name="executed_value" sum="Executed Value"/>
+                <field name="execution_pct" widget="progressbar"/>
+                <field name="certified_qty"/>
+                <field name="remaining_qty"/>
+                <field name="is_variation" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_boq_search" model="ir.ui.view">
+        <field name="name">mosque.boq.search</field>
+        <field name="model">mosque.boq</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="mosque_id"/>
+                <field name="category_id"/>
+                <field name="description"/>
+                <filter string="Architectural" name="arch"
+                        domain="[('work_type','=','architectural')]"/>
+                <filter string="Mechanical" name="mech"
+                        domain="[('work_type','=','mechanical')]"/>
+                <filter string="Electrical" name="elec"
+                        domain="[('work_type','=','electrical')]"/>
+                <filter string="Variations" name="variation"
+                        domain="[('is_variation','=',True)]"/>
+                <separator/>
+                <group string="Group By">
+                    <filter string="Mosque"   name="grp_mosque"   context="{'group_by':'mosque_id'}"/>
+                    <filter string="Category" name="grp_category" context="{'group_by':'category_id'}"/>
+                    <filter string="Type"     name="grp_type"     context="{'group_by':'work_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

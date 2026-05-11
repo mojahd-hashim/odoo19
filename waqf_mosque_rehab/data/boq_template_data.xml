@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+<!--
+  BOQ Template items — these are loaded as reference data.
+  In practice, use the "Load BOQ Template" wizard to copy
+  these items into each mosque with the actual quantities.
+-->
+
+<!-- ARCHITECTURAL & STRUCTURAL -->
+<record id="boq_tmpl_01" model="mosque.boq.category">
+    <field name="name">Architectural &amp; Structural Works</field>
+    <field name="code">ARCH</field>
+    <field name="type">architectural</field>
+    <field name="sequence">1</field>
+</record>
+
+<!--
+  The full 69-item BOQ template is applied via the wizard
+  mosque.boq.load.wizard which copies standard items with
+  zero quantities into each selected mosque, ready for the
+  resident engineer to fill in actual quantities.
+
+  Standard items reference (from contract BOQ):
+  ARCH: items 1-40  (cracks, waterproofing, doors, tiles, painting, facades...)
+  MECH: items 41-51 (HVAC, plumbing, drainage, mixers...)
+  ELEC: items 52-69 (panels, lighting, switches, CNC LED...)
+-->
+</odoo>
