@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Dashboard client action -->
-    <record id="action_mosque_dashboard" model="ir.actions.client">
-        <field name="name">Executive Dashboard</field>
-        <field name="tag">mosque_rehab_dashboard</field>
-    </record>
+<!--    <record id="action_mosque_dashboard" model="ir.actions.client">-->
+<!--        <field name="name">Executive Dashboard</field>-->
+<!--        <field name="tag">mosque_rehab_dashboard</field>-->
+<!--    </record>-->
 
     <!-- Empty views for remaining models -->
     <record id="view_certificate_form2" model="ir.ui.view">
