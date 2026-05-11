@@ -117,7 +117,7 @@ class MosqueMosqueProject(models.Model):
                 tasks = rec.project_id.task_ids.filtered(
                     lambda t: not t.milestone_id)
                 done  = tasks.filtered(
-                    lambda t: t.stage_id.is_closed)
+                    lambda t: t.stage_id.id == 3)
                 rec.task_count      = len(tasks)
                 rec.milestone_count = len(rec.project_id.milestone_ids)
                 rec.project_progress = (
