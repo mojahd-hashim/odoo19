@@ -33,29 +33,14 @@
         </field>
     </record>
 
-    <record id="view_boq_search" model="ir.ui.view">
-        <field name="name">mosque.boq.search</field>
-        <field name="model">mosque.boq</field>
-        <field name="arch" type="xml">
-            <search>
-                <field name="mosque_id"/>
-                <field name="category_id"/>
-                <field name="description"/>
-                <filter string="Architectural" name="arch"
-                        domain="[('work_type','=','architectural')]"/>
-                <filter string="Mechanical" name="mech"
-                        domain="[('work_type','=','mechanical')]"/>
-                <filter string="Electrical" name="elec"
-                        domain="[('work_type','=','electrical')]"/>
-                <filter string="Variations" name="variation"
-                        domain="[('is_variation','=',True)]"/>
-                <separator/>
-                <group string="Group By">
-                    <filter string="Mosque"   name="grp_mosque"   context="{'group_by':'mosque_id'}"/>
-                    <filter string="Category" name="grp_category" context="{'group_by':'category_id'}"/>
-                    <filter string="Type"     name="grp_type"     context="{'group_by':'work_type'}"/>
-                </group>
-            </search>
-        </field>
-    </record>
+    <record id="view_mosque_boq_search" model="ir.ui.view">
+    <field name="name">mosque.boq.search</field>
+    <field name="model">mosque.boq</field>
+    <field name="arch" type="xml">
+        <search>
+            <field name="name"/>
+            <field name="mosque_id"/>
+        </search>
+    </field>
+</record>
 </odoo>
