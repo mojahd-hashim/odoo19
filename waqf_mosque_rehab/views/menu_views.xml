@@ -11,7 +11,7 @@
               name="Executive Dashboard"
               parent="menu_mosque_root"
               action="action_mosque_dashboard"
-              sequence="5"/>
+              sequence="300"/>
 
     <!-- ── Projects ─────────────────────────────────────────── -->
     <menuitem id="menu_mosque_project"
