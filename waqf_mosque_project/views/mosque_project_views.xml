@@ -66,7 +66,7 @@
     <record id="view_project_list_mosque_inherit" model="ir.ui.view">
         <field name="name">project.project.list.mosque</field>
         <field name="model">project.project</field>
-        <field name="inherit_id" ref="project.view_project_project_list"/>
+        <field name="inherit_id" ref="project.view_project"/>
         <field name="arch" type="xml">
             <xpath expr="//list" position="inside">
                 <field name="mosque_id"           optional="show"/>
