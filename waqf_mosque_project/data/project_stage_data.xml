@@ -8,28 +8,24 @@
     <record id="stage_backlog" model="project.task.type">
         <field name="name">Backlog</field>
         <field name="sequence">1</field>
-        <field name="description">Tasks not yet started</field>
         <field name="fold">False</field>
     </record>
 
     <record id="stage_in_progress" model="project.task.type">
         <field name="name">In Progress</field>
         <field name="sequence">2</field>
-        <field name="description">Tasks currently being worked on</field>
         <field name="fold">False</field>
     </record>
 
     <record id="stage_review" model="project.task.type">
         <field name="name">Under Review</field>
         <field name="sequence">3</field>
-        <field name="description">Tasks submitted for review or approval</field>
         <field name="fold">False</field>
     </record>
 
     <record id="stage_done" model="project.task.type">
         <field name="name">Done</field>
         <field name="sequence">4</field>
-        <field name="description">Completed and approved tasks</field>
         <field name="fold">False</field>
         <field name="is_closed">True</field>
     </record>
@@ -37,7 +33,6 @@
     <record id="stage_cancelled" model="project.task.type">
         <field name="name">Cancelled</field>
         <field name="sequence">5</field>
-        <field name="description">Cancelled or no longer applicable</field>
         <field name="fold">True</field>
         <field name="is_closed">True</field>
     </record>
