@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_boq_import_wizard_admin,mosque.boq.import.wizard admin,model_mosque_boq_import_wizard,waqf_mosque_rehab.group_mosque_admin,1,1,1,1

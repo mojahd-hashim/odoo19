@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_boq_import"
+              name="Import BOQ from Excel"
+              parent="waqf_mosque_rehab.menu_mosque_boq_root"
+              action="action_boq_import_wizard"
+              sequence="99"
+              groups="waqf_mosque_rehab.group_mosque_admin"/>
+</odoo>
