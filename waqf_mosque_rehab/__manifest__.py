@@ -39,12 +39,6 @@
         'views/dashboard_views.xml',
         'views/menu_views.xml',
     ],
-    'assets': {
-        'web.assets_backend': [
-            'waqf_mosque_rehab/static/src/css/dashboard.css',
-            'waqf_mosque_rehab/static/src/js/dashboard.js',
-        ],
-    },
     'installable': True,
     'application': True,
     'auto_install': False,
