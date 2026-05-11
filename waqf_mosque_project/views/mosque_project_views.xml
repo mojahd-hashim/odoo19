@@ -49,7 +49,7 @@
             </xpath>
 
             <!-- Add project progress bar in KPI section -->
-           <xpath expr="//field[@name='kpi_performance_group']" position="after">
+           <xpath expr="//group[@name='kpi_performance_group']" position="inside">
                 <group>
                     <field name="project_progress" widget="progressbar"
                            string="Task Completion %"
