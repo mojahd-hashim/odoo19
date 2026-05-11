@@ -27,13 +27,11 @@
         <field name="name">Done</field>
         <field name="sequence">4</field>
         <field name="fold">False</field>
-        <field name="is_closed">True</field>
     </record>
 
     <record id="stage_cancelled" model="project.task.type">
         <field name="name">Cancelled</field>
         <field name="sequence">5</field>
         <field name="fold">True</field>
-        <field name="is_closed">True</field>
     </record>
 </odoo>
