@@ -3,27 +3,23 @@
     <!-- ── Groups ─────────────────────────────────────────────── -->
     <record id="group_mosque_contractor" model="res.groups">
         <field name="name">Mosque / Contractor</field>
-        <field name="category_ids" ref="base.module_category_project"/>
         <field name="comment">Contractors can add BOQ progress and upload evidence photos.</field>
     </record>
 
     <record id="group_mosque_consultant" model="res.groups">
         <field name="name">Mosque / Consultant (Supervisor)</field>
-        <field name="category_ids" ref="base.module_category_project"/>
         <field name="implied_ids" eval="[(4, ref('group_mosque_contractor'))]"/>
         <field name="comment">Consultants can approve supervision reports and certificates at stage 1.</field>
     </record>
 
     <record id="group_mosque_waqf_manager" model="res.groups">
         <field name="name">Mosque / Waqf Project Manager</field>
-        <field name="category_ids" ref="base.module_category_project"/>
         <field name="implied_ids" eval="[(4, ref('group_mosque_consultant'))]"/>
         <field name="comment">Waqf managers have full read access and approve certificates at stage 2.</field>
     </record>
 
     <record id="group_mosque_admin" model="res.groups">
         <field name="name">Mosque / Administrator</field>
-        <field name="category_ids" ref="base.module_category_project"/>
         <field name="implied_ids" eval="[(4, ref('group_mosque_waqf_manager'))]"/>
         <field name="comment">Full configuration and deletion access.</field>
     </record>
