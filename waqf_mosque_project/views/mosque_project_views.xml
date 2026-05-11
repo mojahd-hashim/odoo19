@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══ MOSQUE FORM — inherit & add project smart buttons ══ -->
+    <record id="view_mosque_form_project_inherit" model="ir.ui.view">
+        <field name="name">mosque.mosque.form.project</field>
+        <field name="model">mosque.mosque</field>
+        <field name="inherit_id" ref="waqf_mosque_rehab.view_mosque_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Add smart buttons after existing ones -->
+            <xpath expr="//div[hasclass('o_field_widget','o_stat_buttons')]" position="inside">
+
+                <button class="btn btn-link o_stat_button"
+                        type="object"
+                        name="action_view_project"
+                        icon="fa-folder-open"
+                        invisible="not project_id">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Odoo Project</span>
+                        <span class="o_stat_value" style="font-size:12px">
+                            <field name="project_id"/>
+                        </span>
+                    </div>
+                </button>
+
+                <button class="btn btn-link o_stat_button"
+                        type="object"
+                        name="action_view_tasks"
+                        icon="fa-tasks"
+                        invisible="not project_id">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value"><field name="task_count"/></span>
+                        <span class="o_stat_text">Tasks</span>
+                    </div>
+                </button>
+
+                <button class="btn btn-link o_stat_button"
+                        type="object"
+                        name="action_view_milestones"
+                        icon="fa-flag-o"
+                        invisible="not project_id">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value"><field name="milestone_count"/></span>
+                        <span class="o_stat_text">Milestones</span>
+                    </div>
+                </button>
+
+            </xpath>
+
+            <!-- Add project progress bar in KPI section -->
+            <xpath expr="//group[@string='KPI Performance']" position="inside">
+                <group>
+                    <field name="project_progress" widget="progressbar"
+                           string="Task Completion %"
+                           invisible="not project_id"/>
+                    <field name="project_id" readonly="1"
+                           invisible="not project_id"/>
+                </group>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ══ PROJECT LIST — add mosque KPI columns ══════════════ -->
+    <record id="view_project_list_mosque_inherit" model="ir.ui.view">
+        <field name="name">project.project.list.mosque</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_index"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <field name="mosque_id"           optional="show"/>
+                <field name="mosque_kpi"
+                       widget="progressbar"
+                       string="Mosque KPI %"
+                       optional="show"/>
+                <field name="mosque_financial_pct"
+                       widget="progressbar"
+                       string="Financial %"
+                       optional="show"/>
+                <field name="mosque_state"
+                       widget="badge"
+                       optional="show"
+                       decoration-success="mosque_state == 'final_hov'"
+                       decoration-info="mosque_state == 'active'"
+                       decoration-warning="mosque_state == 'mobilizing'"/>
+                <field name="mosque_days_delay"
+                       optional="show"
+                       decoration-danger="mosque_days_delay &gt; 0"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ══ PROJECT FORM — add mosque info section ══════════════ -->
+    <record id="view_project_form_mosque_inherit" model="ir.ui.view">
+        <field name="name">project.project.form.mosque</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <div invisible="not mosque_id"
+                     style="background:var(--color-background-info);
+                            border-bottom:1px solid var(--color-border-info);
+                            padding:8px 16px;
+                            display:flex; gap:24px; align-items:center;">
+                    <span style="font-size:13px;font-weight:500">
+                        🕌 <field name="mosque_id" readonly="1" nolabel="1"/>
+                    </span>
+                    <span style="font-size:12px;color:var(--color-text-info)">
+                        KPI: <field name="mosque_kpi" readonly="1" nolabel="1"/>%
+                        &nbsp;|&nbsp;
+                        Financial: <field name="mosque_financial_pct" readonly="1" nolabel="1"/>%
+                        &nbsp;|&nbsp;
+                        Delay: <field name="mosque_days_delay" readonly="1" nolabel="1"/> days
+                    </span>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ══ TASK FORM — add mosque reference ════════════════════ -->
+    <record id="view_task_form_mosque_inherit" model="ir.ui.view">
+        <field name="name">project.task.form.mosque</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='project_sharing']" position="after">
+                <group invisible="not mosque_id">
+                    <field name="mosque_id"   readonly="1" string="Mosque"/>
+                    <field name="mosque_code" readonly="1" string="Mosque Code"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ══ TASK LIST — add mosque column ═══════════════════════ -->
+    <record id="view_task_list_mosque_inherit" model="ir.ui.view">
+        <field name="name">project.task.list.mosque</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_tree2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <field name="mosque_code" optional="show" string="Mosque"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ══ ACTIONS ═════════════════════════════════════════════ -->
+
+    <!-- All mosque projects grouped view -->
+    <record id="action_mosque_projects" model="ir.actions.act_window">
+        <field name="name">Mosque Projects</field>
+        <field name="res_model">project.project</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('mosque_id', '!=', False)]</field>
+        <field name="context">{
+            'search_default_group_by_stage': 0,
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No mosque projects yet.
+            </p>
+            <p>Mobilize a mosque to auto-create its Odoo Project.</p>
+        </field>
+    </record>
+
+    <!-- All mosque tasks across all projects -->
+    <record id="action_mosque_tasks_all" model="ir.actions.act_window">
+        <field name="name">All Mosque Tasks</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">list,kanban,form,gantt</field>
+        <field name="domain">[('mosque_id', '!=', False)]</field>
+        <field name="context">{
+            'search_default_group_by_project': 1,
+        }</field>
+    </record>
+
+    <!-- All milestones across all mosque projects -->
+    <record id="action_mosque_milestones_all" model="ir.actions.act_window">
+        <field name="name">All Mosque Milestones</field>
+        <field name="res_model">project.milestone</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('project_id.mosque_id', '!=', False)]</field>
+        <field name="context">{
+            'search_default_group_by_project': 1,
+        }</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Add Project Integration sub-menu under Mosque Rehabilitation root -->
+    <menuitem id="menu_mosque_project_root"
+              name="Project Tracking"
+              parent="waqf_mosque_rehab.menu_mosque_root"
+              sequence="35"/>
+
+    <menuitem id="menu_mosque_projects_list"
+              name="Mosque Projects"
+              parent="menu_mosque_project_root"
+              action="action_mosque_projects"
+              sequence="10"/>
+
+    <menuitem id="menu_mosque_tasks_all"
+              name="All Tasks"
+              parent="menu_mosque_project_root"
+              action="action_mosque_tasks_all"
+              sequence="20"/>
+
+    <menuitem id="menu_mosque_milestones_all"
+              name="All Milestones"
+              parent="menu_mosque_project_root"
+              action="action_mosque_milestones_all"
+              sequence="30"/>
+
+</odoo>
