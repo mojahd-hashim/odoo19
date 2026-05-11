@@ -37,7 +37,7 @@ class MosqueMosque(models.Model):
     _order = 'code'
 
     # ── Identification ────────────────────────────────────────────
-    name = fields.Char(string='Mosque Name', required=True, tracking=True,translate=True)
+    name = fields.Char(string='Mosque Name', required=True, tracking=True,translate=False)
     code = fields.Char(string='Code', required=True, copy=False,
                        default=lambda self: 'New')
     package_id = fields.Many2one('mosque.package', string='Package',
