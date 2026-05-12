@@ -15,7 +15,7 @@
           <div class="cp-header-logo">و</div>
           <div>
             <div class="cp-header-title">بوابة المشرف الميداني</div>
-            <div class="cp-header-sub">كوقف — مشروع تأهيل المساجد</div>
+            <div class="cp-header-sub">الوقف — مشروع تأهيل المساجد</div>
           </div>
         </div>
         <div class="cp-header-user">
@@ -105,7 +105,7 @@
       <div class="cp-progress-wrap">
         <div class="cp-progress-label">
           <span>نسبة الإنجاز المالي</span>
-          <span><t t-esc="'%.1f%%' % mosque.financial_progress"/></span>
+          <t t-esc="'%.1f%%' % (mosque.financial_progress or 0.0)"/>
         </div>
         <div class="cp-progress-bar">
           <div class="cp-progress-fill"
@@ -116,7 +116,9 @@
       <div class="cp-progress-wrap" style="margin-top:8px">
         <div class="cp-progress-label">
           <span>الإنجاز الزمني</span>
-          <span><t t-esc="'%.1f%%' % mosque.time_progress"/></span>
+          <span>
+    <t t-esc="'%.1f%%' % (mosque.time_progress or 0.0)"/>
+</span>
         </div>
         <div class="cp-progress-bar">
           <div class="cp-progress-fill"
