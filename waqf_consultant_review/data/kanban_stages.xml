@@ -10,8 +10,6 @@
         <field name="sequence">1</field>
         <field name="waqf_stage">todo</field>
         <field name="require_green">False</field>
-        <field name="is_closing_stage">False</field>
-        <field name="description">المهمة مجدولة ولم تبدأ بعد</field>
     </record>
 
     <record id="stage_in_progress" model="project.task.type">
@@ -20,7 +18,6 @@
         <field name="waqf_stage">in_progress</field>
         <field name="require_green">False</field>
         <field name="is_closing_stage">False</field>
-        <field name="description">المشرف يعمل على هذه المهمة</field>
     </record>
 
     <record id="stage_consultant_review" model="project.task.type">
@@ -29,7 +26,6 @@
         <field name="waqf_stage">consultant_review</field>
         <field name="require_green">False</field>
         <field name="is_closing_stage">False</field>
-        <field name="description">بانتظار مراجعة واعتماد الاستشاري</field>
     </record>
 
     <record id="stage_waqf_approval" model="project.task.type">
@@ -38,7 +34,6 @@
         <field name="waqf_stage">waqf_approval</field>
         <field name="require_green">True</field>
         <field name="is_closing_stage">False</field>
-        <field name="description">بانتظار الاعتماد النهائي من الوقف — يُشترط أن تكون المهمة خضراء</field>
     </record>
 
     <record id="stage_done" model="project.task.type">
@@ -47,7 +42,6 @@
         <field name="waqf_stage">done</field>
         <field name="require_green">False</field>
         <field name="is_closing_stage">True</field>
-        <field name="is_closed">True</field>
-        <field name="description">مكتملة ومعتمدة من الوقف</field>
+        <field name="fold">True</field>
     </record>
 </odoo>
