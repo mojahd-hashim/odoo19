@@ -35,7 +35,6 @@ class MosqueCertificateReview(models.Model):
             main_tasks = self.env['project.task'].search([
                 ('project_id', '=', project.id),
                 ('parent_id',  '=', False),
-                ('stage_id.is_closed', '=', False),
             ])
 
             green     = main_tasks.filtered(
