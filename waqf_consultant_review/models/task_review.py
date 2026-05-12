@@ -188,8 +188,6 @@ class ProjectTask(models.Model):
                 task.kanban_color = 'orange'
             else:
                 task.kanban_color = 'grey'
-            else:
-                task.kanban_color = 'grey'
 
     # ── Compute: subtask counts ───────────────────────────────────
     @api.depends('child_ids', 'child_ids.review_state', 'child_ids.kanban_color')
