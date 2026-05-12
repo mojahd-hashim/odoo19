@@ -29,6 +29,16 @@
               action="action_mosque_boq"
               sequence="30"/>
 
+
+
+    <!-- ── BOQ ───────────────────────────────────────────────── -->
+    <menuitem id="menu_mosque_boq_root"
+              name="Bill of Quantities"
+              parent="menu_mosque_root"
+              sequence="20"/>
+
+
+
     <!-- ── Supervision ───────────────────────────────────────── -->
     <menuitem id="menu_mosque_supervision_root"
               name="Supervision"
