@@ -129,7 +129,7 @@ class ProjectTask(models.Model):
         'parent_id',
     )
     def _compute_kanban_color(self):
-        today = date.today()
+        today = fields.Date.today()
         for task in self:
 
             # ── SUBTASK: color from own review_state ──────────────
