@@ -22,8 +22,8 @@
         'project',
     ],
     'data': [
-        'security/ir.model.access.csv',
         'security/portal_security.xml',
+        'security/ir.model.access.csv',
         'data/portal_data.xml',
         'views/portal_templates.xml',
         'views/portal_work_log.xml',
