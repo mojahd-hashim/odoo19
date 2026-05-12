@@ -3,7 +3,6 @@
     <!-- Contractor supervisor portal group -->
     <record id="group_contractor_supervisor" model="res.groups">
         <field name="name">Contractor / Site Supervisor</field>
-        <field name="category_id" ref="base.module_category_website_published"/>
         <field name="comment">
             Contractor site supervisors can access the portal to log work,
             upload photos, and submit certificates for their assigned mosque only.
