@@ -32,12 +32,6 @@
         'views/portal_change_order.xml',
         'views/portal_assets.xml',
     ],
-    'assets': {
-        'web.assets_frontend': [
-            'waqf_contractor_portal/static/src/css/portal.css',
-            'waqf_contractor_portal/static/src/js/portal.js',
-        ],
-    },
     'installable': True,
     'application': False,
     'license': 'LGPL-3',
