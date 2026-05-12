@@ -244,131 +244,131 @@
 </record>
 
 <!-- ══ KANBAN CSS asset ══════════════════════════════════════ -->
-<template id="assets_kanban_css" inherit_id="web.assets_backend">
-    <xpath expr="." position="inside">
-        <style>
-/* ── Waqf Kanban Card Colors ─────────────────────────────── */
-.waqf-task-card {
-    border-radius: 8px !important;
-    border: 1px solid #DDE8EE !important;
-    overflow: hidden;
-    transition: box-shadow 0.15s, transform 0.15s;
-    position: relative;
-}
+<!--<template id="assets_kanban_css" inherit_id="web.assets_backend">-->
+<!--    <xpath expr="." position="inside">-->
+<!--        <style>-->
+<!--/* ── Waqf Kanban Card Colors ─────────────────────────────── */-->
+<!--.waqf-task-card {-->
+<!--    border-radius: 8px !important;-->
+<!--    border: 1px solid #DDE8EE !important;-->
+<!--    overflow: hidden;-->
+<!--    transition: box-shadow 0.15s, transform 0.15s;-->
+<!--    position: relative;-->
+<!--}-->
 
-.waqf-task-card:hover {
-    box-shadow: 0 4px 16px rgba(27,58,82,0.12) !important;
-    transform: translateY(-1px);
-}
+<!--.waqf-task-card:hover {-->
+<!--    box-shadow: 0 4px 16px rgba(27,58,82,0.12) !important;-->
+<!--    transform: translateY(-1px);-->
+<!--}-->
 
-/* Color strip at top of each card */
-.waqf-card-strip {
-    height: 4px;
-    width: 100%;
-    margin: -12px -12px 10px -12px;
-    width: calc(100% + 24px);
-}
+<!--/* Color strip at top of each card */-->
+<!--.waqf-card-strip {-->
+<!--    height: 4px;-->
+<!--    width: 100%;-->
+<!--    margin: -12px -12px 10px -12px;-->
+<!--    width: calc(100% + 24px);-->
+<!--}-->
 
-/* Green */
-.waqf-green { border-color: #2ECC8A !important; }
-.waqf-green .waqf-card-strip { background: #2ECC8A; }
-.waqf-green { background: #FAFFFC !important; }
+<!--/* Green */-->
+<!--.waqf-green { border-color: #2ECC8A !important; }-->
+<!--.waqf-green .waqf-card-strip { background: #2ECC8A; }-->
+<!--.waqf-green { background: #FAFFFC !important; }-->
 
-/* Red */
-.waqf-red { border-color: #E85555 !important; }
-.waqf-red .waqf-card-strip { background: #E85555; }
-.waqf-red { background: #FFF8F8 !important; }
+<!--/* Red */-->
+<!--.waqf-red { border-color: #E85555 !important; }-->
+<!--.waqf-red .waqf-card-strip { background: #E85555; }-->
+<!--.waqf-red { background: #FFF8F8 !important; }-->
 
-/* Yellow */
-.waqf-yellow { border-color: #C8A454 !important; }
-.waqf-yellow .waqf-card-strip { background: #C8A454; }
-.waqf-yellow { background: #FDFAF3 !important; }
+<!--/* Yellow */-->
+<!--.waqf-yellow { border-color: #C8A454 !important; }-->
+<!--.waqf-yellow .waqf-card-strip { background: #C8A454; }-->
+<!--.waqf-yellow { background: #FDFAF3 !important; }-->
 
-/* Orange */
-.waqf-orange { border-color: #F0A500 !important; }
-.waqf-orange .waqf-card-strip { background: #F0A500; }
-.waqf-orange { background: #FFFBF0 !important; }
+<!--/* Orange */-->
+<!--.waqf-orange { border-color: #F0A500 !important; }-->
+<!--.waqf-orange .waqf-card-strip { background: #F0A500; }-->
+<!--.waqf-orange { background: #FFFBF0 !important; }-->
 
-/* Grey */
-.waqf-grey { border-color: #DDE8EE !important; }
-.waqf-grey .waqf-card-strip { background: #B0C4D0; }
-.waqf-grey { background: #FAFCFD !important; }
+<!--/* Grey */-->
+<!--.waqf-grey { border-color: #DDE8EE !important; }-->
+<!--.waqf-grey .waqf-card-strip { background: #B0C4D0; }-->
+<!--.waqf-grey { background: #FAFCFD !important; }-->
 
-/* Card content */
-.waqf-card-name {
-    font-size: 13px; font-weight: 600;
-    color: #1A2B3C; margin-bottom: 4px;
-    line-height: 1.4;
-}
+<!--/* Card content */-->
+<!--.waqf-card-name {-->
+<!--    font-size: 13px; font-weight: 600;-->
+<!--    color: #1A2B3C; margin-bottom: 4px;-->
+<!--    line-height: 1.4;-->
+<!--}-->
 
-.waqf-card-meta {
-    font-size: 11px; color: #237292;
-    font-weight: 500; margin-bottom: 3px;
-    font-family: monospace;
-}
+<!--.waqf-card-meta {-->
+<!--    font-size: 11px; color: #237292;-->
+<!--    font-weight: 500; margin-bottom: 3px;-->
+<!--    font-family: monospace;-->
+<!--}-->
 
-.waqf-card-deadline {
-    font-size: 11px; color: #7A8F9F; margin-bottom: 6px;
-}
+<!--.waqf-card-deadline {-->
+<!--    font-size: 11px; color: #7A8F9F; margin-bottom: 6px;-->
+<!--}-->
 
-.waqf-card-co-lock {
-    font-size: 11px; color: #856404;
-    background: #FFF3CD;
-    border-radius: 4px; padding: 2px 6px;
-    margin-bottom: 6px; display: inline-block;
-}
+<!--.waqf-card-co-lock {-->
+<!--    font-size: 11px; color: #856404;-->
+<!--    background: #FFF3CD;-->
+<!--    border-radius: 4px; padding: 2px 6px;-->
+<!--    margin-bottom: 6px; display: inline-block;-->
+<!--}-->
 
-/* Subtask counters */
-.waqf-card-subtasks {
-    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px;
-}
+<!--/* Subtask counters */-->
+<!--.waqf-card-subtasks {-->
+<!--    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px;-->
+<!--}-->
 
-.waqf-count {
-    font-size: 11px; font-weight: 500;
-    padding: 2px 6px; border-radius: 999px;
-}
+<!--.waqf-count {-->
+<!--    font-size: 11px; font-weight: 500;-->
+<!--    padding: 2px 6px; border-radius: 999px;-->
+<!--}-->
 
-.waqf-count-pending  { background: #FFF8EC; color: #856404; }
-/* Subtask progress bar */
-.waqf-subtask-progress {
-    display: flex; align-items: center; gap: 6px;
-    flex: 1;
-}
+<!--.waqf-count-pending  { background: #FFF8EC; color: #856404; }-->
+<!--/* Subtask progress bar */-->
+<!--.waqf-subtask-progress {-->
+<!--    display: flex; align-items: center; gap: 6px;-->
+<!--    flex: 1;-->
+<!--}-->
 
-.waqf-subtask-bar {
-    flex: 1; height: 5px;
-    background: #DDE8EE; border-radius: 3px;
-    overflow: hidden;
-}
+<!--.waqf-subtask-bar {-->
+<!--    flex: 1; height: 5px;-->
+<!--    background: #DDE8EE; border-radius: 3px;-->
+<!--    overflow: hidden;-->
+<!--}-->
 
-.waqf-subtask-fill {
-    height: 100%;
-    background: #2ECC8A;
-    border-radius: 3px;
-    transition: width 0.3s ease;
-}
+<!--.waqf-subtask-fill {-->
+<!--    height: 100%;-->
+<!--    background: #2ECC8A;-->
+<!--    border-radius: 3px;-->
+<!--    transition: width 0.3s ease;-->
+<!--}-->
 
-.waqf-subtask-label {
-    font-size: 11px; color: #7A8F9F;
-    white-space: nowrap;
-}
+<!--.waqf-subtask-label {-->
+<!--    font-size: 11px; color: #7A8F9F;-->
+<!--    white-space: nowrap;-->
+<!--}-->
 
-.waqf-count-approved { background: #D1F0E3; color: #0D6B41; }
-.waqf-count-rejected { background: #FEE;    color: #9B1C1C; }
+<!--.waqf-count-approved { background: #D1F0E3; color: #0D6B41; }-->
+<!--.waqf-count-rejected { background: #FEE;    color: #9B1C1C; }-->
 
-/* Stage column headers */
-.o_kanban_group[data-waqf_stage="waqf_approval"] > .o_kanban_header {
-    background: rgba(35,114,146,0.08) !important;
-    border-bottom: 2px solid #237292 !important;
-}
+<!--/* Stage column headers */-->
+<!--.o_kanban_group[data-waqf_stage="waqf_approval"] > .o_kanban_header {-->
+<!--    background: rgba(35,114,146,0.08) !important;-->
+<!--    border-bottom: 2px solid #237292 !important;-->
+<!--}-->
 
-.o_kanban_group[data-waqf_stage="done"] > .o_kanban_header {
-    background: rgba(46,204,138,0.08) !important;
-    border-bottom: 2px solid #2ECC8A !important;
-}
-        </style>
-    </xpath>
-</template>
+<!--.o_kanban_group[data-waqf_stage="done"] > .o_kanban_header {-->
+<!--    background: rgba(46,204,138,0.08) !important;-->
+<!--    border-bottom: 2px solid #2ECC8A !important;-->
+<!--}-->
+<!--        </style>-->
+<!--    </xpath>-->
+<!--</template>-->
 
 <!-- ══ TASK LIST — add review state column ══════════════════ -->
 <record id="view_task_list_review_inherit" model="ir.ui.view">
