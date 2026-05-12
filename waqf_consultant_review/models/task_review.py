@@ -159,7 +159,7 @@ class ProjectTask(models.Model):
                 elif task.review_state == 'rejected':
                     task.kanban_color = 'red'
                 elif (task.date_deadline and
-                      task.date_deadline.date < today and
+                      task.date_deadline.date() < today and
                       not task.stage_id.is_closed):
                     task.kanban_color = 'orange'
                 else:
