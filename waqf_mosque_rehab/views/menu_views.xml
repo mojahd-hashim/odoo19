@@ -25,7 +25,7 @@
               sequence="20"/>
      <menuitem id="menu_mosque_boq"
               name="BOQ Lines"
-              parent="menu_mosque_root"
+              parent="menu_mosque_project"
               action="action_mosque_boq"
               sequence="30"/>
 
