@@ -154,7 +154,7 @@
 <record id="view_task_kanban_review_inherit" model="ir.ui.view">
     <field name="name">project.task.kanban.waqf.review</field>
     <field name="model">project.task</field>
-    <field name="inherit_id" ref="project.view_task_kanban"/>
+    <field name="inherit_id" ref="project_enterprise.view_task_kanban_inherited_project_enterprise"/>
     <field name="arch" type="xml">
 
         <!-- add fields -->

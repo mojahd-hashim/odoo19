@@ -27,6 +27,7 @@
         'waqf_mosque_project',
         'waqf_contractor_portal',
         'project',
+        'project_enterprise',
         'mail',
     ],
     'data': [
