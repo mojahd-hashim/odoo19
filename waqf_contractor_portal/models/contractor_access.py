@@ -67,7 +67,7 @@ class ContractorBOQAccess(models.Model):
         })
 
     @api.model
-    def has_access(self, mosque_id, partner_id):
+    def check_contractor_access(self, mosque_id, partner_id):
         return bool(self.search([
             ('mosque_id', '=', mosque_id),
             ('supervisor_id', '=', partner_id),
