@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Contractor supervisor portal group -->
+    <record id="group_contractor_supervisor" model="res.groups">
+        <field name="name">Contractor / Site Supervisor</field>
+        <field name="category_id" ref="base.module_category_website_published"/>
+        <field name="comment">
+            Contractor site supervisors can access the portal to log work,
+            upload photos, and submit certificates for their assigned mosque only.
+        </field>
+    </record>
+
+    <!-- Record rule: supervisor sees only their mosque -->
+    <record id="rule_work_log_supervisor" model="ir.rule">
+        <field name="name">Work Log: supervisor sees own records only</field>
+        <field name="model_id" ref="model_contractor_work_log"/>
+        <field name="domain_force">[('supervisor_id','=',user.partner_id.id)]</field>
+        <field name="groups" eval="[(4, ref('group_contractor_supervisor'))]"/>
+    </record>
+
+    <record id="rule_boq_access_supervisor" model="ir.rule">
+        <field name="name">BOQ Access: supervisor sees own requests</field>
+        <field name="model_id" ref="model_contractor_boq_access"/>
+        <field name="domain_force">[('supervisor_id','=',user.partner_id.id)]</field>
+        <field name="groups" eval="[(4, ref('group_contractor_supervisor'))]"/>
+    </record>
+
+    <!-- Waqf managers can see and approve all access requests -->
+    <record id="rule_boq_access_waqf" model="ir.rule">
+        <field name="name">BOQ Access: Waqf managers see all</field>
+        <field name="model_id" ref="model_contractor_boq_access"/>
+        <field name="domain_force">[(1,'=',1)]</field>
+        <field name="groups" eval="[(4, ref('waqf_mosque_rehab.group_mosque_waqf_manager'))]"/>
+    </record>
+</odoo>

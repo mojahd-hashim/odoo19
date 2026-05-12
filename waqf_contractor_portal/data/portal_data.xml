@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!--
+        Portal data:
+        - Contractor supervisor group is created in portal_security.xml
+        - Individual supervisors are created manually via:
+          Contacts → New → check "Contractor Supervisor" → assign mosque
+          Then: Settings → Users → Portal → invite by email
+    -->
+</odoo>

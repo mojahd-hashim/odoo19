@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_boq_access_admin,contractor.boq.access admin,model_contractor_boq_access,waqf_mosque_rehab.group_mosque_admin,1,1,1,1
+access_boq_access_waqf,contractor.boq.access waqf,model_contractor_boq_access,waqf_mosque_rehab.group_mosque_waqf_manager,1,1,0,0
+access_boq_access_consultant,contractor.boq.access consultant,model_contractor_boq_access,waqf_mosque_rehab.group_mosque_consultant,1,1,0,0
+access_boq_access_supervisor,contractor.boq.access supervisor,model_contractor_boq_access,group_contractor_supervisor,1,1,1,0
+access_work_log_admin,contractor.work.log admin,model_contractor_work_log,waqf_mosque_rehab.group_mosque_admin,1,1,1,1
+access_work_log_waqf,contractor.work.log waqf,model_contractor_work_log,waqf_mosque_rehab.group_mosque_waqf_manager,1,0,0,0
+access_work_log_consultant,contractor.work.log consultant,model_contractor_work_log,waqf_mosque_rehab.group_mosque_consultant,1,1,0,0
+access_work_log_supervisor,contractor.work.log supervisor,model_contractor_work_log,group_contractor_supervisor,1,1,1,0

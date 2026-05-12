@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<!-- ══ CERTIFICATE FORM — add green check panel ════════════ -->
+<record id="view_certificate_review_inherit" model="ir.ui.view">
+    <field name="name">mosque.certificate.form.review</field>
+    <field name="model">mosque.certificate</field>
+    <field name="inherit_id" ref="waqf_mosque_rehab.view_certificate_form"/>
+    <field name="arch" type="xml">
+
+        <!-- Warning panel before Submit to Waqf button -->
+        <xpath expr="//button[@name='action_submit_to_waqf']" position="before">
+
+            <!-- All green — ready -->
+            <div invisible="not all_tasks_green or state != 'consultant_approved'"
+                 style="background:#D1F0E3;border:1px solid #2ECC8A;
+                        border-radius:8px;padding:12px 16px;
+                        margin-bottom:8px;font-size:13px;
+                        color:#0D6B41;font-weight:500">
+                ✅ جميع مهام المشروع خضراء —
+                يمكن إرسال المستخلص للوقف.
+            </div>
+
+            <!-- Not all green — blocked -->
+            <div invisible="all_tasks_green or state != 'consultant_approved'"
+                 style="background:#FFF8EC;border:1.5px solid #C8A454;
+                        border-radius:8px;padding:12px 16px;
+                        margin-bottom:8px;font-size:13px;">
+                <div style="font-weight:600;color:#856404;margin-bottom:6px">
+                    ⚠ لا يمكن الإرسال للوقف بعد
+                </div>
+                <div style="font-size:12px;color:#7A4F00;margin-bottom:8px">
+                    يوجد <field name="tasks_not_green" readonly="1" nolabel="1"/>
+                    مهمة لم تُعتمد بعد من الاستشاري:
+                </div>
+                <field name="blocking_tasks_html" readonly="1" nolabel="1"/>
+                <div style="font-size:11px;color:#7A8F9F;margin-top:8px">
+                    اعتمد جميع المهام أعلاه أولاً ثم أعد المحاولة.
+                </div>
+            </div>
+
+        </xpath>
+
+        <!-- Hide submit button if not all green -->
+        <xpath expr="//button[@name='action_submit_to_waqf']" position="attributes">
+            <attribute name="invisible">
+                not all_tasks_green or state != 'consultant_approved'
+            </attribute>
+        </xpath>
+
+        <!-- Task summary in form -->
+        <xpath expr="//field[@name='notes']" position="before">
+            <group string="حالة مهام المشروع"
+                   invisible="state in ['draft','paid']">
+                <group>
+                    <field name="tasks_total"   string="إجمالي المهام" readonly="1"/>
+                    <field name="tasks_green"   string="خضراء (معتمدة)" readonly="1"/>
+                </group>
+                <group>
+                    <field name="tasks_not_green" string="غير معتمدة" readonly="1"/>
+                    <field name="all_tasks_green"
+                           string="جاهز للوقف"
+                           widget="boolean_toggle" readonly="1"/>
+                </group>
+            </group>
+        </xpath>
+
+    </field>
+</record>
+
+</odoo>

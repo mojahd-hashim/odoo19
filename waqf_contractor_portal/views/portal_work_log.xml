@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<!-- ══ UPLOAD PHOTOS ═════════════════════════════════════════ -->
+<template id="tmpl_upload_photos" name="Upload Evidence Photos">
+  <t t-call="waqf_contractor_portal.tmpl_base">
+
+    <!-- Steps -->
+    <div class="cp-steps">
+      <div class="cp-step done">
+        <div class="cp-step-dot">1</div>
+        <div class="cp-step-label">تسجيل العمل</div>
+      </div>
+      <div class="cp-step-line done"/>
+      <div class="cp-step active">
+        <div class="cp-step-dot">2</div>
+        <div class="cp-step-label">رفع الصور</div>
+      </div>
+      <div class="cp-step-line"/>
+      <div class="cp-step">
+        <div class="cp-step-dot">3</div>
+        <div class="cp-step-label">إرسال للاستشاري</div>
+      </div>
+    </div>
+
+    <!-- Work summary -->
+    <div class="cp-form-card" style="margin-bottom:16px">
+      <div class="cp-mosque-name" style="font-size:14px" t-esc="log.name"/>
+      <div class="cp-mosque-meta">
+        <t t-esc="log.boq_id.item_code"/> —
+        <t t-esc="'%.2f' % log.qty_executed"/> <t t-esc="log.uom or ''"/> —
+        <t t-esc="'%.2f' % log.line_value"/> ريال
+      </div>
+    </div>
+
+    <div class="cp-section-title">صور إثبات الإنجاز</div>
+
+    <div class="cp-warning">
+      يجب رفع صورة واحدة على الأقل تُظهر العمل المنجز قبل الإرسال.
+    </div>
+
+    <form t-attf-action="/contractor/work/#{log.id}/photos/save"
+          method="post" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+      <div class="cp-form-card">
+        <!-- Drop zone -->
+        <div class="cp-photo-zone" id="photo-zone">
+          <div class="cp-photo-zone-text">اضغط لاختيار صور أو اسحبها هنا</div>
+          <div class="cp-photo-zone-sub">يمكن رفع أكثر من صورة — JPG, PNG</div>
+          <input type="file" id="photo-input" name="photos"
+                 multiple="multiple" accept="image/*"
+                 style="display:none" capture="environment"/>
+        </div>
+
+        <!-- Preview grid -->
+        <div class="cp-photo-grid" id="photo-preview-grid"/>
+
+        <div style="margin-top:8px;font-size:12px;color:var(--text-gray);text-align:center"
+             id="photo-count"/>
+
+        <div style="margin-top:16px;display:flex;gap:8px">
+          <button type="submit" class="cp-btn cp-btn-primary" style="flex:1">
+            إرسال للاستشاري
+          </button>
+          <a t-attf-href="/contractor/task/#{log.task_id.id or 0}"
+             class="cp-btn cp-btn-ghost">رجوع</a>
+        </div>
+      </div>
+    </form>
+
+  </t>
+</template>
+
+<!-- ══ CHANGE ORDER FORM ══════════════════════════════════════ -->
+<template id="tmpl_change_order" name="Change Order">
+  <t t-call="waqf_contractor_portal.tmpl_base">
+
+    <div style="margin-bottom:16px;font-size:13px;color:var(--text-gray)">
+      <a href="/contractor" style="color:var(--teal)">الرئيسية</a>
+      ← طلب تعديل كميات
+    </div>
+
+    <t t-if="log">
+      <div class="cp-warning">
+        الكمية التي أدخلتها تتجاوز الحد التعاقدي لبند
+        <strong t-esc="log.boq_id.item_code"/>.
+        يجب رفع طلب تعديل كميات قبل استكمال التسجيل.
+      </div>
+    </t>
+
+    <div class="cp-section-title">طلب تعديل كميات أو نطاق</div>
+
+    <form action="/contractor/change-order/submit" method="post">
+      <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+      <t t-if="log">
+        <input type="hidden" name="log_id" t-att-value="log.id"/>
+      </t>
+
+      <div class="cp-form-card">
+
+        <div class="cp-form-group">
+          <label class="cp-label"><span>*</span> نوع التعديل</label>
+          <select name="type" class="cp-select" required="required">
+            <option value="scope">تغيير في نطاق الأعمال</option>
+            <option value="cost">تعديل في الكميات / التكلفة</option>
+            <option value="design">تعديل تصميمي</option>
+            <option value="time">تمديد مدة العقد</option>
+          </select>
+        </div>
+
+        <div class="cp-form-group">
+          <label class="cp-label"><span>*</span> سبب ومبرر التعديل</label>
+          <textarea name="reason" class="cp-textarea" required="required"
+                    placeholder="اشرح بالتفصيل سبب الحاجة لهذا التعديل..."/>
+        </div>
+
+        <div class="cp-input-group">
+          <div class="cp-form-group">
+            <label class="cp-label">المبلغ الإضافي (ريال)</label>
+            <input type="number" name="amount" class="cp-input"
+                   placeholder="0" min="0" step="100"/>
+          </div>
+          <div class="cp-form-group">
+            <label class="cp-label">أيام التمديد</label>
+            <input type="number" name="days_extension" class="cp-input"
+                   placeholder="0" min="0"/>
+          </div>
+        </div>
+
+        <button type="submit" class="cp-btn cp-btn-gold cp-btn-full">
+          إرسال طلب التعديل للمراجعة
+        </button>
+      </div>
+    </form>
+
+  </t>
+</template>
+
+<!-- ══ CERTIFICATE FORM ═══════════════════════════════════════ -->
+<template id="tmpl_certificate" name="Certificate Form">
+  <t t-call="waqf_contractor_portal.tmpl_base">
+
+    <!-- Steps -->
+    <div class="cp-steps">
+      <div class="cp-step active">
+        <div class="cp-step-dot">1</div>
+        <div class="cp-step-label">اختر الفترة</div>
+      </div>
+      <div class="cp-step-line"/>
+      <div class="cp-step">
+        <div class="cp-step-dot">2</div>
+        <div class="cp-step-label">راجع الأعمال</div>
+      </div>
+      <div class="cp-step-line"/>
+      <div class="cp-step">
+        <div class="cp-step-dot">3</div>
+        <div class="cp-step-label">أرسل للاستشاري</div>
+      </div>
+    </div>
+
+    <div class="cp-section-title">إنشاء مستخلص دفع</div>
+
+    <t t-if="not logs">
+      <div class="cp-empty">
+        <div class="cp-empty-title">لا توجد أعمال معتمدة لإدراجها في مستخلص</div>
+        <div class="cp-empty-sub">
+          يجب أن تكون الأعمال معتمدة من الاستشاري أولاً قبل إدراجها في المستخلص.
+        </div>
+      </div>
+    </t>
+
+    <t t-if="logs">
+      <form action="/contractor/certificate/submit" method="post">
+        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+        <div class="cp-form-card">
+          <div class="cp-input-group">
+            <div class="cp-form-group">
+              <label class="cp-label">رقم المستخلص</label>
+              <input type="number" name="cert_number" class="cp-input"
+                     t-att-value="next_num" readonly="readonly"/>
+            </div>
+            <div/>
+          </div>
+          <div class="cp-input-group">
+            <div class="cp-form-group">
+              <label class="cp-label"><span>*</span> من تاريخ</label>
+              <input type="date" name="period_from" class="cp-input" required="required"/>
+            </div>
+            <div class="cp-form-group">
+              <label class="cp-label"><span>*</span> إلى تاريخ</label>
+              <input type="date" name="period_to" class="cp-input" required="required"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Work logs selection -->
+        <div class="cp-section-title">الأعمال المعتمدة — اختر ما تريد إدراجه</div>
+
+        <div class="cp-form-card">
+          <t t-foreach="logs" t-as="log">
+            <div class="cp-log-item" style="padding:10px 0;border-bottom:1px solid var(--border)">
+              <input type="checkbox" name="log_ids"
+                     class="cert-log-check"
+                     t-att-value="log.id"
+                     t-att-data-value="log.line_value"
+                     checked="checked"
+                     style="width:18px;height:18px;flex-shrink:0"/>
+              <div style="flex:1">
+                <div class="cp-log-name" t-esc="log.name"/>
+                <div class="cp-log-meta">
+                  <t t-esc="log.boq_id.item_code"/> —
+                  <t t-esc="'%.2f' % log.qty_executed"/> <t t-esc="log.uom or ''"/>
+                </div>
+              </div>
+              <div style="font-size:14px;font-weight:500;color:var(--teal);white-space:nowrap">
+                <t t-esc="'%.2f' % log.line_value"/> ريال
+              </div>
+            </div>
+          </t>
+        </div>
+
+        <!-- Summary -->
+        <div class="cp-summary">
+          <div class="cp-summary-row">
+            <span>إجمالي الأعمال</span>
+            <strong id="cert-total" style="color:var(--teal)">—</strong>
+          </div>
+          <div class="cp-summary-row">
+            <span>الضمان المحتجز (10%)</span>
+            <span style="color:var(--text-gray)">يُحسب عند الاعتماد</span>
+          </div>
+          <div class="cp-summary-row">
+            <span class="cp-summary-total">الصافي المستحق</span>
+            <span class="cp-summary-total" style="color:var(--navy)">يُحسب عند الاعتماد</span>
+          </div>
+        </div>
+
+        <button type="submit" class="cp-btn cp-btn-primary cp-btn-full">
+          إرسال المستخلص للاستشاري
+        </button>
+      </form>
+    </t>
+
+  </t>
+</template>
+
+</odoo>

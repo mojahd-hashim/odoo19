@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_demo_wizard_admin,waqf.demo.setup.wizard admin,model_waqf_demo_setup_wizard,waqf_mosque_rehab.group_mosque_admin,1,1,1,1

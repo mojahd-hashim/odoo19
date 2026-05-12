@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<!-- Project kanban — show task color summary per project -->
+<record id="view_project_kanban_review_inherit" model="ir.ui.view">
+    <field name="name">project.project.kanban.waqf</field>
+    <field name="model">project.project</field>
+    <field name="inherit_id" ref="project.view_project_kanban"/>
+    <field name="arch" type="xml">
+        <xpath expr="//footer" position="before">
+            <!-- Mosque KPI quick view on project card -->
+            <div t-if="record.mosque_kpi.value"
+                 style="font-size:11px;color:#7A8F9F;margin-bottom:4px">
+                KPI:
+                <span t-attf-style="font-weight:600;color:#{
+                    record.mosque_kpi.value >= 70 ? '#2ECC8A' :
+                    record.mosque_kpi.value >= 50 ? '#F0A500' : '#E85555'}">
+                    <field name="mosque_kpi"/>%
+                </span>
+            </div>
+        </xpath>
+    </field>
+</record>
+
+<!-- Wizard view -->
+<record id="view_task_reject_wizard" model="ir.ui.view">
+    <field name="name">waqf.task.reject.wizard.form</field>
+    <field name="model">waqf.task.reject.wizard</field>
+    <field name="arch" type="xml">
+        <form string="رفض المهمة">
+            <sheet>
+                <group>
+                    <field name="task_id" readonly="1"/>
+                    <field name="reject_type" readonly="1" invisible="1"/>
+                </group>
+                <group string="سبب الرفض">
+                    <field name="reason" nolabel="1"
+                           placeholder="اكتب السبب بوضوح — سيُرسَل تلقائياً للمشرف الميداني..."
+                           style="min-height:80px"/>
+                </group>
+                <div style="font-size:12px;color:#7A8F9F;margin-top:8px">
+                    سيتلقى المشرف إشعاراً فورياً بسبب الرفض ويمكنه التعديل وإعادة الإرسال.
+                </div>
+            </sheet>
+            <footer>
+                <button name="action_confirm_reject"
+                        string="تأكيد الرفض"
+                        type="object"
+                        class="btn-danger"/>
+                <button special="cancel" string="إلغاء"/>
+            </footer>
+        </form>
+    </field>
+</record>
+
+</odoo>

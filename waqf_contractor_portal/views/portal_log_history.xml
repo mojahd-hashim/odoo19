@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<!-- ══ WORK LOG HISTORY ══════════════════════════════════════ -->
+<template id="tmpl_log_history" name="Work Log History">
+  <t t-call="waqf_contractor_portal.tmpl_base">
+
+    <!-- Breadcrumb -->
+    <div class="cp-breadcrumb">
+      <a href="/contractor">الرئيسية</a>
+      <span>←</span>
+      <span>سجل الأعمال</span>
+    </div>
+
+    <!-- Rejected alert if any -->
+    <t t-if="rejected_count > 0">
+      <div class="cp-rejected-banner">
+        <div class="cp-rejected-banner-title">
+          <t t-esc="rejected_count"/> عمل مرفوض يحتاج تعديل
+        </div>
+      </div>
+    </t>
+
+    <!-- Cancelled notice -->
+    <div t-if="request.params.get('cancelled')" class="cp-success">
+      تم إلغاء العمل.
+    </div>
+
+    <!-- ── Financial Summary Cards ── -->
+    <div class="cp-summary-grid">
+      <div class="cp-summary-card cp-summary-card--approved">
+        <div class="cp-summary-card-label">معتمد</div>
+        <div class="cp-summary-card-value">
+          <t t-esc="'{:,.0f}'.format(approved_val)"/>
+          <span>ريال</span>
+        </div>
+      </div>
+      <div class="cp-summary-card cp-summary-card--pending">
+        <div class="cp-summary-card-label">بانتظار الاعتماد</div>
+        <div class="cp-summary-card-value">
+          <t t-esc="'{:,.0f}'.format(pending_val)"/>
+          <span>ريال</span>
+        </div>
+      </div>
+      <div class="cp-summary-card cp-summary-card--rejected">
+        <div class="cp-summary-card-label">مرفوض</div>
+        <div class="cp-summary-card-value">
+          <t t-esc="'{:,.0f}'.format(rejected_val)"/>
+          <span>ريال</span>
+        </div>
+      </div>
+      <div class="cp-summary-card cp-summary-card--total">
+        <div class="cp-summary-card-label">الإجمالي</div>
+        <div class="cp-summary-card-value">
+          <t t-esc="'{:,.0f}'.format(total_val)"/>
+          <span>ريال</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── State Filters ── -->
+    <div class="cp-filter-tabs">
+      <a t-attf-href="/contractor/logs"
+         t-attf-class="cp-filter-tab #{active_state == 'all' and 'active' or ''}">
+        الكل
+      </a>
+      <a t-attf-href="/contractor/logs?state=submitted"
+         t-attf-class="cp-filter-tab cp-filter-tab--pending #{active_state == 'submitted' and 'active' or ''}">
+        بانتظار الاعتماد
+      </a>
+      <a t-attf-href="/contractor/logs?state=approved"
+         t-attf-class="cp-filter-tab cp-filter-tab--approved #{active_state == 'approved' and 'active' or ''}">
+        معتمد
+      </a>
+      <a t-attf-href="/contractor/logs?state=rejected"
+         t-attf-class="cp-filter-tab cp-filter-tab--rejected #{active_state == 'rejected' and 'active' or ''}">
+        مرفوض
+      </a>
+    </div>
+
+    <!-- ── Logs Table ── -->
+    <div class="cp-log-table-wrap">
+      <t t-if="not logs">
+        <div class="cp-empty">
+          <div class="cp-empty-title">لا توجد أعمال في هذه الفئة</div>
+        </div>
+      </t>
+
+      <t t-if="logs">
+        <div class="cp-log-table">
+          <!-- Header -->
+          <div class="cp-log-table-header">
+            <div>البند</div>
+            <div>الوصف</div>
+            <div>الكمية</div>
+            <div>القيمة</div>
+            <div>التاريخ</div>
+            <div>الحالة</div>
+            <div/>
+          </div>
+
+          <!-- Rows -->
+          <t t-foreach="logs" t-as="log">
+            <div t-attf-class="cp-log-table-row #{log.state}">
+              <!-- Status indicator -->
+              <div class="cp-log-table-cell">
+                <div class="cp-log-row-indicator">
+                  <div t-attf-class="cp-log-status #{log.state}"/>
+                  <span class="cp-log-code" t-esc="log.boq_id.item_code or '—'"/>
+                </div>
+              </div>
+
+              <!-- Description -->
+              <div class="cp-log-table-cell">
+                <div class="cp-log-name" t-esc="log.name"/>
+                <div class="cp-log-location" t-if="log.location_detail"
+                     t-esc="log.location_detail"/>
+                <!-- Reject reason inline -->
+                <div t-if="log.state == 'rejected'" class="cp-log-reject-inline">
+                  <t t-esc="log.reject_reason or 'لم يُذكر السبب'"/>
+                </div>
+              </div>
+
+              <!-- Qty -->
+              <div class="cp-log-table-cell cp-log-qty">
+                <t t-esc="'%.2f' % log.qty_executed"/>
+                <span t-esc="log.uom or ''"/>
+              </div>
+
+              <!-- Value -->
+              <div class="cp-log-table-cell cp-log-value">
+                <t t-esc="'{:,.0f}'.format(log.line_value)"/>
+                <span>ر</span>
+              </div>
+
+              <!-- Date -->
+              <div class="cp-log-table-cell cp-log-date">
+                <t t-esc="log.log_date"/>
+              </div>
+
+              <!-- Badge -->
+              <div class="cp-log-table-cell">
+                <span t-attf-class="cp-badge cp-badge-#{log.state == 'approved' and 'granted' or log.state == 'submitted' and 'pending' or log.state == 'rejected' and 'rejected' or 'draft'}">
+                  <t t-if="log.state == 'draft'">مسودة</t>
+                  <t t-elif="log.state == 'submitted'">بانتظار</t>
+                  <t t-elif="log.state == 'approved'">معتمد</t>
+                  <t t-elif="log.state == 'rejected'">مرفوض</t>
+                </span>
+                <div t-if="log.photo_count > 0"
+                     style="font-size:11px;color:var(--text-muted);margin-top:3px;text-align:center">
+                  <t t-esc="log.photo_count"/> صورة
+                </div>
+              </div>
+
+              <!-- Action -->
+              <div class="cp-log-table-cell">
+                <t t-if="log.state == 'rejected'">
+                  <a t-attf-href="/contractor/work/#{log.id}/rejected"
+                     class="cp-btn cp-btn-sm"
+                     style="background:#FEE;color:#C0392B;border:1px solid #F5C6C6">
+                    عدّل
+                  </a>
+                </t>
+              </div>
+            </div>
+          </t>
+        </div>
+      </t>
+    </div>
+
+    <!-- ── BOQ Balance ── -->
+    <t t-if="boq_balance">
+      <div class="cp-section-title" style="margin-top:28px">
+        رصيد الكميات المتبقية
+      </div>
+      <div class="cp-boq-balance-list">
+        <t t-foreach="boq_balance" t-as="item">
+          <t t-set="pct" t-value="min(100, item['executed'] / item['contracted'] * 100) if item['contracted'] else 0"/>
+          <div class="cp-boq-balance-item">
+            <div class="cp-boq-balance-header">
+              <span class="cp-boq-code" t-esc="item['boq'].item_code"/>
+              <span class="cp-boq-balance-name"
+                    t-esc="(item['boq'].description or '')[:45]"/>
+              <span class="cp-boq-balance-nums">
+                <strong t-esc="'%.1f' % (item['contracted'] - item['executed'])"/>
+                متبقي من
+                <t t-esc="'%.1f' % item['contracted']"/>
+                <t t-esc="item['boq'].uom or ''"/>
+              </span>
+            </div>
+            <div class="cp-progress-bar" style="height:6px">
+              <div t-attf-class="cp-progress-fill #{pct >= 90 and 'cp-progress-fill--warning' or ''}"
+                   t-attf-style="width:#{pct}%"/>
+            </div>
+          </div>
+        </t>
+      </div>
+    </t>
+
+  </t>
+</template>
+
+<!-- ══ REJECTED DETAIL — تعديل وإعادة إرسال ════════════════ -->
+<template id="tmpl_rejected_detail" name="Rejected Work Detail">
+  <t t-call="waqf_contractor_portal.tmpl_base">
+
+    <!-- Breadcrumb -->
+    <div class="cp-breadcrumb">
+      <a href="/contractor">الرئيسية</a>
+      <span>←</span>
+      <a href="/contractor/logs">سجل الأعمال</a>
+      <span>←</span>
+      <span>تعديل عمل مرفوض</span>
+    </div>
+
+    <!-- Error -->
+    <div t-if="request.params.get('error')" class="cp-error">
+      يرجى ملء جميع الحقول المطلوبة.
+    </div>
+
+    <!-- ── Rejection Card ── -->
+    <div class="cp-rejection-card">
+      <div class="cp-rejection-card-header">
+        سبب الرفض من الاستشاري
+      </div>
+      <div class="cp-rejection-card-body">
+        <div class="cp-rejection-reason-text">
+          "<t t-esc="log.reject_reason or 'لم يُذكر سبب محدد — تواصل مع الاستشاري'"/>"
+        </div>
+        <div class="cp-rejection-meta">
+          البند: <strong t-esc="log.boq_id.item_code"/> —
+          الكمية السابقة: <strong t-esc="'%.2f' % log.qty_executed"/>
+          <t t-esc="log.uom or ''"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Edit Form ── -->
+    <div class="cp-section-title">تعديل بيانات العمل</div>
+
+    <form t-attf-action="/contractor/work/#{log.id}/resubmit"
+          method="post" id="resubmit-form">
+      <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+      <input type="hidden" id="boq_id" name="boq_id" t-att-value="log.boq_id.id"/>
+
+      <div class="cp-form-card">
+
+        <!-- Description — pre-filled -->
+        <div class="cp-form-group">
+          <label class="cp-label">
+            <span>*</span> وصف العمل
+          </label>
+          <input type="text" name="name" class="cp-input"
+                 t-att-value="log.name" required="required"/>
+        </div>
+
+        <!-- Location — pre-filled -->
+        <div class="cp-form-group">
+          <label class="cp-label">موقع العمل في المسجد</label>
+          <input type="text" name="location_detail" class="cp-input"
+                 t-att-value="log.location_detail or ''"/>
+        </div>
+
+        <!-- BOQ selector — current highlighted -->
+        <div class="cp-form-group">
+          <label class="cp-label">
+            <span>*</span> بند جدول الكميات
+            <span style="font-size:11px;color:var(--text-gray);font-weight:400">
+              — البند الحالي: <t t-esc="log.boq_id.item_code"/>
+            </span>
+          </label>
+          <div class="cp-boq-select" style="max-height:200px;overflow-y:auto">
+            <t t-foreach="boq_items" t-as="boq">
+              <div t-attf-class="cp-boq-option #{boq.id == log.boq_id.id and 'selected' or ''}"
+                   t-att-data-id="boq.id"
+                   t-att-data-uom="boq.uom"
+                   t-att-data-price="boq.unit_price"
+                   t-att-data-remaining="boq.remaining_qty">
+                <div>
+                  <div class="cp-boq-code" t-esc="boq.item_code"/>
+                  <div class="cp-boq-name"
+                       t-esc="(boq.description or '')[:55]"/>
+                </div>
+                <div class="cp-boq-remaining">
+                  متبقي: <t t-esc="'%.1f' % boq.remaining_qty"/>
+                  <t t-esc="boq.uom or ''"/>
+                </div>
+              </div>
+            </t>
+          </div>
+        </div>
+
+        <!-- Quantity — pre-filled -->
+        <div class="cp-form-group">
+          <label class="cp-label"><span>*</span> الكمية المنفذة</label>
+          <div class="cp-qty-wrap">
+            <button type="button" class="cp-qty-btn" data-action="dec">−</button>
+            <input type="number" name="qty_executed" class="cp-qty-input"
+                   t-att-value="log.qty_executed"
+                   min="0.1" step="0.5" data-step="0.5"/>
+            <span class="cp-qty-uom" t-esc="log.uom or ''"/>
+            <button type="button" class="cp-qty-btn" data-action="inc">+</button>
+          </div>
+        </div>
+
+        <!-- Note to consultant — optional -->
+        <div class="cp-form-group">
+          <label class="cp-label">
+            ملاحظة للاستشاري
+            <span style="font-size:11px;font-weight:400;color:var(--text-gray)">(اختياري)</span>
+          </label>
+          <textarea name="note_to_consultant" class="cp-textarea"
+                    placeholder="مثال: تم إعادة التصوير بزاوية أوضح تُظهر الإطار الكامل..."
+                    style="min-height:60px"/>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <button type="submit" class="cp-btn cp-btn-primary" style="flex:1">
+            حفظ وإضافة صور جديدة
+          </button>
+          <a href="/contractor/logs" class="cp-btn cp-btn-ghost">رجوع</a>
+        </div>
+      </div>
+    </form>
+
+    <!-- Cancel -->
+    <div style="margin-top:12px;text-align:center">
+      <form t-attf-action="/contractor/work/#{log.id}/cancel" method="post">
+        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+        <button type="submit" class="cp-btn cp-btn-ghost cp-btn-sm"
+                style="color:var(--text-gray)"
+                onclick="return confirm('هل أنت متأكد من إلغاء هذا العمل؟')">
+          إلغاء هذا العمل
+        </button>
+      </form>
+    </div>
+
+  </t>
+</template>
+
+</odoo>

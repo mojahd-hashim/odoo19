@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- No new menus needed — consultant works from existing Project menus -->
+    <!-- Filters are added to existing task search view -->
+</odoo>
