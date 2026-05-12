@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══ FORM ══════════════════════════════════════════════ -->
+    <record id="view_contractor_boq_access_form" model="ir.ui.view">
+        <field name="name">contractor.boq.access.form</field>
+        <field name="model">contractor.boq.access</field>
+        <field name="arch" type="xml">
+            <form string="BOQ Access Request">
+                <header>
+                    <button name="action_grant"
+                            string="منح الصلاحية"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'requested'"
+                            groups="waqf_mosque_rehab.group_mosque_consultant"/>
+                    <button name="action_revoke"
+                            string="إلغاء الصلاحية"
+                            type="object"
+                            class="btn-danger"
+                            invisible="state != 'granted'"
+                            groups="waqf_mosque_rehab.group_mosque_waqf_manager"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="requested,granted,revoked"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="display_name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="بيانات الطلب">
+                            <field name="mosque_id"/>
+                            <field name="supervisor_id"/>
+                            <field name="request_date"/>
+                        </group>
+                        <group string="بيانات الاعتماد">
+                            <field name="grant_date" readonly="1"/>
+                            <field name="granted_by" readonly="1"/>
+                            <field name="revoke_date" readonly="1"
+                                   invisible="state != 'revoked'"/>
+                            <field name="revoke_reason"
+                                   invisible="state != 'revoked'"/>
+                        </group>
+                    </group>
+                    <field name="notes" placeholder="ملاحظات..."/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══ LIST ══════════════════════════════════════════════ -->
+    <record id="view_contractor_boq_access_list" model="ir.ui.view">
+        <field name="name">contractor.boq.access.list</field>
+        <field name="model">contractor.boq.access</field>
+        <field name="arch" type="xml">
+            <list string="BOQ Access Requests"
+                  decoration-success="state == 'granted'"
+                  decoration-danger="state == 'revoked'"
+                  decoration-warning="state == 'requested'">
+                <field name="mosque_id"/>
+                <field name="supervisor_id"/>
+                <field name="request_date"/>
+                <field name="grant_date"/>
+                <field name="granted_by"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'granted'"
+                       decoration-danger="state == 'revoked'"
+                       decoration-warning="state == 'requested'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ══ SEARCH ════════════════════════════════════════════ -->
+    <record id="view_contractor_boq_access_search" model="ir.ui.view">
+        <field name="name">contractor.boq.access.search</field>
+        <field name="model">contractor.boq.access</field>
+        <field name="arch" type="xml">
+            <search string="البحث في طلبات الوصول">
+                <field name="mosque_id"/>
+                <field name="supervisor_id"/>
+                <filter string="بانتظار الموافقة" name="requested"
+                        domain="[('state','=','requested')]"/>
+                <filter string="ممنوحة" name="granted"
+                        domain="[('state','=','granted')]"/>
+                <filter string="ملغاة" name="revoked"
+                        domain="[('state','=','revoked')]"/>
+                <separator/>
+                <group string="تجميع حسب">
+                    <filter string="المسجد"    name="grp_mosque"
+                            context="{'group_by':'mosque_id'}"/>
+                    <filter string="المشرف"    name="grp_supervisor"
+                            context="{'group_by':'supervisor_id'}"/>
+                    <filter string="الحالة"    name="grp_state"
+                            context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ══ ACTION ════════════════════════════════════════════ -->
+    <record id="action_contractor_boq_access" model="ir.actions.act_window">
+        <field name="name">طلبات الوصول لجداول الكميات</field>
+        <field name="res_model">contractor.boq.access</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_contractor_boq_access_search"/>
+        <field name="context">{'search_default_requested': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                لا توجد طلبات وصول بعد
+            </p>
+            <p>ستظهر هنا طلبات المشرفين للوصول لجداول الكميات.</p>
+        </field>
+    </record>
+
+    <!-- ══ MENU ══════════════════════════════════════════════ -->
+    <menuitem id="menu_contractor_boq_access"
+              name="طلبات الوصول للكميات"
+              parent="waqf_mosque_rehab.menu_mosque_supervision_root"
+              action="action_contractor_boq_access"
+              sequence="30"
+              groups="waqf_mosque_rehab.group_mosque_consultant"/>
+
+</odoo>
