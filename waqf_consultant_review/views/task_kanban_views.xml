@@ -153,7 +153,7 @@
 <record id="view_task_kanban_review_inherit" model="ir.ui.view">
     <field name="name">project.task.kanban.waqf.review</field>
     <field name="model">project.task</field>
-    <field name="inherit_id" ref="project.view_task_kanban_grouped_stage"/>
+   <field name="inherit_id" ref="project.view_task_kanban"/>
     <field name="arch" type="xml">
 
         <xpath expr="//kanban" position="attributes">
