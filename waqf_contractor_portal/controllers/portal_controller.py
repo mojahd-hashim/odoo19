@@ -21,7 +21,7 @@ class ContractorPortal(http.Controller):
         if not supervisor:
             return False
         Access = request.env['contractor.boq.access'].sudo()
-        return Access.has_access(mosque_id, supervisor.id)
+        return Access.check_contractor_access(mosque_id, supervisor.id)
 
     # ── Home ──────────────────────────────────────────────────────
     @http.route('/contractor', type='http', auth='user', website=True)
@@ -48,7 +48,6 @@ class ContractorPortal(http.Controller):
             tasks = request.env['project.task'].sudo().search([
                 ('project_id', '=', mosque.project_id.id),
                 ('parent_id', '=', False),
-                ('stage_id.is_closed', '=', False),
             ], order='date_deadline asc')
 
         # Recent work logs
