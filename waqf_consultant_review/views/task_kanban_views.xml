@@ -196,36 +196,36 @@
                 </div>
 
                 <!-- Subtask progress bar — main tasks only -->
-                <div class="waqf-card-subtasks"
-                     t-if="!record.parent_id.value &amp;&amp; record.child_ids.raw_value">
-                    <div class="waqf-subtask-progress">
-                        <div class="waqf-subtask-bar">
-                            <div class="waqf-subtask-fill"
-                                 t-attf-style="width:#{
-                                     record.approved_subtask_count.value /
-                                     (record.approved_subtask_count.value +
-                                      record.pending_subtask_count.value +
-                                      record.rejected_subtask_count.value + 0.001)
-                                     * 100}%"/>
-                        </div>
-                        <span class="waqf-subtask-label">
-                            <field name="approved_subtask_count"/>/<t
-                                t-esc="(record.approved_subtask_count.value or 0) +
-                                       (record.pending_subtask_count.value or 0) +
-                                       (record.rejected_subtask_count.value or 0)"/>
-                            معتمدة
-                        </span>
-                    </div>
-                    <span t-if="record.rejected_subtask_count.value > 0"
-                          class="waqf-count waqf-count-rejected">
-                        ✗ <field name="rejected_subtask_count"/>
-                    </span>
-                    <span t-if="record.is_blocked_by_co.value"
-                          class="waqf-count"
-                          style="background:#FFF3CD;color:#856404">
-                        🔒
-                    </span>
-                </div>
+<!--                <div class="waqf-card-subtasks"-->
+<!--                     t-if="!record.parent_id.value &amp;&amp; record.child_ids.raw_value">-->
+<!--                    <div class="waqf-subtask-progress">-->
+<!--                        <div class="waqf-subtask-bar">-->
+<!--                            <div class="waqf-subtask-fill"-->
+<!--                                 t-attf-style="width:#{-->
+<!--                                     record.approved_subtask_count.value /-->
+<!--                                     (record.approved_subtask_count.value +-->
+<!--                                      record.pending_subtask_count.value +-->
+<!--                                      record.rejected_subtask_count.value + 0.001)-->
+<!--                                     * 100}%"/>-->
+<!--                        </div>-->
+<!--                        <span class="waqf-subtask-label">-->
+<!--                            <field name="approved_subtask_count"/>/<t-->
+<!--                                t-esc="(record.approved_subtask_count.value or 0) +-->
+<!--                                       (record.pending_subtask_count.value or 0) +-->
+<!--                                       (record.rejected_subtask_count.value or 0)"/>-->
+<!--                            معتمدة-->
+<!--                        </span>-->
+<!--                    </div>-->
+<!--                    <span t-if="record.rejected_subtask_count.value > 0"-->
+<!--                          class="waqf-count waqf-count-rejected">-->
+<!--                        ✗ <field name="rejected_subtask_count"/>-->
+<!--                    </span>-->
+<!--                    <span t-if="record.is_blocked_by_co.value"-->
+<!--                          class="waqf-count"-->
+<!--                          style="background:#FFF3CD;color:#856404">-->
+<!--                        🔒-->
+<!--                    </span>-->
+<!--                </div>-->
 
                 <footer>
                     <field name="user_ids" widget="many2many_avatar_user"/>
