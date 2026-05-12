@@ -31,6 +31,7 @@
         'views/portal_certificate.xml',
         'views/portal_change_order.xml',
         'views/portal_assets.xml',
+        'views/contractor_boq_access.xml',
     ],
     'installable': True,
     'application': False,
