@@ -101,30 +101,30 @@
         <t t-esc="mosque.city or ''"/>
       </div>
 
-      <!-- Progress bars -->
-      <div class="cp-progress-wrap">
-        <div class="cp-progress-label">
-          <span>نسبة الإنجاز المالي</span>
-          <t t-esc="'%.1f%%' % (mosque.financial_progress or 0.0)"/>
-        </div>
-        <div class="cp-progress-bar">
-          <div class="cp-progress-fill"
-               t-attf-style="width:#{mosque.financial_progress}%"/>
-        </div>
-      </div>
+<!--      &lt;!&ndash; Progress bars &ndash;&gt;-->
+<!--      <div class="cp-progress-wrap">-->
+<!--        <div class="cp-progress-label">-->
+<!--          <span>نسبة الإنجاز المالي</span>-->
+<!--          <t t-esc="'%.1f%%' % (mosque.financial_progress or 0.0)"/>-->
+<!--        </div>-->
+<!--        <div class="cp-progress-bar">-->
+<!--          <div class="cp-progress-fill"-->
+<!--               t-attf-style="width:#{mosque.financial_progress}%"/>-->
+<!--        </div>-->
+<!--      </div>-->
 
-      <div class="cp-progress-wrap" style="margin-top:8px">
-        <div class="cp-progress-label">
-          <span>الإنجاز الزمني</span>
-          <span>
-    <t t-esc="'%.1f%%' % (mosque.time_progress or 0.0)"/>
-</span>
-        </div>
-        <div class="cp-progress-bar">
-          <div class="cp-progress-fill"
-               t-attf-style="width:#{mosque.time_progress}%;background:linear-gradient(90deg,#C8A454,#e2c07a)"/>
-        </div>
-      </div>
+<!--      <div class="cp-progress-wrap" style="margin-top:8px">-->
+<!--        <div class="cp-progress-label">-->
+<!--          <span>الإنجاز الزمني</span>-->
+<!--          <span>-->
+<!--    <t t-esc="'%.1f%%' % (mosque.time_progress or 0.0)"/>-->
+<!--</span>-->
+<!--        </div>-->
+<!--        <div class="cp-progress-bar">-->
+<!--          <div class="cp-progress-fill"-->
+<!--               t-attf-style="width:#{mosque.time_progress}%;background:linear-gradient(90deg,#C8A454,#e2c07a)"/>-->
+<!--        </div>-->
+<!--      </div>-->
 
       <!-- Status badge -->
       <div style="margin-top:12px">
