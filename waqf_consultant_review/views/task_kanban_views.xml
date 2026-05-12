@@ -150,94 +150,90 @@
 </record>
 
 <!-- ══ KANBAN VIEW — color-coded cards ══════════════════════ -->
+<!-- ══ KANBAN VIEW — color-coded cards ══════════════════════ -->
 <record id="view_task_kanban_review_inherit" model="ir.ui.view">
     <field name="name">project.task.kanban.waqf.review</field>
     <field name="model">project.task</field>
-   <field name="inherit_id" ref="project.view_task_kanban"/>
+    <field name="inherit_id" ref="project.view_task_kanban"/>
     <field name="arch" type="xml">
 
+        <!-- add fields -->
+        <xpath expr="//kanban" position="inside">
+            <field name="kanban_color"/>
+            <field name="mosque_code"/>
+            <field name="date_deadline"/>
+            <field name="is_blocked_by_co"/>
+            <field name="review_state"/>
+            <field name="user_ids"/>
+        </xpath>
+
+        <!-- kanban class -->
         <xpath expr="//kanban" position="attributes">
             <attribute name="class">waqf_kanban</attribute>
         </xpath>
 
-        <!-- Override card color via kanban_color field -->
+        <!-- replace card -->
         <xpath expr="//t[@t-name='card']" position="replace">
-            <t t-name="card"
-               t-att-class="
-                   'waqf-task-card ' +
-                   (record.kanban_color.value == 'green'  ? 'waqf-green'  :
-                    record.kanban_color.value == 'red'    ? 'waqf-red'    :
-                    record.kanban_color.value == 'yellow' ? 'waqf-yellow' :
-                    record.kanban_color.value == 'orange' ? 'waqf-orange' :
-                    'waqf-grey')">
 
-                <!-- Color strip at top -->
-                <div class="waqf-card-strip"/>
+            <t t-name="card">
 
-                <!-- Task name -->
-                <div class="waqf-card-name">
-                    <field name="name"/>
-                </div>
+                <div t-att-class="
+                    'waqf-task-card ' +
+                    (
+                        record.kanban_color.raw_value == 'green' ? 'waqf-green' :
+                        record.kanban_color.raw_value == 'red' ? 'waqf-red' :
+                        record.kanban_color.raw_value == 'yellow' ? 'waqf-yellow' :
+                        record.kanban_color.raw_value == 'orange' ? 'waqf-orange' :
+                        'waqf-grey'
+                    )
+                ">
 
-                <!-- Mosque code if available -->
-                <div class="waqf-card-meta" t-if="record.mosque_code.value">
-                    <field name="mosque_code"/>
-                </div>
+                    <!-- strip -->
+                    <div class="waqf-card-strip"/>
 
-                <!-- Deadline -->
-                <div class="waqf-card-deadline" t-if="record.date_deadline.value">
-                    <field name="date_deadline"/>
-                </div>
+                    <!-- title -->
+                    <div class="waqf-card-name">
+                        <field name="name"/>
+                    </div>
 
-                <!-- CO lock indicator -->
-                <div t-if="record.is_blocked_by_co.value"
-                     class="waqf-card-co-lock">
-                    🔒 مجمّد — CO معلق
-                </div>
+                    <!-- mosque -->
+                    <div class="waqf-card-meta"
+                         t-if="record.mosque_code.raw_value">
+                        <field name="mosque_code"/>
+                    </div>
 
-                <!-- Subtask progress bar — main tasks only -->
-<!--                <div class="waqf-card-subtasks"-->
-<!--                     t-if="!record.parent_id.value &amp;&amp; record.child_ids.raw_value">-->
-<!--                    <div class="waqf-subtask-progress">-->
-<!--                        <div class="waqf-subtask-bar">-->
-<!--                            <div class="waqf-subtask-fill"-->
-<!--                                 t-attf-style="width:#{-->
-<!--                                     record.approved_subtask_count.value /-->
-<!--                                     (record.approved_subtask_count.value +-->
-<!--                                      record.pending_subtask_count.value +-->
-<!--                                      record.rejected_subtask_count.value + 0.001)-->
-<!--                                     * 100}%"/>-->
-<!--                        </div>-->
-<!--                        <span class="waqf-subtask-label">-->
-<!--                            <field name="approved_subtask_count"/>/<t-->
-<!--                                t-esc="(record.approved_subtask_count.value or 0) +-->
-<!--                                       (record.pending_subtask_count.value or 0) +-->
-<!--                                       (record.rejected_subtask_count.value or 0)"/>-->
-<!--                            معتمدة-->
-<!--                        </span>-->
-<!--                    </div>-->
-<!--                    <span t-if="record.rejected_subtask_count.value > 0"-->
-<!--                          class="waqf-count waqf-count-rejected">-->
-<!--                        ✗ <field name="rejected_subtask_count"/>-->
-<!--                    </span>-->
-<!--                    <span t-if="record.is_blocked_by_co.value"-->
-<!--                          class="waqf-count"-->
-<!--                          style="background:#FFF3CD;color:#856404">-->
-<!--                        🔒-->
-<!--                    </span>-->
-<!--                </div>-->
+                    <!-- deadline -->
+                    <div class="waqf-card-deadline"
+                         t-if="record.date_deadline.raw_value">
+                        <field name="date_deadline"/>
+                    </div>
 
-                <footer>
-                    <field name="user_ids" widget="many2many_avatar_user"/>
-                    <!-- Quick approve button for consultant -->
-                    <button t-if="record.stage_id.raw_value &amp;&amp;
-                                  record.review_state.value == 'submitted'"
+                    <!-- blocked -->
+                    <div t-if="record.is_blocked_by_co.raw_value"
+                         class="waqf-card-co-lock">
+                        🔒 مجمّد — CO معلق
+                    </div>
+
+                    <footer>
+
+                        <field name="user_ids"
+                               widget="many2many_avatar_user"/>
+
+                        <button
+                            t-if="record.review_state.raw_value == 'submitted'"
                             name="action_consultant_approve"
                             type="object"
                             class="btn btn-sm btn-success ms-auto"
-                            title="اعتماد سريع">✓</button>
-                </footer>
+                            title="اعتماد سريع">
+                            ✓
+                        </button>
+
+                    </footer>
+
+                </div>
+
             </t>
+
         </xpath>
 
     </field>
