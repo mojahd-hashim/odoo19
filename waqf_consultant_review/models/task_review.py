@@ -123,7 +123,7 @@ class ProjectTask(models.Model):
     # ── Compute: kanban color ─────────────────────────────────────
     @api.depends(
         'review_state', 'is_blocked_by_co',
-        'date_deadline', 'stage_id.is_closed',
+        'date_deadline', 'stage_id.fold',
         'child_ids', 'child_ids.review_state',
         'child_ids.is_blocked_by_co',
         'parent_id',
@@ -142,7 +142,7 @@ class ProjectTask(models.Model):
                     task.kanban_color = 'red'
                 elif (task.date_deadline and
                       task.date_deadline < today and
-                      not task.stage_id.is_closed):
+                      not task.stage_id.fold):
                     task.kanban_color = 'orange'
                 else:
                     task.kanban_color = 'grey'
@@ -160,7 +160,7 @@ class ProjectTask(models.Model):
                     task.kanban_color = 'red'
                 elif (task.date_deadline and
                       task.date_deadline.date() < today and
-                      not task.stage_id.is_closed):
+                      not task.stage_id.fold):
                     task.kanban_color = 'orange'
                 else:
                     task.kanban_color = 'grey'
@@ -184,7 +184,7 @@ class ProjectTask(models.Model):
                 task.kanban_color = 'green'
             elif (task.date_deadline and
                   task.date_deadline < today and
-                  not task.stage_id.is_closed):
+                  not task.stage_id.fold):
                 task.kanban_color = 'orange'
             else:
                 task.kanban_color = 'grey'
