@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══ FORM ══════════════════════════════════════════════ -->
+    <record id="view_contractor_work_log_form" model="ir.ui.view">
+        <field name="name">contractor.work.log.form</field>
+        <field name="model">contractor.work.log</field>
+        <field name="arch" type="xml">
+            <form string="Work Log">
+                <header>
+                    <button name="action_submit"
+                            string="إرسال للاستشاري"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_approve"
+                            string="اعتماد"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'submitted'"
+                            groups="waqf_mosque_rehab.group_mosque_consultant"/>
+                    <button name="action_reject"
+                            string="رفض"
+                            type="object"
+                            class="btn-danger"
+                            invisible="state not in ['submitted']"
+                            groups="waqf_mosque_rehab.group_mosque_consultant"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,submitted,approved"/>
+                </header>
+                <sheet>
+                    <div class="o_field_widget o_stat_buttons">
+                        <div class="o_stat_button">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="line_value" widget="monetary"/>
+                                </span>
+                                <span class="o_stat_text">القيمة (ريال)</span>
+                            </div>
+                        </div>
+                        <div class="o_stat_button">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="photo_count"/>
+                                </span>
+                                <span class="o_stat_text">صور الشاهد</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="وصف العمل المنجز..."/></h1>
+                    </div>
+
+                    <!-- Qty warning banner -->
+                    <div invisible="not qty_warning"
+                         style="background:#FFF8EC;border:1.5px solid #C8A454;
+                                border-radius:8px;padding:10px 14px;
+                                margin-bottom:12px;font-size:13px;color:#856404">
+                        ⚠ <field name="qty_warning" readonly="1" nolabel="1"/>
+                    </div>
+
+                    <!-- Reject reason banner -->
+                    <div invisible="state != 'rejected'"
+                         style="background:#FEF2F2;border:1.5px solid #E85555;
+                                border-radius:8px;padding:10px 14px;
+                                margin-bottom:12px;font-size:13px;color:#9B1C1C">
+                        ❌ سبب الرفض:
+                        <field name="reject_reason" readonly="1" nolabel="1"/>
+                    </div>
+
+                    <group>
+                        <group string="بيانات العمل">
+                            <field name="mosque_id"/>
+                            <field name="supervisor_id"/>
+                            <field name="log_date"/>
+                            <field name="location_detail"
+                                   placeholder="مثال: الجناح الشمالي، الطابق الأول"/>
+                        </group>
+                        <group string="الكميات">
+                            <field name="boq_id"
+                                   domain="[('mosque_id','=',mosque_id)]"/>
+                            <field name="uom" readonly="1"/>
+                            <field name="qty_executed"/>
+                            <field name="unit_price" readonly="1"/>
+                            <field name="line_value" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group string="ربط بالمشروع">
+                        <field name="task_id"
+                               domain="[('project_id.mosque_id','=',mosque_id),
+                                        ('parent_id','=',False)]"/>
+                        <field name="subtask_id" readonly="1"/>
+                    </group>
+
+                    <notebook>
+                        <page string="صور الشاهد" name="photos">
+                            <field name="photo_ids"
+                                   widget="many2many_binary"
+                                   string="صور الإنجاز"/>
+                        </page>
+                        <page string="ملاحظات" name="notes"
+                              invisible="state != 'rejected'">
+                            <field name="reject_reason"
+                                   placeholder="سبب الرفض من الاستشاري..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══ LIST ══════════════════════════════════════════════ -->
+    <record id="view_contractor_work_log_list" model="ir.ui.view">
+        <field name="name">contractor.work.log.list</field>
+        <field name="model">contractor.work.log</field>
+        <field name="arch" type="xml">
+            <list string="Work Logs"
+                  decoration-success="state == 'approved'"
+                  decoration-danger="state == 'rejected'"
+                  decoration-warning="state == 'submitted'"
+                  decoration-muted="state == 'draft'">
+                <field name="log_date"/>
+                <field name="mosque_id"/>
+                <field name="supervisor_id"/>
+                <field name="boq_id" string="البند"/>
+                <field name="name" string="الوصف"/>
+                <field name="qty_executed"/>
+                <field name="uom" readonly="1"/>
+                <field name="line_value" sum="الإجمالي"/>
+                <field name="photo_count" string="صور"/>
+                <field name="subtask_id" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'approved'"
+                       decoration-danger="state == 'rejected'"
+                       decoration-warning="state == 'submitted'"
+                       decoration-muted="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ══ ACTION ════════════════════════════════════════════ -->
+    <record id="action_contractor_work_log" model="ir.actions.act_window">
+        <field name="name">سجلات الأعمال الميدانية</field>
+        <field name="res_model">contractor.work.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_contractor_work_log_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                لا توجد أعمال مسجلة بعد
+            </p>
+            <p>ستظهر هنا الأعمال التي يسجلها المشرفون الميدانيون.</p>
+        </field>
+    </record>
+
+    <!-- ══ MENU ══════════════════════════════════════════════ -->
+    <menuitem id="menu_contractor_work_log"
+              name="سجلات الأعمال الميدانية"
+              parent="waqf_mosque_rehab.menu_mosque_supervision_root"
+              action="action_contractor_work_log"
+              sequence="25"
+              groups="waqf_mosque_rehab.group_mosque_consultant"/>
+
+</odoo>

@@ -32,6 +32,7 @@
         'views/portal_change_order.xml',
         'views/portal_assets.xml',
         'views/contractor_boq_access.xml',
+        'views/contractor_work_log.xml',
     ],
     'installable': True,
     'application': False,
