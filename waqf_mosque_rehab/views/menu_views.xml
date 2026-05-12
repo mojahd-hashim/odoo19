@@ -2,46 +2,32 @@
 <odoo>
     <!-- ══ ROOT MENU ══════════════════════════════════════════ -->
     <menuitem id="menu_mosque_root"
-              name="Mosque Rehabilitation"
+              name="Project initialization"
               web_icon="waqf_mosque_rehab,static/description/icon.png"
               sequence="50"/>
 
-    <!-- ── Dashboard ────────────────────────────────────────── -->
-<!--    <menuitem id="menu_mosque_dashboard"-->
-<!--              name="Executive Dashboard"-->
-<!--              parent="menu_mosque_root"-->
-<!--              action="action_mosque_dashboard"-->
-<!--              sequence="300"/>-->
-
     <!-- ── Projects ─────────────────────────────────────────── -->
     <menuitem id="menu_mosque_project"
-              name="Projects"
+              name="Settings"
               parent="menu_mosque_root"
-              sequence="10"/>
-
-    <menuitem id="menu_mosque_mosque"
-              name="Mosques"
-              parent="menu_mosque_project"
-              action="action_mosque_mosque"
               sequence="10"/>
 
     <menuitem id="menu_mosque_packages"
-              name="Geographic Packages"
+              name="Programs (Stages)"
               parent="menu_mosque_project"
               action="action_mosque_package"
-              sequence="20"/>
-
-    <!-- ── BOQ ───────────────────────────────────────────────── -->
-    <menuitem id="menu_mosque_boq_root"
-              name="Bill of Quantities"
-              parent="menu_mosque_root"
-              sequence="20"/>
-
-    <menuitem id="menu_mosque_boq"
-              name="BOQ Lines"
-              parent="menu_mosque_boq_root"
-              action="action_mosque_boq"
               sequence="10"/>
+
+    <menuitem id="menu_mosque_mosque"
+              name="Project portfolio"
+              parent="menu_mosque_project"
+              action="action_mosque_mosque"
+              sequence="20"/>
+     <menuitem id="menu_mosque_boq"
+              name="BOQ Lines"
+              parent="menu_mosque_root"
+              action="action_mosque_boq"
+              sequence="30"/>
 
     <!-- ── Supervision ───────────────────────────────────────── -->
     <menuitem id="menu_mosque_supervision_root"
