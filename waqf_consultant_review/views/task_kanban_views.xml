@@ -197,7 +197,7 @@
 
                 <!-- Subtask progress bar — main tasks only -->
                 <div class="waqf-card-subtasks"
-                     t-if="not record.parent_id.value and record.child_ids.raw_value">
+                     t-if="not record.parent_id.value &amp;&amp; record.child_ids.raw_value">
                     <div class="waqf-subtask-progress">
                         <div class="waqf-subtask-bar">
                             <div class="waqf-subtask-fill"
@@ -230,7 +230,7 @@
                 <footer>
                     <field name="user_ids" widget="many2many_avatar_user"/>
                     <!-- Quick approve button for consultant -->
-                    <button t-if="record.stage_id.raw_value and
+                    <button t-if="record.stage_id.raw_value &amp;&amp;
                                   record.review_state.value == 'submitted'"
                             name="action_consultant_approve"
                             type="object"
