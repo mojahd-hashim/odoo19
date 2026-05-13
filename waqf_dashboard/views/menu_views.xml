@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_waqf_dashboard"
+              name="📊 لوحة الإدارة"
+              parent="waqf_mosque_rehab.menu_mosque_root"
+              action="action_dashboard_open"
+              sequence="1"
+              groups="waqf_mosque_rehab.group_mosque_waqf_manager,waqf_mosque_rehab.group_mosque_admin"/>
+
+    <record id="action_dashboard_open" model="ir.actions.act_url">
+        <field name="name">لوحة الإدارة التنفيذية</field>
+        <field name="url">/dashboard</field>
+        <field name="target">self</field>
+    </record>
+
+    <!-- Live Stream menu -->
+    <menuitem id="menu_live_streams"
+              name="البث المباشر"
+              parent="waqf_mosque_rehab.menu_mosque_config"
+              action="action_live_streams"
+              sequence="20"
+              groups="waqf_mosque_rehab.group_mosque_admin"/>
+
+    <record id="action_live_streams" model="ir.actions.act_window">
+        <field name="name">جلسات البث المباشر</field>
+        <field name="res_model">waqf.live.stream</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Dashboard Settings in res.config.settings -->
+    <record id="view_dashboard_settings" model="ir.ui.view">
+    <field name="name">res.config.settings.dashboard</field>
+    <field name="model">res.config.settings</field>
+    <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+    <field name="arch" type="xml">
+        <xpath expr="//form" position="inside">
+
+            <!-- ===== Dashboard App Block ===== -->
+            <app string="📊 Dashboard" name="waqf_dashboard_app">
+                <group>
+
+                    <!-- Azure OpenAI Settings -->
+                    <group>
+                        <field name="waqf_azure_openai_endpoint" placeholder="Endpoint URL"/>
+                        <field name="waqf_azure_openai_key" password="True" placeholder="API Key"/>
+                        <field name="waqf_azure_deployment" placeholder="Deployment"/>
+                        <field name="waqf_chatbot_system_prompt" placeholder="System Prompt"/>
+                    </group>
+
+                    <!-- Live Stream Settings -->
+                    <group>
+                        <field name="waqf_live_stream_enabled" widget="boolean_toggle"/>
+                        <field name="waqf_live_stream_url"
+                               placeholder="https://www.youtube.com/embed/..."
+                               attrs="{'invisible': [('waqf_live_stream_enabled','=',False)]}"/>
+                        <field name="waqf_dashboard_refresh_interval"/>
+                    </group>
+
+                </group>
+            </app>
+
+        </xpath>
+    </field>
+</record>
+
+    <!-- Live Stream form -->
+    <record id="view_live_stream_form" model="ir.ui.view">
+        <field name="name">waqf.live.stream.form</field>
+        <field name="model">waqf.live.stream</field>
+        <field name="arch" type="xml">
+            <form string="بث مباشر">
+                <header>
+                    <button name="action_end_stream" string="إنهاء البث"
+                            type="object" class="btn-danger"
+                            invisible="not is_active"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="mosque_id"/>
+                        <field name="stream_url" placeholder="https://www.youtube.com/embed/..."/>
+                        <field name="started_by"/>
+                        <field name="is_active" widget="boolean_toggle"/>
+                        <field name="viewers"/>
+                    </group>
+                    <group string="التوقيت">
+                        <field name="start_time" readonly="1"/>
+                        <field name="end_time" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_live_stream_list" model="ir.ui.view">
+        <field name="name">waqf.live.stream.list</field>
+        <field name="model">waqf.live.stream</field>
+        <field name="arch" type="xml">
+            <list decoration-success="is_active" decoration-muted="not is_active">
+                <field name="name"/>
+                <field name="mosque_id"/>
+                <field name="started_by"/>
+                <field name="start_time"/>
+                <field name="end_time"/>
+                <field name="is_active" widget="boolean_toggle"/>
+                <field name="viewers"/>
+            </list>
+        </field>
+    </record>
+</odoo>

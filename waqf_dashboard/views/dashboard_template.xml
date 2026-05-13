@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══ WIZARD FORM ══════════════════════════════════════════ -->
+    <record id="view_demo_setup_wizard" model="ir.ui.view">
+        <field name="name">waqf.demo.setup.wizard.form</field>
+        <field name="model">waqf.demo.setup.wizard</field>
+        <field name="arch" type="xml">
+            <form string="البيئة التجريبية — Demo Environment">
+                <sheet>
+
+                    <!-- ── Ready state ── -->
+                    <div invisible="state != 'ready'">
+                        <div style="text-align:center;padding:24px 0 16px">
+                            <div style="font-size:40px;margin-bottom:12px">🕌</div>
+                            <div style="font-size:18px;font-weight:600;
+                                    color:#1B3A52;margin-bottom:8px">
+                                بيئة تجريبية لمشروع تأهيل المساجد
+                            </div>
+                            <div style="font-size:13px;color:#7A8F9F;
+                                    max-width:420px;margin:0 auto;line-height:1.7">
+                                سيتم إنشاء مسجد تجريبي كامل مع بيانات واقعية
+                                لعرض جميع مراحل النظام وتدريب الفريق.
+                            </div>
+                        </div>
+
+                        <!-- What will be created -->
+                        <div style="background:#F4F8FB;border-radius:8px;
+                                padding:16px;margin-bottom:16px">
+                            <div style="font-size:13px;font-weight:600;
+                                    color:#1B3A52;margin-bottom:10px">
+                                ما سيتم إنشاؤه:
+                            </div>
+                            <table style="width:100%;font-size:13px;
+                                      border-collapse:collapse">
+                                <tr style="border-bottom:1px solid #DDE8EE">
+                                    <td style="padding:6px 8px;color:#237292">🕌</td>
+                                    <td style="padding:6px 8px;font-weight:500">مسجد تجريبي [DEMO-01]</td>
+                                    <td style="padding:6px 8px;color:#7A8F9F">مع BOQ كامل (20 بند)</td>
+                                </tr>
+                                <tr style="border-bottom:1px solid #DDE8EE">
+                                    <td style="padding:6px 8px;color:#237292">📋</td>
+                                    <td style="padding:6px 8px;font-weight:500">5 مهام رئيسية</td>
+                                    <td style="padding:6px 8px;color:#7A8F9F">
+                                        🟢 معتمدة | 🔴 مرفوضة | 🟡 مجمّدة | ⚪ لم تبدأ
+                                    </td>
+                                </tr>
+                                <tr style="border-bottom:1px solid #DDE8EE">
+                                    <td style="padding:6px 8px;color:#237292">✅</td>
+                                    <td style="padding:6px 8px;font-weight:500">13 مهمة فرعية</td>
+                                    <td style="padding:6px 8px;color:#7A8F9F">في حالات مختلفة</td>
+                                </tr>
+                                <tr style="border-bottom:1px solid #DDE8EE">
+                                    <td style="padding:6px 8px;color:#237292">🔄</td>
+                                    <td style="padding:6px 8px;font-weight:500">أمر تغيير</td>
+                                    <td style="padding:6px 8px;color:#7A8F9F">قيد المراجعة — يجمّد مهمة الكهرباء</td>
+                                </tr>
+                                <tr style="border-bottom:1px solid #DDE8EE">
+                                    <td style="padding:6px 8px;color:#237292">📝</td>
+                                    <td style="padding:6px 8px;font-weight:500">5 سجلات عمل ميداني</td>
+                                    <td style="padding:6px 8px;color:#7A8F9F">معتمد | مرفوض | بانتظار</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:6px 8px;color:#237292">💰</td>
+                                    <td style="padding:6px 8px;font-weight:500">مستخلص #1</td>
+                                    <td style="padding:6px 8px;color:#7A8F9F">بانتظار اعتماد الاستشاري</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div invisible="not already_exists"
+                             style="background:#FFF8EC;border:1px solid #C8A454;
+                                border-radius:8px;padding:12px 14px;
+                                font-size:13px;color:#856404;margin-bottom:12px">
+                            ⚠ توجد بيانات تجريبية سابقة — سيتم حذفها وإعادة إنشائها.
+                        </div>
+                    </div>
+
+                    <!-- ── Done state ── -->
+                    <div invisible="state != 'done'">
+                        <div style="text-align:center;padding:16px 0">
+                            <div style="font-size:36px;margin-bottom:8px">✅</div>
+                            <div style="font-size:16px;font-weight:600;color:#0D6B41">
+                                تم إنشاء البيئة التجريبية بنجاح
+                            </div>
+                        </div>
+                        <field name="result_log" nolabel="1" readonly="1"
+                               style="font-family:monospace;font-size:12px;
+                                  background:#F4F8FB;border-radius:8px;
+                                  padding:14px;line-height:2;
+                                  border:1px solid #DDE8EE;
+                                  white-space:pre"/>
+                    </div>
+
+                    <!-- ── Error state ── -->
+                    <div invisible="state != 'error'">
+                        <div style="text-align:center;padding:16px 0">
+                            <div style="font-size:36px;margin-bottom:8px">❌</div>
+                            <div style="font-size:15px;font-weight:600;color:#9B1C1C">
+                                حدث خطأ أثناء الإعداد
+                            </div>
+                        </div>
+                        <field name="result_log" nolabel="1" readonly="1"
+                               style="font-family:monospace;font-size:12px;
+                                  background:#FEF2F2;border-radius:8px;
+                                  padding:14px;line-height:1.8;
+                                  border:1px solid #F5C6C6;
+                                  white-space:pre;color:#9B1C1C"/>
+                    </div>
+
+                </sheet>
+
+                <footer>
+
+                    <!-- Ready buttons -->
+                    <button name="action_setup_demo"
+                            string="🚀 إنشاء البيئة التجريبية"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'ready' or already_exists"/>
+
+                    <button name="action_reset_demo"
+                            string="🔄 إعادة إنشاء البيئة التجريبية"
+                            type="object"
+                            class="btn-warning"
+                            invisible="state != 'ready' or not already_exists"/>
+
+                    <!-- Done buttons -->
+                    <button name="action_open_mosque"
+                            string="🕌 فتح المسجد التجريبي"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'done'"/>
+
+                    <button name="action_open_project"
+                            string="📋 فتح المشروع"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'done'"/>
+
+                    <button name="action_reset_demo"
+                            string="🔄 إعادة تعيين"
+                            type="object"
+                            class="btn-outline-secondary"
+                            invisible="state != 'done'"/>
+
+                    <!-- Error buttons -->
+                    <button name="action_reset_demo"
+                            string="🔄 إعادة المحاولة"
+                            type="object"
+                            class="btn-warning"
+                            invisible="state != 'error'"/>
+
+                    <button special="cancel" string="إغلاق"/>
+
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══ ACTION ═══════════════════════════════════════════════ -->
+    <record id="action_demo_setup" model="ir.actions.act_window">
+        <field name="name">البيئة التجريبية</field>
+        <field name="res_model">waqf.demo.setup.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'dialog_size': 'medium'}</field>
+    </record>
+
+<!--    &lt;!&ndash; ══ MENU ══════════════════════════════════════════════════ &ndash;&gt;-->
+<!--    <menuitem id="menu_demo_setup"-->
+<!--              name="🧪 البيئة التجريبية"-->
+<!--              parent="waqf_mosque_rehab.menu_mosque_root"-->
+<!--              action="action_demo_setup"-->
+<!--              sequence="95"-->
+<!--              groups="waqf_mosque_rehab.group_mosque_admin"/>-->
+
+    <!-- ══ MOSQUE LIST — show demo badge ═════════════════════════ -->
+    <record id="view_mosque_list_demo_inherit" model="ir.ui.view">
+        <field name="name">mosque.mosque.list.demo</field>
+        <field name="model">mosque.mosque</field>
+        <field name="inherit_id" ref="waqf_mosque_rehab.view_mosque_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="decoration-muted">is_demo == True</attribute>
+            </xpath>
+            <xpath expr="//field[@name='code']" position="after">
+                <field name="is_demo" optional="show" string="تجريبي"
+                       widget="boolean_toggle"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
