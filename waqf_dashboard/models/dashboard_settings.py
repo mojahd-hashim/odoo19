@@ -19,7 +19,7 @@ class ResConfigSettings(models.TransientModel):
         config_parameter='waqf.dashboard.azure_deployment',
         default='gpt-4o',
     )
-    waqf_chatbot_system_prompt = fields.Text(
+    waqf_chatbot_system_prompt = fields.char(
         string='Chatbot System Prompt',
         config_parameter='waqf.dashboard.chatbot_prompt',
         default='أنت مساعد ذكي متخصص في متابعة مشروع تأهيل المساجد لكوقف. '
