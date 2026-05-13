@@ -213,9 +213,9 @@
           <a href="/contractor/logs" class="cp-btn cp-btn-ghost cp-btn-sm">
             سجل الأعمال الكامل
           </a>
-<!--          <a href="/contractor/certificate/new" class="cp-btn cp-btn-primary cp-btn-sm">-->
-<!--            إنشاء مستخلص-->
-<!--          </a>-->
+          <a href="/contractor/certificate/new" class="cp-btn cp-btn-primary cp-btn-sm">
+            إنشاء مستخلص
+          </a>
         </div>
       </div>
 
