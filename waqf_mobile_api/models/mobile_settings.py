@@ -84,7 +84,7 @@ class WaqfMobileSettings(models.TransientModel):
         config_parameter='waqf.mobile.maintenance',
         help='If enabled, app shows maintenance screen.',
     )
-    waqf_maintenance_message = fields.Text(
+    waqf_maintenance_message = fields.Char(
         string='Maintenance Message',
         default='النظام في وضع الصيانة — يرجى المحاولة لاحقاً',
         config_parameter='waqf.mobile.maintenance_msg',
