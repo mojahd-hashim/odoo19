@@ -15,7 +15,7 @@
     'data': [
         'security/ir.model.access.csv',
         'wizard/boq_import_views.xml',
-        'views/menu_views.xml',
+        # 'views/menu_views.xml',
     ],
     'installable': True,
     'application': False,

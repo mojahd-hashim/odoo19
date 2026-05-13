@@ -31,18 +31,18 @@
 
 
 
-    <!-- ── BOQ ───────────────────────────────────────────────── -->
-    <menuitem id="menu_mosque_boq_root"
-              name="Bill of Quantities"
-              parent="menu_mosque_root"
-              sequence="20"/>
+<!--    &lt;!&ndash; ── BOQ ───────────────────────────────────────────────── &ndash;&gt;-->
+<!--    <menuitem id="menu_mosque_boq_root"-->
+<!--              name="Bill of Quantities"-->
+<!--              parent="menu_mosque_root"-->
+<!--              sequence="20"/>-->
 
 
 
     <!-- ── Supervision ───────────────────────────────────────── -->
     <menuitem id="menu_mosque_supervision_root"
               name="Supervision"
-              parent="menu_mosque_root"
+              web_icon="waqf_mosque_rehab,static/description/icon.png"
               sequence="30"/>
 
     <menuitem id="menu_mosque_supervision"
