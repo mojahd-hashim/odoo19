@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_api_token_admin,waqf.api.token admin,model_waqf_api_token,waqf_mosque_rehab.group_mosque_admin,1,1,1,1
+access_api_token_manager,waqf.api.token manager,model_waqf_api_token,waqf_mosque_rehab.group_mosque_waqf_manager,1,0,0,0
+access_token_wizard_admin,waqf.token.show.wizard admin,model_waqf_token_show_wizard,waqf_mosque_rehab.group_mosque_admin,1,1,1,1

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<!-- ══ MOBILE SETTINGS — res.config.settings ════════════════ -->
+<record id="view_mobile_settings" model="ir.ui.view">
+    <field name="name">res.config.settings.mobile</field>
+    <field name="model">res.config.settings</field>
+    <field name="inherit_id" ref="base_setup.action_general_configuration"/>
+    <field name="arch" type="xml">
+        <xpath expr="//div[hasclass('settings')]" position="inside">
+            <div class="app_settings_block">
+                <h2>📱 إعدادات تطبيق الجوال — Mobile App</h2>
+                <div class="row mt16 o_settings_container">
+
+                    <!-- Geofence -->
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_left_pane"/>
+                        <div class="o_setting_right_pane">
+                            <span class="o_form_label">إعدادات الجيوفنس</span>
+                            <div class="text-muted mb8">
+                                التحقق الجغرافي من وجود المستشار في الموقع
+                            </div>
+                            <div class="content-group">
+                                <div class="row">
+                                    <label class="col-4 o_light_label"
+                                           for="waqf_default_geofence_radius">
+                                        نطاق افتراضي (م)
+                                    </label>
+                                    <field name="waqf_default_geofence_radius"
+                                           class="col-2"/>
+                                </div>
+                                <div class="row">
+                                    <label class="col-4 o_light_label"
+                                           for="waqf_min_visit_minutes">
+                                        حد أدنى للزيارة (دقيقة)
+                                    </label>
+                                    <field name="waqf_min_visit_minutes"
+                                           class="col-2"/>
+                                </div>
+                                <div class="row">
+                                    <label class="col-4 o_light_label"
+                                           for="waqf_long_stay_hours">
+                                        تنبيه الإقامة الطويلة (ساعة)
+                                    </label>
+                                    <field name="waqf_long_stay_hours"
+                                           class="col-2"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Check-in mode -->
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_left_pane">
+                            <field name="waqf_auto_checkin"
+                                   widget="boolean_toggle"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <span class="o_form_label">تسجيل حضور تلقائي صامت</span>
+                            <div class="text-muted">
+                                عند التفعيل يُسجَّل الحضور بدون إشعار عند الوصول للنطاق
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_left_pane">
+                            <field name="waqf_require_qr"
+                                   widget="boolean_toggle"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <span class="o_form_label">إلزامية مسح QR للحضور</span>
+                            <div class="text-muted">
+                                GPS وحده لا يكفي — يجب مسح QR المثبت في المسجد
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report settings -->
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_left_pane">
+                            <field name="waqf_report_required_on_checkout"
+                                   widget="boolean_toggle"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <span class="o_form_label">إلزامية التقرير عند الانصراف</span>
+                            <div class="text-muted">
+                                المستشار يجب أن يُرسل تقرير الزيارة قبل الانصراف
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_left_pane"/>
+                        <div class="o_setting_right_pane">
+                            <span class="o_form_label">الحد الأدنى للصور في التقرير</span>
+                            <field name="waqf_report_min_photos"/>
+                        </div>
+                    </div>
+
+                    <!-- Maintenance -->
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_left_pane">
+                            <field name="waqf_maintenance_mode"
+                                   widget="boolean_toggle"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <span class="o_form_label">وضع الصيانة</span>
+                            <div class="text-muted">
+                                يوقف التطبيق ويعرض رسالة الصيانة
+                            </div>
+                            <field name="waqf_maintenance_message"
+                                   invisible="not waqf_maintenance_mode"
+                                   placeholder="رسالة تظهر للمستخدمين..."/>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_left_pane"/>
+                        <div class="o_setting_right_pane">
+                            <span class="o_form_label">الحد الأدنى لإصدار التطبيق</span>
+                            <div class="text-muted">
+                                إصدارات أقدم تُجبر على التحديث
+                            </div>
+                            <field name="waqf_app_version_min"
+                                   placeholder="1.0.0"/>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </xpath>
+    </field>
+</record>
+
+</odoo>

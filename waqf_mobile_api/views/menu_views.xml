@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_api_tokens"
+              name="API Tokens — Mobile"
+              parent="waqf_mosque_rehab.menu_mosque_config"
+              action="action_api_tokens"
+              sequence="10"
+              groups="waqf_mosque_rehab.group_mosque_admin"/>
+</odoo>

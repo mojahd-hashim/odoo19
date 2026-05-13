@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="default_geofence_radius" model="ir.config_parameter">
+        <field name="key">waqf.mobile.geofence_radius</field>
+        <field name="value">100</field>
+    </record>
+    <record id="default_min_visit" model="ir.config_parameter">
+        <field name="key">waqf.mobile.min_visit_minutes</field>
+        <field name="value">30</field>
+    </record>
+    <record id="default_long_stay" model="ir.config_parameter">
+        <field name="key">waqf.mobile.long_stay_hours</field>
+        <field name="value">8</field>
+    </record>
+    <record id="default_auto_checkin" model="ir.config_parameter">
+        <field name="key">waqf.mobile.auto_checkin</field>
+        <field name="value">False</field>
+    </record>
+    <record id="default_require_qr" model="ir.config_parameter">
+        <field name="key">waqf.mobile.require_qr</field>
+        <field name="value">False</field>
+    </record>
+    <record id="default_report_required" model="ir.config_parameter">
+        <field name="key">waqf.mobile.report_required</field>
+        <field name="value">False</field>
+    </record>
+    <record id="default_min_photos" model="ir.config_parameter">
+        <field name="key">waqf.mobile.min_photos</field>
+        <field name="value">1</field>
+    </record>
+    <record id="default_notify_pending" model="ir.config_parameter">
+        <field name="key">waqf.mobile.notify_pending</field>
+        <field name="value">True</field>
+    </record>
+    <record id="default_no_visit_alert" model="ir.config_parameter">
+        <field name="key">waqf.mobile.no_visit_alert_days</field>
+        <field name="value">2</field>
+    </record>
+    <record id="default_min_version" model="ir.config_parameter">
+        <field name="key">waqf.mobile.min_version</field>
+        <field name="value">1.0.0</field>
+    </record>
+    <record id="default_maintenance" model="ir.config_parameter">
+        <field name="key">waqf.mobile.maintenance</field>
+        <field name="value">False</field>
+    </record>
+    <record id="default_maintenance_msg" model="ir.config_parameter">
+        <field name="key">waqf.mobile.maintenance_msg</field>
+        <field name="value">النظام في وضع الصيانة — يرجى المحاولة لاحقاً</field>
+    </record>
+</odoo>
