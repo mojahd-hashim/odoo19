@@ -29,7 +29,6 @@
     ],
     'data': [
         'security/ir.model.access.csv',
-        'data/dashboard_settings.xml',
         'views/dashboard_template.xml',
         'views/menu_views.xml',
     ],
