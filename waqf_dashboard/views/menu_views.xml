@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-      <record id="action_dashboard_open" model="ir.actions.act_url">
+    <record id="action_dashboard_open" model="ir.actions.act_url">
         <field name="name">لوحة الإدارة التنفيذية</field>
         <field name="url">/dashboard</field>
         <field name="target">self</field>
@@ -12,7 +12,7 @@
               sequence="1"
               groups="waqf_mosque_rehab.group_mosque_waqf_manager,waqf_mosque_rehab.group_mosque_admin"/>
 
-  <record id="action_live_streams" model="ir.actions.act_window">
+    <record id="action_live_streams" model="ir.actions.act_window">
         <field name="name">جلسات البث المباشر</field>
         <field name="res_model">waqf.live.stream</field>
         <field name="view_mode">list,form</field>
@@ -27,42 +27,41 @@
               groups="waqf_mosque_rehab.group_mosque_admin"/>
 
 
-
     <!-- Dashboard Settings in res.config.settings -->
     <record id="view_dashboard_settings" model="ir.ui.view">
-    <field name="name">res.config.settings.dashboard</field>
-    <field name="model">res.config.settings</field>
-    <field name="inherit_id" ref="base.res_config_settings_view_form"/>
-    <field name="arch" type="xml">
-        <xpath expr="//form" position="inside">
+        <field name="name">res.config.settings.dashboard</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
 
-            <!-- ===== Dashboard App Block ===== -->
-            <app string="📊 Dashboard" name="waqf_dashboard_app">
-                <group>
-
-                    <!-- Azure OpenAI Settings -->
+                <!-- ===== Dashboard App Block ===== -->
+                <app string="📊 Dashboard" name="waqf_dashboard_app">
                     <group>
-                        <field name="waqf_azure_openai_endpoint" placeholder="Endpoint URL"/>
-                        <field name="waqf_azure_openai_key" password="True" placeholder="API Key"/>
-                        <field name="waqf_azure_deployment" placeholder="Deployment"/>
-                        <field name="waqf_chatbot_system_prompt" placeholder="System Prompt"/>
+
+                        <!-- Azure OpenAI Settings -->
+                        <group>
+                            <field name="waqf_azure_openai_endpoint" placeholder="Endpoint URL"/>
+                            <field name="waqf_azure_openai_key" password="True" placeholder="API Key"/>
+                            <field name="waqf_azure_deployment" placeholder="Deployment"/>
+                            <field name="waqf_chatbot_system_prompt" placeholder="System Prompt"/>
+                        </group>
+
+                        <!-- Live Stream Settings -->
+                        <group>
+                            <field name="waqf_live_stream_enabled" widget="boolean_toggle"/>
+                            <field name="waqf_live_stream_url"
+                                   placeholder="https://www.youtube.com/embed/..."
+                                   invisible="[('waqf_live_stream_enabled','=',False)]"/>
+                            <field name="waqf_dashboard_refresh_interval"/>
+                        </group>
+
                     </group>
+                </app>
 
-                    <!-- Live Stream Settings -->
-                    <group>
-                        <field name="waqf_live_stream_enabled" widget="boolean_toggle"/>
-                        <field name="waqf_live_stream_url"
-                               placeholder="https://www.youtube.com/embed/..."
-                               attrs="{'invisible': [('waqf_live_stream_enabled','=',False)]}"/>
-                        <field name="waqf_dashboard_refresh_interval"/>
-                    </group>
-
-                </group>
-            </app>
-
-        </xpath>
-    </field>
-</record>
+            </xpath>
+        </field>
+    </record>
 
     <!-- Live Stream form -->
     <record id="view_live_stream_form" model="ir.ui.view">
