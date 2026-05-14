@@ -65,20 +65,20 @@
                 <sheet>
                     <group>
                         <group>
-                            <field name="mosque_id"/>
-                            <field name="engineer_id"/>
-                            <field name="visit_type"/>
-                            <field name="check_in"/>
-                            <field name="check_out"/>
-                            <field name="duration"/>
+                            <field name="mosque_id" readonly="1"/>
+                            <field name="engineer_id" readonly="1"/>
+                            <field name="visit_type" readonly="1"/>
+                            <field name="check_in" readonly="1"/>
+                            <field name="check_out" readonly="1"/>
+                            <field name="duration" readonly="1"/>
                         </group>
                         <group string="GPS Validation">
-                            <field name="gps_latitude"/>
-                            <field name="gps_longitude"/>
-                            <field name="distance_m"/>
-                            <field name="gps_validated" widget="boolean_toggle"/>
-                            <field name="qr_validated"  widget="boolean_toggle"/>
-                            <field name="is_validated"  widget="boolean_toggle"/>
+                            <field name="gps_latitude" readonly="1"/>
+                            <field name="gps_longitude" readonly="1"/>
+                            <field name="distance_m" readonly="1"/>
+                            <field name="gps_validated" widget="boolean_toggle" readonly="1"/>
+                            <field name="qr_validated"  widget="boolean_toggle" readonly="1"/>
+                            <field name="is_validated"  widget="boolean_toggle" readonly="1"/>
                         </group>
                     </group>
                     <field name="live_stream_url" widget="url"
