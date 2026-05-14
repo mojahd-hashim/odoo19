@@ -17,7 +17,7 @@
   --gold-dim:    rgba(200,164,84,0.18);
   --white:       #FFFFFF;
   --off-white:   #F8FAFB;
-  --bg-light:    #EEF3F7;
+  --bg-light: rgb(238 243 247 / 0);
   --text-dark:   #1A2B3C;
   --text-mid:    #4A6070;
   --text-muted:  #8FA3B3;
@@ -932,7 +932,7 @@ body.waqf-landing #wrapwrap,body.waqf-login #wrapwrap{padding:0!important;margin
 .wl-gate.gold .gate-ico svg{color:var(--gold)}
 
 .gate-body{flex:1;min-width:0;text-align:right}
-.gate-title{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px}
+.gate-title{font-size:21px;font-weight:700;color:var(--navy);margin-bottom:3px}
 .gate-desc{font-size:11px;color:var(--text3);line-height:1.5}
 .gate-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px}
 .gate-tag{font-size:9px;font-weight:700;padding:2px 8px;border-radius:999px}
@@ -955,7 +955,7 @@ body.waqf-landing #wrapwrap,body.waqf-login #wrapwrap{padding:0!important;margin
   font-size:9px;font-weight:800;padding:2px 9px;
   border-radius:999px;letter-spacing:.3px}
 
-.wl-footer{padding:16px 24px;border-top:1px solid var(--border);
+.wl-footer{padding:16px 24px;border-top:1px solid var(--text-dark);
   background:rgba(255,255,255,.55);text-align:center;
   font-size:10px;color:var(--text3);position:relative;z-index:1}
 
@@ -982,7 +982,7 @@ body.waqf-landing #wrapwrap,body.waqf-login #wrapwrap{padding:0!important;margin
 .ll-logo svg{width:28px;height:28px;color:var(--navy-deep)}
 .ll-company{font-size:24px;font-weight:800;color:#fff;
   line-height:1.25;margin-bottom:6px;letter-spacing:-.3px}
-.ll-project{font-size:13px;color:rgba(255,255,255,.45);
+.ll-project{font-size:13px;color:rgba(255,255,255,1);
   margin-bottom:38px;line-height:1.65}
 .ll-feats{display:flex;flex-direction:column;gap:13px;margin-bottom:42px}
 .ll-feat{display:flex;align-items:center;gap:12px}
@@ -990,7 +990,7 @@ body.waqf-landing #wrapwrap,body.waqf-login #wrapwrap{padding:0!important;margin
   border-radius:9px;flex-shrink:0;
   display:flex;align-items:center;justify-content:center}
 .ll-feat-ico svg{width:15px;height:15px;color:rgba(255,255,255,.55)}
-.ll-feat-txt{font-size:12px;color:rgba(255,255,255,.52)}
+.ll-feat-txt{font-size:12px;color:rgba(255,255,255,1)}
 .ll-stats{display:flex;gap:26px}
 .ll-stat-v{font-size:21px;font-weight:800;color:var(--gold);line-height:1}
 .ll-stat-l{font-size:10px;color:rgba(255,255,255,.28);margin-top:3px}
@@ -1071,7 +1071,7 @@ body.waqf-landing #wrapwrap,body.waqf-login #wrapwrap{padding:0!important;margin
   .wl-gate{padding:15px 14px}
   .gate-ico{width:44px;height:44px;border-radius:12px}
   .gate-ico svg{width:22px;height:22px}
-  .gate-title{font-size:13px}
+  .gate-title{font-size:17px}
   .gate-desc{font-size:10px}
 
   .wl-login{flex-direction:column}

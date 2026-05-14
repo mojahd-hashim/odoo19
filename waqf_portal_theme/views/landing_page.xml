@@ -10,50 +10,44 @@
 <div class="wl">
 
   <!-- ── Header ────────────────────────────────────────── -->
-  <header class="wl-hdr">
-    <div class="wl-brand">
+<!--  <header class="wl-hdr">-->
+<!--    <div class="wl-brand">-->
 
-      <!-- Logo: شعار الشركة أو fallback SVG -->
-      <div class="wl-logo">
-        <t t-if="company and company.logo">
-          <img t-att-src="'/web/image/res.company/%d/logo' % company.id"
-               t-att-alt="company.name"/>
-        </t>
-        <t t-else="">
-          <!-- SVG mosque icon fallback -->
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2C10 4 8 5 8 8h8c0-3-2-4-4-6z"/>
-            <path d="M4 22V12a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10"/>
-            <path d="M2 22h20"/>
-            <path d="M7 22v-6h10v6"/>
-            <circle cx="12" cy="7" r="1"/>
-            <path d="M6 12v-2"/>
-            <path d="M18 12v-2"/>
-          </svg>
-        </t>
-      </div>
+<!--      &lt;!&ndash; Logo: شعار الشركة أو fallback SVG &ndash;&gt;-->
+<!--      <div class="wl-logo">-->
+<!--        <t t-if="company and company.logo">-->
+<!--          <img t-att-src="'/web/image/res.company/%d/logo' % company.id"-->
+<!--               t-att-alt="company.name"/>-->
+<!--        </t>-->
+<!--        <t t-else="">-->
+<!--          &lt;!&ndash; SVG mosque icon fallback &ndash;&gt;-->
+<!--          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"-->
+<!--               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">-->
+<!--            <path d="M12 2C10 4 8 5 8 8h8c0-3-2-4-4-6z"/>-->
+<!--            <path d="M4 22V12a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10"/>-->
+<!--            <path d="M2 22h20"/>-->
+<!--            <path d="M7 22v-6h10v6"/>-->
+<!--            <circle cx="12" cy="7" r="1"/>-->
+<!--            <path d="M6 12v-2"/>-->
+<!--            <path d="M18 12v-2"/>-->
+<!--          </svg>-->
+<!--        </t>-->
+<!--      </div>-->
 
-      <div>
-        <div class="wl-company"
-             t-esc="company.name if company else 'وقف خادم الحرمين الشريفين'"/>
-        <div class="wl-tagline">نظام متابعة تأهيل المساجد</div>
-      </div>
-    </div>
-  </header>
+<!--      <div>-->
+<!--        <div class="wl-company"-->
+<!--             t-esc="company.name if company else 'وقف خادم الحرمين الشريفين'"/>-->
+<!--        <div class="wl-tagline">نظام متابعة تأهيل المساجد</div>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </header>-->
 
   <!-- ── Hero ──────────────────────────────────────────── -->
   <main class="wl-hero">
 
     <!-- Badge -->
     <div class="wl-badge">
-      <!-- Star-crescent SVG -->
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>
-        <path d="M19.5 8.5l.5-.5-.5-.5-.5.5z"/>
-      </svg>
-      وقف خادم الحرمين الشريفين الملك عبدالله بن عبدالعزيز لوالديه – يرحمهم الله
+      <img src="/web/image/res.company/1/logo" alt="وقف خادم الحرمين الشريفين الملك عبدالله بن عبدالعزيز لوالديه" loading="lazy"></img>
     </div>
 
     <!-- Title -->
