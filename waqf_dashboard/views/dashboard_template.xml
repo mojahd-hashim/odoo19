@@ -9,7 +9,12 @@
      t-att-data-config="json.dumps(config)"
      t-att-data-packages="packages_json"
      style="display:none"/>
-      <script t-out="'window.WAQF_PACKAGES=' + packages_json + ';'"/>
+     <script>
+//<![CDATA[
+<t t-raw="'window.WAQF_DASH_CONFIG=' + json.dumps(config) + ';'"/>
+<t t-raw="'window.WAQF_PACKAGES=' + packages_json + ';'"/>
+//]]>
+</script>
     </t>
     <body class="waqf-dashboard">
     <div class="wd-shell">

@@ -8,6 +8,9 @@
 document.addEventListener('DOMContentLoaded', function () {
 
   // ── State ──────────────────────────────────────────────────
+  const el = document.getElementById('waqf-data');
+  window.WAQF_DASH_CONFIG = JSON.parse(el.dataset.config   || '{}');
+  window.WAQF_PACKAGES    = JSON.parse(el.dataset.packages || '[]');
   const state = {
     activeMosqueId: null,
     packages:       window.WAQF_PACKAGES || [],
