@@ -620,3 +620,140 @@ body.waqf-dashboard {
   font-size: 10px; padding: 2px 8px; border-radius: 999px;
   background: rgba(35,114,146,.1); color: var(--teal); font-weight: 600;
 }
+
+/* ═══════════════════════════════════════════════
+   UI SCALE IMPROVEMENTS
+   تكبير الخطوط والأيقونات بشكل أوضح
+   ═══════════════════════════════════════════════ */
+
+/* Hero Section */
+.hero-title,
+.main-title {
+    font-size: 54px !important;
+    line-height: 1.15 !important;
+    font-weight: 800 !important;
+    letter-spacing: -1px;
+}
+
+.hero-subtitle,
+.main-subtitle {
+    font-size: 24px !important;
+    font-weight: 600 !important;
+}
+
+.hero-desc,
+.main-description {
+    font-size: 17px !important;
+    line-height: 1.9 !important;
+    color: var(--text2);
+}
+
+/* Portal Cards */
+.portal-card,
+.entry-card {
+    padding: 26px 28px !important;
+    border-radius: 22px !important;
+}
+
+/* Card Titles */
+.portal-card h3,
+.entry-card h3,
+.portal-title {
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    line-height: 1.4;
+    color: var(--navy);
+}
+
+/* Card Description */
+.portal-card p,
+.entry-card p,
+.portal-desc {
+    font-size: 15px !important;
+    line-height: 1.8 !important;
+    color: var(--text2);
+}
+
+/* Badges */
+.portal-card .pill,
+.entry-card .pill {
+    font-size: 12px !important;
+    padding: 5px 12px !important;
+    font-weight: 700;
+}
+
+/* Main Icons */
+.portal-icon,
+.entry-icon,
+.portal-card i,
+.entry-card i,
+.portal-card svg,
+.entry-card svg {
+    width: 72px !important;
+    height: 72px !important;
+    font-size: 34px !important;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 20px;
+    background: rgba(35,114,146,.08);
+    color: var(--teal);
+
+    transition: all .2s ease;
+}
+
+/* Hover */
+.portal-card:hover .portal-icon,
+.entry-card:hover .entry-icon,
+.portal-card:hover i,
+.entry-card:hover i {
+    transform: scale(1.08);
+}
+
+/* Arrow Buttons */
+.portal-arrow,
+.entry-arrow {
+    width: 42px !important;
+    height: 42px !important;
+    font-size: 18px !important;
+}
+
+/* Top Header */
+.topbar-title {
+    font-size: 18px !important;
+    font-weight: 800 !important;
+}
+
+.topbar-sub {
+    font-size: 13px !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+
+    .hero-title,
+    .main-title {
+        font-size: 36px !important;
+    }
+
+    .hero-subtitle,
+    .main-subtitle {
+        font-size: 19px !important;
+    }
+
+    .portal-card h3,
+    .entry-card h3 {
+        font-size: 20px !important;
+    }
+
+    .portal-icon,
+    .entry-icon,
+    .portal-card i,
+    .entry-card i {
+        width: 58px !important;
+        height: 58px !important;
+        font-size: 28px !important;
+    }
+}
