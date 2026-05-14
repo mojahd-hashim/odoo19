@@ -3,162 +3,676 @@
 <template id="tmpl_landing" name="Waqf Landing Page">
 <t t-call="web.layout">
 <t t-set="head">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-  <link rel="stylesheet" href="/waqf_portal_theme/static/src/css/theme.css"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin"/>
+  <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&amp;display=swap" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --primary:#006B84;--primary-light:#2B8BA3;--primary-dark:#08333D;
+      --green:#2F7D5B;--green-light:#E8F3EE;
+      --gold:#8A7A4F;--gold-light:#F2EBDD;
+      --ivory:#F7F5EF;--white:#FFFFFF;
+      --text:#17343B;--muted:#64747A;--border:#DDE4E6;
+      --shadow-soft:0 10px 30px rgba(8,51,61,0.08);
+      --shadow-strong:0 24px 70px rgba(8,51,61,0.18);
+      --radius-xl:30px;
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:"Almarai",Arial,sans-serif;color:var(--text);background:var(--ivory);line-height:1.8;direction:rtl}
+    a{color:inherit;text-decoration:none}
+    img{display:block;width:100%;max-width:100%}
+    .container{width:min(1180px,calc(100% - 36px));margin:0 auto}
+
+    /* Header */
+    .site-header{position:sticky;top:0;z-index:50;background:rgba(8,51,61,0.96);
+      color:var(--white);border-bottom:1px solid rgba(255,255,255,0.12);
+      backdrop-filter:blur(14px);box-shadow:0 8px 25px rgba(8,51,61,0.16)}
+    .header-inner{min-height:76px;display:flex;align-items:center;
+      justify-content:space-between;gap:24px}
+    .brand{display:flex;align-items:center;gap:12px;min-width:0}
+    .brand-mark{width:48px;height:48px;border-radius:16px;overflow:hidden;
+      flex-shrink:0;display:grid;place-items:center;
+      background:linear-gradient(135deg,var(--primary),var(--green));
+      box-shadow:0 12px 30px rgba(0,107,132,0.28)}
+    .brand-mark img{width:100%;height:100%;object-fit:contain}
+    .brand-mark-fb{font-size:25px;color:var(--white)}
+    .brand-title{font-size:15px;font-weight:800;line-height:1.4}
+    .brand-subtitle{color:rgba(255,255,255,0.66);font-size:11px;margin-top:2px}
+    .main-nav{display:flex;align-items:center;justify-content:center;gap:26px;flex:1}
+    .main-nav a{font-size:14px;font-weight:700;color:rgba(255,255,255,0.86);
+      transition:0.2s;white-space:nowrap}
+    .main-nav a:hover{color:var(--white)}
+    .header-login-btn{display:inline-flex;align-items:center;justify-content:center;
+      min-height:44px;padding:10px 18px;border-radius:999px;
+      background:var(--gold);color:var(--white);border:1px solid var(--gold);
+      font-size:13px;font-weight:800;white-space:nowrap;transition:0.22s}
+    .header-login-btn:hover{transform:translateY(-2px);
+      box-shadow:0 12px 25px rgba(138,122,79,0.34)}
+
+    /* Badges */
+    .badge{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;
+      border-radius:999px;font-weight:800;font-size:13px;
+      border:1px solid transparent;white-space:nowrap}
+    .badge.blue{background:#E5F3F6;color:var(--primary);border-color:#B9DDE5}
+    .badge.green{background:var(--green-light);color:var(--green);border-color:#B9DAC8}
+    .badge.gold{background:var(--gold-light);color:var(--gold);border-color:#D8C99C}
+    .badge.light{background:rgba(255,255,255,0.13);color:var(--white);
+      border-color:rgba(255,255,255,0.22)}
+
+    .section-title{text-align:center;max-width:830px;margin:0 auto 48px}
+    .section-title .eyebrow{color:var(--gold);font-size:15px;font-weight:800;margin-bottom:10px}
+    .section-title h2{color:var(--primary-dark);font-size:clamp(30px,4.4vw,46px);
+      line-height:1.3;font-weight:800;letter-spacing:-0.6px}
+    .section-title p{margin-top:16px;color:var(--muted);font-size:18px}
+
+    .card{background:rgba(255,255,255,0.95);border:1px solid var(--border);
+      border-radius:var(--radius-xl);padding:26px;
+      box-shadow:var(--shadow-soft);transition:0.28s}
+    .card:hover{transform:translateY(-5px);box-shadow:var(--shadow-strong);
+      border-color:rgba(0,107,132,0.25)}
+
+    .icon-box{width:58px;height:58px;border-radius:19px;display:grid;
+      place-items:center;background:#E5F3F6;color:var(--primary);
+      font-size:28px;margin-bottom:18px}
+    .icon-box.green{background:var(--green-light);color:var(--green)}
+    .icon-box.gold{background:var(--gold-light);color:var(--gold)}
+
+    .check-list{list-style:none;display:grid;gap:11px;margin-top:20px}
+    .check-list li{display:grid;grid-template-columns:23px 1fr;
+      gap:10px;color:#355057;font-size:14px;line-height:1.75}
+    .check-list li::before{content:"✓";color:var(--green);font-weight:800}
+
+    /* Hero */
+    .hero{position:relative;overflow:hidden;min-height:720px;display:flex;
+      align-items:center;color:var(--white);background:var(--primary-dark)}
+    .hero::before{content:"";position:absolute;inset:0;
+      background:linear-gradient(270deg,rgba(8,51,61,0.98),rgba(8,51,61,0.86),rgba(0,107,132,0.70)),
+      url("https://images.unsplash.com/photo-1591588582259-e675bd2e6088?q=80&amp;w=1600&amp;auto=format&amp;fit=crop") center/cover}
+    .hero::after{content:"";position:absolute;width:600px;height:600px;
+      left:-160px;top:-150px;border-radius:50%;
+      background:radial-gradient(circle,rgba(138,122,79,0.34),transparent 68%);
+      animation:float 9s ease-in-out infinite}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(22px)}}
+    .hero-grid{position:relative;z-index:1;display:grid;
+      grid-template-columns:1.05fr 0.95fr;gap:44px;
+      align-items:center;padding:90px 0}
+    .hero h1{margin-top:22px;font-size:clamp(38px,6vw,66px);
+      line-height:1.18;font-weight:800;letter-spacing:-1px}
+    .hero-text{margin-top:24px;max-width:720px;
+      color:rgba(255,255,255,0.82);font-size:19px}
+    .hero-badges{display:flex;flex-wrap:wrap;gap:10px}
+    .hero-actions{display:flex;flex-wrap:wrap;gap:13px;margin-top:32px}
+    .hero-link{min-height:54px;display:inline-flex;align-items:center;
+      justify-content:center;border-radius:18px;padding:14px 22px;
+      font-weight:800;transition:0.24s}
+    .hero-link.main{background:var(--gold);color:var(--white);
+      box-shadow:0 14px 34px rgba(0,0,0,0.18)}
+    .hero-link.outline{background:rgba(255,255,255,0.10);color:var(--white);
+      border:1px solid rgba(255,255,255,0.24);backdrop-filter:blur(12px)}
+    .hero-link:hover{transform:translateY(-3px)}
+
+    /* Access Panel */
+    .access-panel{border:1px solid rgba(255,255,255,0.18);
+      background:rgba(255,255,255,0.11);backdrop-filter:blur(18px);
+      padding:17px;border-radius:34px;box-shadow:0 28px 80px rgba(0,0,0,0.28)}
+    .access-panel-inner{border-radius:25px;background:var(--white);
+      color:var(--text);padding:22px}
+    .access-panel-header{display:flex;align-items:center;
+      justify-content:space-between;gap:16px;margin-bottom:18px}
+    .access-panel-header small{display:block;color:var(--primary);
+      font-weight:800;margin-bottom:4px}
+    .access-panel-header h3{color:var(--primary-dark);font-size:24px;line-height:1.35}
+    .secure-icon{width:50px;height:50px;border-radius:18px;display:grid;
+      place-items:center;color:var(--green);background:var(--green-light);
+      font-size:26px;flex:0 0 auto}
+    .role-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .role-card{min-height:132px;border:1px solid var(--border);border-radius:20px;
+      padding:16px;background:linear-gradient(180deg,#FFFFFF 0%,#FAFAF8 100%);
+      transition:0.24s;display:block}
+    .role-card:hover{transform:translateY(-4px);border-color:var(--primary);
+      box-shadow:0 12px 28px rgba(0,107,132,0.12)}
+    .role-card .role-icon{width:42px;height:42px;border-radius:15px;
+      display:grid;place-items:center;background:#E5F3F6;
+      color:var(--primary);font-size:23px;margin-bottom:10px}
+    .role-card h4{color:var(--primary-dark);font-size:15px;
+      line-height:1.45;font-weight:800}
+    .role-card p{margin-top:7px;color:var(--muted);font-size:12px;line-height:1.55}
+    .role-card.main-role{background:linear-gradient(135deg,#F2EBDD 0%,#FFFFFF 100%);
+      border-color:#D8C99C}
+    .role-card.main-role .role-icon{background:var(--gold);color:var(--white)}
+    .panel-note{margin-top:16px;padding:13px 15px;border-radius:17px;
+      background:#EEF7FA;color:#315963;font-size:12px;line-height:1.7;
+      border:1px solid #C9E6EC}
+    .panel-login-main{display:flex;align-items:center;justify-content:center;
+      min-height:52px;margin-top:16px;border-radius:18px;
+      background:var(--primary);color:var(--white);font-size:14px;
+      font-weight:800;transition:0.22s}
+    .panel-login-main:hover{transform:translateY(-2px);background:var(--primary-dark)}
+
+    /* Quick */
+    .quick-section{padding:54px 0 22px}
+    .quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+    .quick-card h3{color:var(--primary-dark);font-size:20px;margin-bottom:8px}
+    .quick-card p{color:var(--muted);font-size:14px}
+
+    /* Stakeholders */
+    .stakeholders-section{padding:78px 0;background:var(--ivory)}
+    .stakeholder-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+    .stakeholder-card{position:relative;overflow:hidden}
+    .stakeholder-card::before{content:"";position:absolute;width:130px;height:130px;
+      right:-52px;top:-52px;border-radius:50%;
+      background:radial-gradient(circle,rgba(0,107,132,0.12),transparent 70%)}
+    .stakeholder-top{position:relative;z-index:1;display:flex;
+      align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
+    .stakeholder-card h3,.stakeholder-card p,.stakeholder-card ul{position:relative;z-index:1}
+    .stakeholder-card h3{color:var(--primary-dark);font-size:21px;line-height:1.45;margin-bottom:9px}
+    .stakeholder-card p{color:var(--muted);font-size:14px}
+
+    /* Virtual */
+    .virtual-section{padding:78px 0}
+    .virtual-box{display:grid;grid-template-columns:1fr 1fr;
+      align-items:center;gap:36px;border-radius:42px;padding:28px;
+      color:var(--white);background:var(--primary-dark);
+      box-shadow:var(--shadow-strong);overflow:hidden}
+    .virtual-media{min-height:430px;border-radius:32px;overflow:hidden;
+      position:relative;background:#0f4a5c}
+    .virtual-media img{height:100%;min-height:430px;object-fit:cover}
+    .virtual-media::after{content:"";position:absolute;inset:0;
+      background:linear-gradient(0deg,rgba(0,0,0,0.72),rgba(0,0,0,0.05))}
+    .live-overlay{position:absolute;z-index:2;inset-inline:22px;bottom:22px;
+      border-radius:22px;padding:18px;color:var(--white);
+      background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.24);
+      backdrop-filter:blur(16px)}
+    .live-title{display:flex;align-items:center;gap:10px;font-weight:800;margin-bottom:7px}
+    .live-dot{width:13px;height:13px;border-radius:999px;background:#EF4444;
+      box-shadow:0 0 0 9px rgba(239,68,68,0.25)}
+    .live-overlay p{color:rgba(255,255,255,0.82);font-size:13px}
+    .virtual-content h2{margin-top:20px;font-size:clamp(30px,4vw,48px);
+      line-height:1.28;font-weight:800}
+    .virtual-content p{margin-top:18px;color:rgba(255,255,255,0.78);font-size:17px}
+    .virtual-points{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:25px}
+    .virtual-point{border-radius:18px;padding:15px;
+      background:rgba(255,255,255,0.10);color:rgba(255,255,255,0.90);font-size:14px}
+
+    /* Dashboard */
+    .dashboard-section{padding:78px 0;background:var(--white)}
+    .dashboard-shell{background:linear-gradient(135deg,var(--ivory) 0%,#F0F0ED 100%);
+      border:1px solid var(--border);border-radius:32px;padding:26px;
+      box-shadow:var(--shadow-strong);overflow:hidden}
+    .dashboard-header{display:flex;align-items:center;justify-content:space-between;
+      gap:16px;padding-bottom:22px;margin-bottom:22px;border-bottom:1px solid var(--border)}
+    .dashboard-header h3{color:var(--primary-dark);font-size:22px;font-weight:800}
+    .dashboard-tabs{display:flex;gap:8px;min-width:270px}
+    .dashboard-tab{height:10px;border-radius:999px;flex:1;background:#DDE4E6}
+    .dashboard-tab.active{background:linear-gradient(90deg,var(--primary),var(--green))}
+    .metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    .metric-box{border-radius:20px;background:var(--white);padding:22px;
+      border-top:4px solid var(--primary);
+      box-shadow:0 6px 18px rgba(8,51,61,0.06);text-align:center}
+    .metric-value{color:var(--primary);font-size:32px;font-weight:800;line-height:1.1}
+    .metric-label{margin-top:8px;color:var(--muted);font-size:13px}
+
+    /* Workflow */
+    .workflow-section{padding:78px 0;background:var(--ivory)}
+    .steps{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+    .step{border:1px solid var(--border);border-radius:26px;padding:24px;
+      background:var(--white);box-shadow:var(--shadow-soft)}
+    .step-number{color:rgba(0,107,132,0.18);font-size:42px;line-height:1;font-weight:800}
+    .step h3{margin-top:18px;color:var(--primary-dark);font-size:19px;font-weight:800}
+    .step p{margin-top:10px;color:var(--muted);font-size:14px}
+
+    /* Features */
+    .features-section{padding:78px 0;background:linear-gradient(180deg,#FFFFFF 0%,#F7F5EF 100%)}
+    .features-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+    .feature-card{border-left:4px solid var(--primary)}
+    .feature-card h3{color:var(--primary-dark);font-size:18px;margin-bottom:8px}
+    .feature-card p{color:var(--muted);font-size:14px}
+
+    /* Integrations */
+    .integrations-section{padding:78px 0;background:var(--white)}
+    .integration-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+    .integration-card{text-align:center}
+    .integration-icon{width:62px;height:62px;display:grid;place-items:center;
+      margin:0 auto 16px;border-radius:22px;background:var(--gold-light);
+      color:var(--gold);font-size:30px}
+    .integration-card h3{color:var(--primary-dark);font-size:17px;margin-bottom:8px}
+    .integration-card p{color:var(--muted);font-size:13px}
+
+    /* Final */
+    .final-section{padding:78px 0;background:var(--ivory)}
+    .final-box{border-radius:42px;padding:52px 30px;text-align:center;color:var(--white);
+      background:linear-gradient(270deg,var(--primary),var(--green));
+      box-shadow:var(--shadow-strong)}
+    .final-box h2{max-width:900px;margin:0 auto;font-size:clamp(30px,4.6vw,50px);
+      line-height:1.3;font-weight:800}
+    .final-box p{margin:18px auto 0;max-width:800px;
+      color:rgba(255,255,255,0.82);font-size:18px}
+
+    footer{background:var(--primary-dark);color:rgba(255,255,255,0.82);
+      text-align:center;padding:28px 18px;font-size:13px}
+
+    @media(max-width:1120px){
+      .header-inner{flex-wrap:wrap;padding:12px 0}
+      .main-nav{order:3;flex-basis:100%;justify-content:flex-start;
+        overflow-x:auto;padding-bottom:4px}
+      .hero-grid,.virtual-box{grid-template-columns:1fr}
+      .quick-grid,.stakeholder-grid,.features-grid,
+      .integration-grid,.metrics-grid{grid-template-columns:repeat(2,1fr)}
+      .steps{grid-template-columns:repeat(3,1fr)}
+    }
+    @media(max-width:700px){
+      .container{width:min(100% - 24px,1180px)}
+      .site-header{position:relative}
+      .main-nav{gap:18px}
+      .header-login-btn{width:100%}
+      .hero{min-height:auto}
+      .hero-grid{padding:58px 0}
+      .hero-text,.section-title p,.virtual-content p,
+      .final-box p{font-size:16px}
+      .role-grid,.quick-grid,.stakeholder-grid,.features-grid,
+      .integration-grid,.metrics-grid,.steps,
+      .virtual-points{grid-template-columns:1fr}
+      .dashboard-header{align-items:flex-start;flex-direction:column}
+      .dashboard-tabs{min-width:100%}
+      .card,.step{padding:21px}
+      .virtual-box,.final-box{border-radius:28px;padding:20px}
+      .virtual-media,.virtual-media img{min-height:310px}
+    }
+  </style>
 </t>
-<body class="waqf-landing">
-<div class="wl">
+<body>
 
-  <!-- ── Header ────────────────────────────────────────── -->
-<!--  <header class="wl-hdr">-->
-<!--    <div class="wl-brand">-->
+<!-- ══ Header ══════════════════════════════════════════════ -->
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="#top" class="brand">
+      <div class="brand-mark">
+        <t t-if="company and company.logo">
+          <img t-att-src="'/web/image/res.company/%d/logo' % company.id"
+               t-att-alt="company.name"/>
+        </t>
+        <t t-else=""><span class="brand-mark-fb">🕌</span></t>
+      </div>
+      <div>
+        <div class="brand-title">
+          <t t-esc="company.name if company else 'بوابة تأهيل المساجد'"/>
+        </div>
+        <div class="brand-subtitle">نظام متابعة مشاريع الصيانة والتأهيل</div>
+      </div>
+    </a>
 
-<!--      &lt;!&ndash; Logo: شعار الشركة أو fallback SVG &ndash;&gt;-->
-<!--      <div class="wl-logo">-->
-<!--        <t t-if="company and company.logo">-->
-<!--          <img t-att-src="'/web/image/res.company/%d/logo' % company.id"-->
-<!--               t-att-alt="company.name"/>-->
-<!--        </t>-->
-<!--        <t t-else="">-->
-<!--          &lt;!&ndash; SVG mosque icon fallback &ndash;&gt;-->
-<!--          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"-->
-<!--               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">-->
-<!--            <path d="M12 2C10 4 8 5 8 8h8c0-3-2-4-4-6z"/>-->
-<!--            <path d="M4 22V12a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10"/>-->
-<!--            <path d="M2 22h20"/>-->
-<!--            <path d="M7 22v-6h10v6"/>-->
-<!--            <circle cx="12" cy="7" r="1"/>-->
-<!--            <path d="M6 12v-2"/>-->
-<!--            <path d="M18 12v-2"/>-->
-<!--          </svg>-->
-<!--        </t>-->
-<!--      </div>-->
+    <nav class="main-nav">
+      <a href="#stakeholders">المستفيدون</a>
+      <a href="#virtual">الزيارة الافتراضية</a>
+      <a href="#dashboard">لوحة المتابعة</a>
+      <a href="#features">المميزات</a>
+    </nav>
 
-<!--      <div>-->
-<!--        <div class="wl-company"-->
-<!--             t-esc="company.name if company else 'وقف خادم الحرمين الشريفين'"/>-->
-<!--        <div class="wl-tagline">نظام متابعة تأهيل المساجد</div>-->
-<!--      </div>-->
-<!--    </div>-->
-<!--  </header>-->
+    <a class="header-login-btn" href="/web/login">تسجيل الدخول</a>
+  </div>
+</header>
 
-  <!-- ── Hero ──────────────────────────────────────────── -->
-  <main class="wl-hero">
+<!-- ══ Main ════════════════════════════════════════════════ -->
+<main id="top">
 
-    <!-- Badge -->
-    <div class="wl-badge">
-      <img src="/web/image/res.company/1/logo" alt="وقف خادم الحرمين الشريفين الملك عبدالله بن عبدالعزيز لوالديه" loading="lazy"></img>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <div class="hero-badges">
+          <span class="badge gold">بوابة تقنية لإدارة التأهيل</span>
+          <span class="badge green">حوكمة المشاريع الميدانية</span>
+        </div>
+        <h1>منصة موحدة لإدارة مشاريع تأهيل المساجد من الموقع إلى الاعتماد</h1>
+        <p class="hero-text">
+          حل رقمي متكامل يربط مسؤولي الوقف، ومديري المشاريع، والمستشارين المقيمين،
+          والمقاولين؛ لتسريع المتابعة، ضبط الاعتمادات، توثيق الشواهد،
+          وتمكين الزيارة الافتراضية الحية لمواقع المشاريع.
+        </p>
+        <div class="hero-actions">
+          <a class="hero-link main" href="#access">الدخول للمنصة</a>
+          <a class="hero-link outline" href="#virtual">الزيارة الافتراضية</a>
+        </div>
+      </div>
+
+      <!-- Access Panel -->
+      <aside class="access-panel" id="access">
+        <div class="access-panel-inner">
+          <div class="access-panel-header">
+            <div>
+              <small>تسجيل الدخول</small>
+              <h3>اختر نوع الحساب المناسب</h3>
+            </div>
+            <div class="secure-icon">🔐</div>
+          </div>
+          <div class="role-grid">
+            <a class="role-card main-role" href="/web/login">
+              <span class="role-icon">🏛️</span>
+              <h4>مسؤولو الوقف</h4>
+              <p>الإعدادات، الاعتمادات، المحافظ، ولوحات القرار.</p>
+            </a>
+            <a class="role-card" href="/web/login">
+              <span class="role-icon">📊</span>
+              <h4>مديرو المشاريع</h4>
+              <p>إدارة المواقع، المستشارين، أوامر التغيير، ومواعيد التسليم.</p>
+            </a>
+            <a class="role-card" href="/contractor">
+              <span class="role-icon">📱</span>
+              <h4>المستشار المقيم</h4>
+              <p>الحضور بالإحداثيات، التقارير، المراجعة، وفحص الاستلام.</p>
+            </a>
+            <a class="role-card" href="/contractor">
+              <span class="role-icon">👷</span>
+              <h4>المقاول المنفذ</h4>
+              <p>تحديث التقدم، طلب المستخلصات، ورفع أوامر التغيير.</p>
+            </a>
+          </div>
+          <div class="panel-note">
+            كل دور يعمل من خلال صلاحيات محددة وتسجيل دخول آمن.
+            تأكد من اختيار الدور الصحيح للوصول إلى لوحة التحكم المناسبة.
+          </div>
+          <a class="panel-login-main" href="/web/login">دخول النظام →</a>
+        </div>
+      </aside>
     </div>
+  </section>
 
-    <!-- Title -->
-    <h1 class="wl-title">
-      نظام متابعة تأهيل المساجد
-      <em class="wl-title-sub">
-        التي يرعاها الوقف
-      </em>
-    </h1>
-
-    <p class="wl-desc">
-      منصة متكاملة تربط الوقف بالمستشارين والمقاولين
-      لمتابعة مشاريع الصيانة والتأهيل وضمان الجودة.
-    </p>
-
-    <!-- ── Entry Gates ────────────────────────────────── -->
-    <div class="wl-gates">
-
-      <!-- Gate 1: Waqf + Consultants -->
-      <a class="wl-gate navy" href="/web/login">
-        <div class="gate-ico">
-          <!-- Building columns / institution icon -->
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 22V9L12 2l9 7v13"/>
-            <path d="M9 22V12h6v10"/>
-            <rect x="3" y="9" width="18" height="1" rx=".5"/>
-          </svg>
-        </div>
-        <div class="gate-body">
-          <div class="gate-title">بوابة موظفي الوقف والمستشارين</div>
-          <div class="gate-desc">إدارة المشاريع والاعتمادات والتقارير التنفيذية</div>
-          <div class="gate-tags">
-            <span class="gate-tag">إدراة المشاريع بالوقف </span>
-            <span class="gate-tag">الاستشاري</span>
-          </div>
-        </div>
-        <div class="gate-arrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 18l-6-6 6-6"/>
-          </svg>
-        </div>
-      </a>
-
-      <!-- Gate 2: Field Supervisors -->
-      <a class="wl-gate teal" href="/contractor">
-        <div class="gate-ico">
-          <!-- Hard hat / field work icon -->
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M2 18h20"/>
-            <path d="M12 2v6"/>
-            <path d="M4.93 6.93A8 8 0 0 1 20 12H4a8 8 0 0 1 .93-5.07z"/>
-            <path d="M20 18v2"/>
-            <path d="M4 18v2"/>
-          </svg>
-        </div>
-        <div class="gate-body">
-          <div class="gate-title">بوابة الشركة المفاولة</div>
-          <div class="gate-desc">تسجيل الأعمال ورفع الصور وإرسال المستخلصات</div>
-          <div class="gate-tags">
-            <span class="gate-tag">مشرف الموقع</span>
-            <span class="gate-tag">المقاول</span>
-          </div>
-        </div>
-        <div class="gate-arrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 18l-6-6 6-6"/>
-          </svg>
-        </div>
-      </a>
-
-      <!-- Gate 3: Executive Dashboard -->
-      <a class="wl-gate gold" href="/web/login?redirect=/dashboard">
-        <div class="gate-featured">الإدارة العليا</div>
-        <div class="gate-ico">
-          <!-- Chart / analytics icon -->
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="20" x2="18" y2="10"/>
-            <line x1="12" y1="20" x2="12" y2="4"/>
-            <line x1="6"  y1="20" x2="6"  y2="14"/>
-            <path d="M3 20h18"/>
-          </svg>
-        </div>
-        <div class="gate-body">
-          <div class="gate-title">لوحة الإدارة التنفيذية</div>
-          <div class="gate-desc">مؤشرات الأداء والمخططات التفاعلية لجميع المشاريع</div>
-          <div class="gate-tags">
-          </div>
-        </div>
-        <div class="gate-arrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 18l-6-6 6-6"/>
-          </svg>
-        </div>
-      </a>
-
+  <!-- Quick highlights -->
+  <section class="quick-section">
+    <div class="container quick-grid">
+      <article class="card quick-card">
+        <div class="icon-box">⌖</div>
+        <h3>تحقق جغرافي</h3>
+        <p>تسجيل حضور وانصراف المستشار المقيم داخل إحداثيات موقع المسجد فقط.</p>
+      </article>
+      <article class="card quick-card">
+        <div class="icon-box gold">▣</div>
+        <h3>مستخلصات موثقة</h3>
+        <p>طلبات صرف مرتبطة بالشواهد، والموافقات، وسجل تدقيق واضح.</p>
+      </article>
+      <article class="card quick-card">
+        <div class="icon-box green">◉</div>
+        <h3>بث مباشر</h3>
+        <p>زيارة افتراضية حية من كاميرات مثبتة على خوذ المستشارين المقيمين.</p>
+      </article>
+      <article class="card quick-card">
+        <div class="icon-box">✓</div>
+        <h3>تقارير واستلام</h3>
+        <p>تقارير دورية، وتقارير سلامة، وفحص استلام داخل مسار عمل موحد.</p>
+      </article>
     </div>
-  </main>
+  </section>
 
-  <!-- ── Footer ─────────────────────────────────────────── -->
-  <footer class="wl-footer">
-    © <t t-esc="company.name if company else 'وقف خادم الحرمين الشريفين'"/>
-    — جميع الحقوق محفوظة 2026مـ
-  </footer>
+  <!-- Stakeholders -->
+  <section class="stakeholders-section" id="stakeholders">
+    <div class="container">
+      <div class="section-title">
+        <div class="eyebrow">الفئات المستفيدة من المنصة</div>
+        <h2>هيكلة تشغيلية تفصل الأدوار وتربط كل قرار بمساره الصحيح</h2>
+        <p>كل فئة تعمل من خلال صلاحيات واضحة، دون تداخل في المسؤوليات أو ازدواجية في الاعتمادات.</p>
+      </div>
+      <div class="stakeholder-grid">
+        <article class="card stakeholder-card">
+          <div class="stakeholder-top">
+            <div class="icon-box gold">🏛️</div>
+            <span class="badge gold">إدارة واعتماد</span>
+          </div>
+          <h3>مسؤولو الوقف</h3>
+          <p>مركز القيادة الأعلى لإعداد المحافظ، ضبط النطاق، اعتماد المستخلصات، ومراقبة محفظة المشاريع.</p>
+          <ul class="check-list">
+            <li>إضافة المحافظ واعتماد نطاقها الزمني.</li>
+            <li>إدارة جداول الكميات والنطاق الزمني لكل مشروع.</li>
+            <li>اعتماد مستخلصات الاستشاري والمقاول.</li>
+            <li>اعتماد أوامر التغيير ومتابعة أثرها.</li>
+            <li>الاطلاع على البث المباشر ولوحات التقدم الحية.</li>
+          </ul>
+        </article>
+        <article class="card stakeholder-card">
+          <div class="stakeholder-top">
+            <div class="icon-box">📊</div>
+            <span class="badge blue">إدارة محفظة</span>
+          </div>
+          <h3>مديرو المشاريع من طرف الاستشاري</h3>
+          <p>حساب إداري لمتابعة جميع المواقع والمستشارين المقيمين ومراجعة القرارات التنفيذية.</p>
+          <ul class="check-list">
+            <li>الاطلاع على كل المواقع والمشاريع.</li>
+            <li>متابعة المستشارين المقيمين وتوزيعهم.</li>
+            <li>اعتماد أوامر التغيير في نطاق المحفظة.</li>
+            <li>تعديل مواعيد التسليم وفق الصلاحيات.</li>
+            <li>رفع مستوى المتابعة للإدارة عند الحاجة.</li>
+          </ul>
+        </article>
+        <article class="card stakeholder-card">
+          <div class="stakeholder-top">
+            <div class="icon-box green">📱</div>
+            <span class="badge green">تطبيق جوال</span>
+          </div>
+          <h3>المستشار المقيم</h3>
+          <p>تطبيق جوال ميداني يربط الوجود الفعلي في الموقع بالتقارير والمراجعات والشواهد.</p>
+          <ul class="check-list">
+            <li>تسجيل الحضور والانصراف عبر إحداثيات الموقع.</li>
+            <li>مراجعة طلبات المقاول والموافقة عليها.</li>
+            <li>رفع التقارير الدورية وتقارير السلامة.</li>
+            <li>تنفيذ فحص الاستلام وتوثيق الملاحظات.</li>
+            <li>تفعيل البث المباشر عبر كاميرا الخوذة.</li>
+          </ul>
+        </article>
+        <article class="card stakeholder-card">
+          <div class="stakeholder-top">
+            <div class="icon-box">👷</div>
+            <span class="badge blue">تنفيذ وتحديث</span>
+          </div>
+          <h3>المقاول المنفذ</h3>
+          <p>بوابة تنفيذية لإثبات التقدم، ورفع الشواهد، وطلب المستخلصات، وإدارة التغييرات.</p>
+          <ul class="check-list">
+            <li>تحديث التقدم من خلال المهام المخططة مسبقاً.</li>
+            <li>طلب صرف مستخلص وفق الشواهد الداعمة.</li>
+            <li>طلب أمر تغيير خارج نطاق جداول الكميات.</li>
+            <li>متابعة حالة الطلبات والملاحظات.</li>
+            <li>الالتزام بمسارات الاعتماد المحددة مسبقاً.</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
 
-</div>
+  <!-- Virtual visit -->
+  <section class="virtual-section" id="virtual">
+    <div class="container virtual-box">
+      <div class="virtual-media">
+        <img src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&amp;w=1400&amp;auto=format&amp;fit=crop"
+             alt="موقع مشروع تأهيل"/>
+        <div class="live-overlay">
+          <div class="live-title">
+            <span class="live-dot"/>
+            <span>بث مباشر من موقع المشروع</span>
+          </div>
+          <p>الكاميرا المثبتة على خوذة المستشار المقيم تتيح زيارة افتراضية مباشرة لمتابعة حالة الموقع لحظة بلحظة.</p>
+        </div>
+      </div>
+      <div class="virtual-content">
+        <span class="badge gold">ميزة محورية</span>
+        <h2>الزيارة الافتراضية تجعل إدارة المشاريع أقرب إلى الموقع دون تعطيل العمل</h2>
+        <p>تُمكّن المنصة مسؤولي الوقف ومديري المشاريع من متابعة مواقع التأهيل مباشرة عبر كاميرات مثبتة على خوذ المستشارين المقيمين، بما يساعد على التحقق السريع، توثيق الحالة، وتوجيه القرارات الميدانية في الوقت المناسب.</p>
+        <div class="virtual-points">
+          <div class="virtual-point">تحقق بصري من نسب الإنجاز</div>
+          <div class="virtual-point">توثيق داعم للتقارير والاعتمادات</div>
+          <div class="virtual-point">تقليل فجوة المعلومات بين المكتب والميدان</div>
+          <div class="virtual-point">تدخل مبكر عند مؤشرات التعثر أو التأخير</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dashboard preview -->
+  <section class="dashboard-section" id="dashboard">
+    <div class="container">
+      <div class="section-title">
+        <div class="eyebrow">لوحة التحكم التفاعلية</div>
+        <h2>متابعة مباشرة لمحفظة المشاريع ونسب التقدم والاعتمادات المعلقة</h2>
+        <p>لوحة حية تجمع المشاريع والمواقع والتنبيهات والاعتمادات في عرض تنفيذي واحد.</p>
+      </div>
+      <div class="dashboard-shell">
+        <div class="dashboard-header">
+          <h3>
+            مؤشرات محفظة —
+            <t t-esc="company.name if company else 'مشاريع تأهيل المساجد'"/>
+          </h3>
+          <div class="dashboard-tabs">
+            <div class="dashboard-tab active"/>
+            <div class="dashboard-tab"/>
+            <div class="dashboard-tab"/>
+            <div class="dashboard-tab"/>
+          </div>
+        </div>
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <div class="metric-value">29</div>
+            <div class="metric-label">مشروع نشط</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-value">70%</div>
+            <div class="metric-label">متوسط التقدم</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-value">—</div>
+            <div class="metric-label">اعتماد معلق</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-value">4</div>
+            <div class="metric-label">حزم جغرافية</div>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:24px">
+        <a href="/web/login?redirect=/dashboard"
+           style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;
+                  background:var(--primary);color:white;border-radius:18px;
+                  font-weight:800;font-size:15px;transition:0.2s;
+                  box-shadow:0 8px 24px rgba(0,107,132,0.25)">
+          فتح لوحة الإدارة التنفيذية ←
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Workflow -->
+  <section class="workflow-section">
+    <div class="container">
+      <div class="section-title">
+        <div class="eyebrow">رحلة العمل</div>
+        <h2>من إعداد المحفظة إلى صرف المستخلص وإغلاق المشروع</h2>
+        <p>تعمل المنصة على تنظيم الدورة التشغيلية في مسارات واضحة قابلة للتتبع والمراجعة.</p>
+      </div>
+      <div class="steps">
+        <article class="step">
+          <div class="step-number">01</div>
+          <h3>إعداد المحافظ</h3>
+          <p>تحديد المحافظ والمشاريع والنطاق الزمني وجداول الكميات.</p>
+        </article>
+        <article class="step">
+          <div class="step-number">02</div>
+          <h3>تنفيذ وتحديث</h3>
+          <p>تحديث المقاول للتقدم ورفع الشواهد وطلبات المستخلصات.</p>
+        </article>
+        <article class="step">
+          <div class="step-number">03</div>
+          <h3>مراجعة ميدانية</h3>
+          <p>مراجعة المستشار المقيم ورفع التقارير والسلامة وفحص الاستلام.</p>
+        </article>
+        <article class="step">
+          <div class="step-number">04</div>
+          <h3>اعتماد إداري</h3>
+          <p>اعتماد مدير المشروع لأوامر التغيير ومواعيد التسليم.</p>
+        </article>
+        <article class="step">
+          <div class="step-number">05</div>
+          <h3>صرف وتكامل</h3>
+          <p>اعتماد الوقف للمستخلصات وربطها بالمالية والعقود والمشتريات.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features-section" id="features">
+    <div class="container">
+      <div class="section-title">
+        <div class="eyebrow">مميزات النظام الرئيسية</div>
+        <h2>منصة تشغيل وحوكمة وليست مجرد لوحة متابعة</h2>
+        <p>تدعم المنصة التواصل المؤسسي، التكامل، التوثيق، التنبيهات، وفصل المسؤوليات بين جميع الشركاء.</p>
+      </div>
+      <div class="features-grid">
+        <article class="card feature-card"><h3>📡 البث المباشر</h3><p>مراقبة مباشرة للمواقع عبر كاميرات مثبتة على خوذ المستشارين المقيمين.</p></article>
+        <article class="card feature-card"><h3>📈 لوحة حية</h3><p>متابعة فورية لتحديثات المشاريع ونسب التقدم والتنبيهات والاعتمادات.</p></article>
+        <article class="card feature-card"><h3>🔔 تنبيهات ذكية</h3><p>تنبيهات استباقية عند التعثر أو التأخير أو نقص الشواهد أو تجاوز الصلاحيات.</p></article>
+        <article class="card feature-card"><h3>🤝 تواصل مؤسسي</h3><p>مسارات واضحة بين الوقف والاستشاري والمستشار المقيم والمقاول.</p></article>
+        <article class="card feature-card"><h3>💾 توثيق معرفي</h3><p>حفظ المراحل والمتغيرات والشواهد والقرارات لبناء ذاكرة مؤسسية.</p></article>
+        <article class="card feature-card"><h3>⚙️ تكامل داخلي</h3><p>قابلية الربط مع المالية والعقود والمشتريات والعمليات الداخلية بالوقف.</p></article>
+        <article class="card feature-card"><h3>👤 فصل الأدوار</h3><p>حوكمة الصلاحيات بين الجهات الشريكة مع سجل تدقيق لكل إجراء.</p></article>
+        <article class="card feature-card"><h3>🔐 سرية البيانات</h3><p>صلاحيات دقيقة تمنع تداخل الأدوار أو تضارب المسؤوليات.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Integrations -->
+  <section class="integrations-section">
+    <div class="container">
+      <div class="section-title">
+        <div class="eyebrow">التكاملات الداخلية</div>
+        <h2>ربط آلي مع العمليات الداعمة داخل الوقف</h2>
+        <p>تدعم المنصة التكامل مع الأنظمة ذات العلاقة لضمان انتقال الطلبات والاعتمادات دون ازدواجية.</p>
+      </div>
+      <div class="integration-grid">
+        <article class="card integration-card">
+          <div class="integration-icon">💰</div>
+          <h3>الشؤون المالية</h3>
+          <p>تمرير المستخلصات المعتمدة ومسارات الصرف.</p>
+        </article>
+        <article class="card integration-card">
+          <div class="integration-icon">📋</div>
+          <h3>إدارة العقود</h3>
+          <p>ربط نطاقات العمل والتعديلات وأوامر التغيير.</p>
+        </article>
+        <article class="card integration-card">
+          <div class="integration-icon">🛒</div>
+          <h3>إدارة المشتريات</h3>
+          <p>تنسيق الاحتياجات المرتبطة بالمشروع والموردين.</p>
+        </article>
+        <article class="card integration-card">
+          <div class="integration-icon">📊</div>
+          <h3>التقارير والبيانات</h3>
+          <p>تحليلات تشغيلية ومعرفية قابلة للمراجعة والتعلم.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="final-section">
+    <div class="container final-box">
+      <h2>منصة تعزز جاهزية القرار وتحمي مشاريع التأهيل من التأخر والتشتت</h2>
+      <p>بتجميع الشواهد، الاعتمادات، البث الحي، المستخلصات، أوامر التغيير، والتنبيهات في منظومة واحدة؛ تصبح إدارة مشاريع تأهيل المساجد أكثر وضوحاً وحوكمة وقابلية للتوسع.</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ══ Footer ══════════════════════════════════════════════ -->
+<footer>
+  <p>
+    © 2026
+    <t t-esc="company.name if company else 'وقف الملك عبد الله بن عبد العزيز لوالديه'"/>
+    — جميع الحقوق محفوظة
+  </p>
+  <p style="margin-top:8px;opacity:0.72">
+    نظام متابعة تأهيل المساجد — مشغّل بواسطة
+    <t t-esc="company.name if company else 'الوقف'"/>
+  </p>
+</footer>
+
 </body>
 </t>
 </template>
