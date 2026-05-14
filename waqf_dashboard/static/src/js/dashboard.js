@@ -8,9 +8,9 @@
 document.addEventListener('DOMContentLoaded', function () {
 
   // ── State ──────────────────────────────────────────────────
-  const el = document.getElementById('waqf-data');
-  window.WAQF_DASH_CONFIG = JSON.parse(el.dataset.config   || '{}');
-  window.WAQF_PACKAGES    = JSON.parse(el.dataset.packages || '[]');
+  const dataEl = document.getElementById('waqf-data');
+  window.WAQF_DASH_CONFIG = JSON.parse(dataEl.dataset.config   || '{}');
+  window.WAQF_PACKAGES    = JSON.parse(dataEl.dataset.packages || '[]');
   const state = {
     activeMosqueId: null,
     packages:       window.WAQF_PACKAGES || [],
@@ -913,25 +913,118 @@ document.addEventListener('DOMContentLoaded', function () {
     $('lightbox-caption').textContent = name;
     openModal('modal-lightbox');
   };
+  window.open360Viewer = function(url, name) {
+  // نستخدم Pannellum CDN
+  if (!document.getElementById('pannellum-css')) {
+    const css = document.createElement('link');
+    css.id   = 'pannellum-css';
+    css.rel  = 'stylesheet';
+    css.href = 'https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css';
+    document.head.appendChild(css);
+  }
+  if (!window.pannellum) {
+    const s = document.createElement('script');
+    s.src   = 'https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js';
+    s.onload = () => _show360(url, name);
+    document.head.appendChild(s);
+    return;
+  }
+  _show360(url, name);
+};
 
+  function _show360(url, name) {
+  // Modal 360
+  let modal = document.getElementById('modal-360');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id        = 'modal-360';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+      <div class="modal" style="max-width:900px;padding:0;overflow:hidden">
+        <div class="modal-hdr" style="position:absolute;top:0;right:0;left:0;z-index:10;
+             background:rgba(0,0,0,.5);border:none">
+          <div class="modal-title" id="360-title" style="color:#fff"></div>
+          <button class="modal-close" style="color:#fff"
+                  onclick="document.getElementById('modal-360').classList.remove('show');
+                           document.getElementById('viewer-360').innerHTML=''">✕</button>
+        </div>
+        <div id="viewer-360" style="width:100%;height:500px"></div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e) {
+      if (e.target === this) {
+        this.classList.remove('show');
+        document.getElementById('viewer-360').innerHTML = '';
+      }
+    });
+  }
+
+  document.getElementById('360-title').textContent = name || 'عرض 360°';
+  document.getElementById('viewer-360').innerHTML   = '';
+  modal.classList.add('show');
+
+  pannellum.viewer('viewer-360', {
+    type:        'equirectangular',
+    panorama:    url,
+    autoLoad:    true,
+    autoRotate:  -2,
+    compass:     false,
+    showControls: true,
+    hfov:        100,
+  });
+}
   window.showVisitDetail = function(v) {
-    $('modal-visit-title').textContent = `تقرير زيارة — ${v.date}`;
-    $('modal-visit-body').innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-        ${[['المهندس', v.engineer, ''], ['العمال', v.workers, ''],
-           ['تقارير NCR', v.ncr, v.ncr > 0 ? 'var(--red)' : 'var(--green)'],
-           ['الصور', `${v.photo_count} 📷`, '']].map(([l, val, c]) => `
-          <div style="background:var(--surface2);border-radius:8px;padding:10px 12px">
-            <div style="font-size:10px;color:var(--text3)">${l}</div>
-            <div style="font-size:13px;font-weight:700;${c ? 'color:' + c : ''}">${val}</div>
-          </div>`).join('')}
-      </div>
-      ${v.activities ? `<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px">الأعمال المنجزة</div>
-        <div style="font-size:12px;line-height:1.7;background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px">${v.activities}</div>` : ''}
-      ${v.issues ? `<div style="font-size:11px;font-weight:600;color:var(--orange);margin-bottom:5px">المشكلات</div>
-        <div style="font-size:12px;line-height:1.7;background:rgba(240,165,0,.05);border:1px solid rgba(240,165,0,.2);border-radius:8px;padding:10px 12px">${v.issues}</div>` : ''}`;
-    openModal('modal-visit');
-  };
+  $('modal-visit-title').textContent = `تقرير زيارة — ${v.date}`;
+
+  // Photos HTML
+  const photos = v.photos || [];
+  const photosHTML = photos.length ? `
+    <div style="font-size:11px;font-weight:600;color:var(--text2);margin:12px 0 8px">
+      الصور (${photos.length})
+    </div>
+    <div class="photo-gallery">
+      ${photos.map(ph => ph.is_360 ? `
+        <div style="position:relative;border-radius:10px;overflow:hidden;cursor:pointer;grid-column:span 3"
+             onclick="open360Viewer('${ph.url}','${ph.name}')">
+          <img src="${ph.url}" style="width:100%;height:160px;object-fit:cover;filter:blur(1px)"/>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+                      background:rgba(0,0,0,.35)">
+            <div style="background:rgba(255,255,255,.9);border-radius:999px;padding:8px 16px;
+                        font-size:12px;font-weight:700;color:#1B3A52">
+              🔮 صورة 360° — اضغط للعرض
+            </div>
+          </div>
+        </div>` : `
+        <div class="photo-thumb" onclick="openLightbox('${ph.url}','${ph.name}')">
+          <img src="${ph.url}" alt="${ph.name}" loading="lazy"
+               style="width:100%;height:100%;object-fit:cover"/>
+        </div>`
+      ).join('')}
+    </div>` : '';
+
+  $('modal-visit-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      ${[['المهندس', v.engineer, ''], ['العمال', v.workers, ''],
+         ['تقارير NCR', v.ncr, v.ncr > 0 ? 'var(--red)' : 'var(--green)'],
+         ['الصور', `${v.photo_count} 📷`, '']].map(([l, val, c]) => `
+        <div style="background:var(--surface2);border-radius:8px;padding:10px 12px">
+          <div style="font-size:10px;color:var(--text3)">${l}</div>
+          <div style="font-size:13px;font-weight:700;${c ? 'color:' + c : ''}">${val}</div>
+        </div>`).join('')}
+    </div>
+    ${v.activities ? `
+      <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px">الأعمال المنجزة</div>
+      <div style="font-size:12px;line-height:1.7;background:var(--surface2);border-radius:8px;
+                  padding:10px 12px;margin-bottom:10px">${v.activities}</div>` : ''}
+    ${v.issues ? `
+      <div style="font-size:11px;font-weight:600;color:var(--orange);margin-bottom:5px">المشكلات</div>
+      <div style="font-size:12px;line-height:1.7;background:rgba(240,165,0,.05);
+                  border:1px solid rgba(240,165,0,.2);border-radius:8px;
+                  padding:10px 12px">${v.issues}</div>` : ''}
+    ${photosHTML}`;
+
+  openModal('modal-visit');
+};
 
   // ══════════════════════════════════════════════════════════
   // CERT & CO ACTIONS

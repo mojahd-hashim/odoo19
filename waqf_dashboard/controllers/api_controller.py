@@ -232,22 +232,46 @@ class WaqfDashboardAPI(http.Controller):
                 'state':         co.state,
             })
 
-        # Visit reports
-        visits = []
-        for sup in request.env['mosque.supervision'].sudo().search([
-            ('mosque_id', '=', mosque_id)], order='report_date desc', limit=10):
-            visits.append({
-                'id':            sup.id,
-                'date':          str(sup.report_date) if sup.report_date else '',
-                'engineer':      sup.engineer_id.name if sup.engineer_id else '',
-                'type':          sup.report_type,
-                'workers':       sup.workers_on_site,
-                'ncr':           sup.ncr_count,
-                'state':         sup.state,
-                'activities':    sup.activities_done or '',
-                'issues':        sup.issues or '',
-                'photo_count':   len(sup.photo_ids),
-            })
+            # Visit reports
+            visits = []
+            for sup in request.env['mosque.supervision'].sudo().search([
+                ('mosque_id', '=', mosque_id)], order='report_date desc', limit=10):
+
+                # Photos with 360 detection
+                photos = []
+                for att in request.env['ir.attachment'].sudo().search([
+                    ('res_model', '=', 'mosque.supervision'),
+                    ('res_id', '=', sup.id),
+                    ('mimetype', 'like', 'image'),
+                ]):
+                    name_lower = (att.name or '').lower()
+                    is_360 = (
+                            '360' in name_lower or
+                            'pano' in name_lower or
+                            'equirect' in name_lower or
+                            'insta360' in name_lower or
+                            name_lower.endswith(('.insp', '.insv'))
+                    )
+                    photos.append({
+                        'id': att.id,
+                        'name': att.name or '',
+                        'url': '/web/image/%d' % att.id,
+                        'is_360': is_360,
+                    })
+
+                visits.append({
+                    'id': sup.id,
+                    'date': str(sup.report_date) if sup.report_date else '',
+                    'engineer': sup.engineer_id.name if sup.engineer_id else '',
+                    'type': sup.report_type,
+                    'workers': sup.workers_on_site,
+                    'ncr': sup.ncr_count,
+                    'state': sup.state,
+                    'activities': sup.activities_done or '',
+                    'issues': sup.issues or '',
+                    'photo_count': len(sup.photo_ids),
+                    'photos': photos,  # ← أُضيف
+                })
 
         # Attendance history
         today = date.today()
