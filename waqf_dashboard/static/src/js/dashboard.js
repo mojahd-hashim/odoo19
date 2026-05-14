@@ -1023,6 +1023,18 @@ document.addEventListener('DOMContentLoaded', function () {
                   padding:10px 12px">${v.issues}</div>` : ''}
     ${photosHTML}`;
 
+    if (v.photo_360_url) {
+      $('modal-visit-body').innerHTML += `
+        <div style="margin-top:12px">
+          <button onclick="open360Viewer('${v.photo_360_url}','زيارة ${v.date}')"
+                  style="width:100%;padding:12px;background:var(--navy);color:#fff;
+                         border:none;border-radius:10px;font-size:13px;
+                         font-weight:700;cursor:pointer;font-family:inherit">
+            🔮 عرض صورة 360° — ${v.date}
+          </button>
+        </div>`;
+    }
+
   openModal('modal-visit');
 };
 

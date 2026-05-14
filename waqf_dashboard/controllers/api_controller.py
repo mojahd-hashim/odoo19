@@ -270,7 +270,8 @@ class WaqfDashboardAPI(http.Controller):
                     'activities': sup.activities_done or '',
                     'issues': sup.issues or '',
                     'photo_count': len(sup.photo_ids),
-                    'photos': photos,  # ← أُضيف
+                    'photos': photos,
+                    'photo_360_url': sup.photo_360_url or '',
                 })
 
         # Attendance history

@@ -59,6 +59,7 @@ class MosqueSupervision(models.Model):
     # ── Media ─────────────────────────────────────────────────────
     photo_ids = fields.Many2many('ir.attachment', string='Site Photos',
                                  domain=[('mimetype', 'like', 'image')])
+    photo_360_url = fields.Char(string='رابط صورة 360°')
     live_stream_url = fields.Char(string='Live Stream URL')
     video_report_url = fields.Char(string='Video Report URL')
 

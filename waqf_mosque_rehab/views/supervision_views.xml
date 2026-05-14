@@ -73,6 +73,7 @@
                         </page>
                         <page string="Photos">
                             <field name="photo_ids" widget="many2many_binary"/>
+                            <field name="photo_360_url"/>
                         </page>
                     </notebook>
                 </sheet>
