@@ -213,7 +213,7 @@ class WaqfDashboardAPI(http.Controller):
                 'state':        c.state,
                 'period_from':  str(c.period_from) if c.period_from else '',
                 'period_to':    str(c.period_to)   if c.period_to   else '',
-                'total_value':  c.total_value,
+                'total_value':  c.certified_amount,
                 'net_value':    c.net_value,
                 'lines':        lines,
             })
