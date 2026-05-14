@@ -5,10 +5,11 @@
     <t t-set="head">
       <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
       <link rel="stylesheet" href="/waqf_dashboard/static/src/css/dashboard.css"/>
-      <script>
-        window.WAQF_DASH_CONFIG  = <t t-out="json.dumps(config)"/>;
-        window.WAQF_PACKAGES     = <t t-out="packages_json"/>;
-      </script>
+     <div id="waqf-data"
+     t-att-data-config="json.dumps(config)"
+     t-att-data-packages="packages_json"
+     style="display:none"/>
+      <script t-out="'window.WAQF_PACKAGES=' + packages_json + ';'"/>
     </t>
     <body class="waqf-dashboard">
     <div class="wd-shell">
