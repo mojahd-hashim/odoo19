@@ -24,6 +24,12 @@ class MosqueBOQ(models.Model):
     _inherit = ['mail.thread']
     _order = 'mosque_id, category_id, sequence'
 
+    name = fields.Char(
+        string='Name',
+        compute='_compute_name',
+        store=True,
+    )
+
     mosque_id    = fields.Many2one('mosque.mosque', string='Mosque',
                                    required=True, ondelete='cascade', index=True)
     category_id  = fields.Many2one('mosque.boq.category', string='Category',
@@ -63,6 +69,19 @@ class MosqueBOQ(models.Model):
     notes = fields.Text(string='Notes')
     is_variation = fields.Boolean(string='Variation Item', default=False)
     change_order_id = fields.Many2one('mosque.change.order', string='Change Order Ref.')
+
+    @api.depends('description', 'contracted_qty', 'uom')
+    def _compute_name(self):
+        uom_labels = dict(self._fields['uom'].selection)
+
+        for rec in self:
+            desc = rec.description or ''
+            qty = ('%.3f' % rec.contracted_qty).rstrip('0').rstrip('.') \
+                if rec.contracted_qty else '0'
+
+            uom = uom_labels.get(rec.uom, '')
+
+            rec.name = f'{desc} - {qty} {uom}'
 
     @api.depends('contracted_qty', 'unit_price', 'executed_qty')
     def _compute_values(self):
