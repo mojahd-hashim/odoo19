@@ -199,7 +199,7 @@ class WaqfDashboardAPI(http.Controller):
         for c in request.env['mosque.certificate'].sudo().search([
             ('mosque_id', '=', mosque_id)], order='cert_number desc'):
             lines = []
-            for line in c.certificate_line_ids:
+            for line in c.line_ids:
                 lines.append({
                     'boq_code':  line.boq_id.item_code if line.boq_id else '',
                     'desc':      line.boq_id.description[:40] if line.boq_id else '',
