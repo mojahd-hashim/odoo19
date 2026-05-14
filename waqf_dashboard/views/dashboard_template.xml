@@ -14,6 +14,7 @@
 <t t-raw="'window.WAQF_DASH_CONFIG=' + json.dumps(config) + ';'"/>
 <t t-raw="'window.WAQF_PACKAGES=' + packages_json + ';'"/>
 //]]>
+
 </script>
     </t>
     <body class="waqf-dashboard">
