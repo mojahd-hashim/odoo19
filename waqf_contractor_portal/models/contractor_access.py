@@ -190,7 +190,7 @@ class ContractorWorkLog(models.Model):
         self.write({'state': 'approved'})
         if self.subtask_id:
             closed_stage = self.env['project.task.type'].search(
-                [('is_closed', '=', True)], limit=1)
+                [('fold', '=', True)], limit=1)
             if closed_stage:
                 self.subtask_id.stage_id = closed_stage
 

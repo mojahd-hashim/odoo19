@@ -86,7 +86,7 @@ class MosqueCertificateReview(models.Model):
                     tasks = self.env['project.task'].search([
                         ('project_id', '=', project.id),
                         ('parent_id',  '=', False),
-                        ('stage_id.is_closed', '=', False),
+                        ('stage_id.fold', '=', False),
                     ])
                     not_green_names = [
                         t.name for t in tasks

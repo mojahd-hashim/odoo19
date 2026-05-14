@@ -95,7 +95,7 @@ class WaqfMosqueController(http.Controller):
             task_records = request.env['project.task'].sudo().search([
                 ('project_id', '=', mosque.project_id.id),
                 ('parent_id',  '=', False),
-                ('stage_id.is_closed', '=', False),
+                ('stage_id.fold', '=', False),
             ], order='date_deadline asc')
 
             for t in task_records:
