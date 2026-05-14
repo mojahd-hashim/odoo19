@@ -167,13 +167,13 @@
         <field name="context">{'dialog_size': 'medium'}</field>
     </record>
 
-    <!-- ══ MENU ══════════════════════════════════════════════════ -->
-    <menuitem id="menu_demo_setup"
-              name="🧪 البيئة التجريبية"
-              parent="waqf_mosque_rehab.menu_mosque_root"
-              action="action_demo_setup"
-              sequence="95"
-              groups="waqf_mosque_rehab.group_mosque_admin"/>
+<!--    &lt;!&ndash; ══ MENU ══════════════════════════════════════════════════ &ndash;&gt;-->
+<!--    <menuitem id="menu_demo_setup"-->
+<!--              name="🧪 البيئة التجريبية"-->
+<!--              parent="waqf_mosque_rehab.menu_mosque_root"-->
+<!--              action="action_demo_setup"-->
+<!--              sequence="95"-->
+<!--              groups="waqf_mosque_rehab.group_mosque_admin"/>-->
 
     <!-- ══ MOSQUE LIST — show demo badge ═════════════════════════ -->
     <record id="view_mosque_list_demo_inherit" model="ir.ui.view">
