@@ -9,7 +9,7 @@
               name="📊 لوحة الإدارة"
               parent="waqf_mosque_rehab.menu_mosque_root"
               action="action_dashboard_open"
-              sequence="1"
+              sequence="900"
               groups="waqf_mosque_rehab.group_mosque_waqf_manager,waqf_mosque_rehab.group_mosque_admin"/>
 
     <record id="action_live_streams" model="ir.actions.act_window">
