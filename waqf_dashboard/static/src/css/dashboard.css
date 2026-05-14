@@ -16,7 +16,7 @@
   --surface2:   #F0F4F8;
   --text1:      #1B3A52;
   --text2:      #4A6070;
-  --text3:      #8FA3B3;
+  --text3:      #19374e;
   --border:     rgba(27,58,82,0.10);
   --green:      #2ECC8A;
   --red:        #E85555;
@@ -210,7 +210,7 @@ body.waqf-dashboard {
 .kpi-card.gold::after   { background: var(--gold); }
 .kpi-card.red::after    { background: var(--red); }
 .kpi-card.orange::after { background: var(--orange); }
-.kpi-label { font-size: 11px; color: var(--text3); font-weight: 500; margin-bottom: 6px; }
+.kpi-label { font-size: 11px; color: var(--text1); font-weight: 500; margin-bottom: 6px; }
 .kpi-value { font-size: 26px; font-weight: 700; color: var(--text1); line-height: 1; }
 .kpi-value span { font-size: 13px; font-weight: 400; color: var(--text3); margin-right: 3px; }
 .kpi-sub { font-size: 11px; margin-top: 4px; }

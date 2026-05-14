@@ -6,44 +6,39 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
       <link rel="stylesheet" href="/waqf_dashboard/static/src/css/dashboard.css"/>
       <script>
-        window.WAQF_DASH_CONFIG = <t t-out="json.dumps(config)"/>;
+        window.WAQF_DASH_CONFIG  = <t t-out="json.dumps(config)"/>;
+        window.WAQF_PACKAGES     = <t t-out="packages_json"/>;
       </script>
     </t>
     <body class="waqf-dashboard">
-
     <div class="wd-shell">
 
-      <!-- ══ SIDEBAR ════════════════════════════════════════ -->
+      <!-- ══ SIDEBAR ════════════════════════════════════ -->
       <div class="wd-sidebar">
-
-        <!-- Brand / Company -->
         <div class="sb-brand">
           <div class="sb-logo">
             <t t-if="company.logo">
-              <img t-att-src="'data:image/png;base64,' + company.logo.decode()" alt="logo"/>
+              <img t-att-src="'/web/image/res.company/%d/logo' % company.id" alt="logo"/>
             </t>
-            <t t-else="">
-              <div class="sb-logo-text">و</div>
-            </t>
+            <t t-else=""><div class="sb-logo-text">و</div></t>
           </div>
           <div class="sb-brand-text">
             <div class="sb-company" t-esc="company.name"/>
-            <div class="sb-tagline">لوحة إدارة مشاريع التأهيل</div>
+            <div class="sb-tagline">لوحة إدارة التأهيل</div>
           </div>
         </div>
 
-        <!-- Packages (loaded via JS) -->
         <div class="sb-section">المشاريع</div>
         <div id="sb-packages"></div>
 
-        <!-- On-site summary -->
+        <!-- On-site (server-rendered fast) -->
         <div class="sb-section">في الموقع الآن</div>
         <div style="padding:0 10px;margin-bottom:8px">
           <t t-foreach="on_site" t-as="person">
             <div class="sb-mosque ok" style="cursor:default">
               <div class="sb-mosque-dot" style="background:#2ECC8A"/>
-              <span t-esc="person['name'][:16]"/>
-              <span class="sb-mosque-code" t-esc="person['code']"/>
+              <span t-esc="(person.get('name') or '')[:16]"/>
+              <span class="sb-mosque-code" t-esc="person.get('code','')"/>
             </div>
           </t>
           <t t-if="not on_site">
@@ -53,75 +48,128 @@
           </t>
         </div>
 
-        <!-- Footer -->
         <div class="sb-footer">
           <div class="sb-user">
-            <div class="sb-avatar">
-              <t t-esc="(user.name or 'م')[0]"/>
-            </div>
+            <div class="sb-avatar"><t t-esc="(user.name or 'م')[0]"/></div>
             <div class="sb-username" t-esc="user.name"/>
           </div>
         </div>
       </div>
 
-      <!-- ══ MAIN ════════════════════════════════════════════ -->
+      <!-- ══ MAIN ═══════════════════════════════════════ -->
       <div class="wd-main">
 
         <!-- Topbar -->
         <div class="wd-topbar">
           <div>
-            <div class="topbar-title" id="topbar-title">نظرة عامة — مشروع تأهيل المساجد</div>
+            <div class="topbar-title" id="topbar-title">
+              نظرة عامة — مشروع تأهيل المساجد
+            </div>
             <div class="topbar-sub" id="topbar-sub">
               <t t-esc="company.name"/> · 29 مسجداً وجامعاً
             </div>
           </div>
-          <div class="topbar-right">
 
-            <!-- Live stream pill -->
-            <div class="live-pill" id="live-pill"
-                 style="display:none"
-                 title="انقر لمشاهدة البث">
+          <!-- Global Search -->
+          <div class="search-wrap" style="margin-right:16px;position:relative">
+            <input id="global-search"
+                   class="global-search-input"
+                   type="text"
+                   placeholder="🔍  بحث عن مسجد أو مشروع..."
+                   autocomplete="off"/>
+            <div id="search-dropdown" class="search-dropdown"></div>
+          </div>
+
+          <div class="topbar-right">
+            <!-- Live badge -->
+            <div class="live-pill" id="live-pill" style="display:none">
               <div class="live-dot"/>
               <span>بث مباشر</span>
             </div>
 
             <!-- On-site pill -->
-            <div class="onsite-pill" onclick="document.getElementById('modal-onsite').classList.add('show')">
+            <div class="onsite-pill"
+                 onclick="document.getElementById('modal-onsite').classList.add('show')">
               <div class="onsite-pulse"/>
               <span id="onsite-pill">
-                <span>0 في الموقع</span>
+                <span><t t-esc="on_site_count"/> في الموقع</span>
               </span>
             </div>
 
-            <a href="/dashboard/settings" class="btn btn-ghost">⚙ الإعدادات</a>
-            <button class="btn btn-primary" onclick="window.location.reload()">↺ تحديث</button>
+            <!-- Pending certs badge -->
+            <t t-if="summary.get('pending_certs', 0) > 0">
+              <div class="topbar-badge red"
+                   title="مستخلصات بانتظار الاعتماد">
+                <span>📋</span>
+                <span><t t-esc="summary.get('pending_certs')"/></span>
+              </div>
+            </t>
+
+            <!-- Pending COs badge -->
+            <t t-if="summary.get('pending_cos', 0) > 0">
+              <div class="topbar-badge orange"
+                   title="أوامر تغيير بانتظار المراجعة">
+                <span>🔄</span>
+                <span><t t-esc="summary.get('pending_cos')"/></span>
+              </div>
+            </t>
+
+            <!-- Delayed mosques badge -->
+            <t t-if="summary.get('delayed', 0) > 0">
+              <div class="topbar-badge yellow" title="مساجد متأخرة">
+                <span>⚠</span>
+                <span><t t-esc="summary.get('delayed')"/></span>
+              </div>
+            </t>
+
+            <a href="/dashboard/settings" class="btn btn-ghost">⚙ إعدادات</a>
+            <button class="btn btn-primary" onclick="window.location.reload()">↺</button>
           </div>
         </div>
 
-        <!-- ══ CONTENT ══════════════════════════════════════ -->
+        <!-- ══ CONTENT ══════════════════════════════════ -->
         <div class="wd-content">
 
-          <!-- KPI Summary -->
+          <!-- KPI Summary Cards -->
           <div class="kpi-grid">
             <div class="kpi-card teal">
               <div class="kpi-label">إجمالي قيمة العقود</div>
-              <div class="kpi-value"><span>ر</span><span id="kpi-total-value">—</span></div>
-              <div class="kpi-sub neutral">29 مسجداً وجامعاً</div>
+              <div class="kpi-value">
+                <span id="kpi-total-value">—</span><span> ر</span>
+              </div>
+              <div class="kpi-sub neutral">
+                <t t-esc="summary.get('mosque_count', 29)"/> مسجداً وجامعاً
+              </div>
             </div>
             <div class="kpi-card gold">
               <div class="kpi-label">متوسط KPI الكلي</div>
-              <div class="kpi-value"><span id="kpi-avg-kpi">—</span></div>
-              <div class="kpi-sub neutral">الإنجاز المالي: <span id="kpi-financial-pct">—</span></div>
+              <div class="kpi-value">
+                <span id="kpi-avg-kpi">
+                  <t t-esc="str(summary.get('avg_kpi', '—')) + '%'"/>
+                </span>
+              </div>
+              <div class="kpi-sub neutral">
+                الإنجاز المالي: <span id="kpi-financial-pct">—</span>
+              </div>
             </div>
             <div class="kpi-card red">
               <div class="kpi-label">مساجد متأخرة</div>
-              <div class="kpi-value"><span id="kpi-delayed">—</span><span>مسجد</span></div>
+              <div class="kpi-value">
+                <span id="kpi-delayed"><t t-esc="summary.get('delayed', '—')"/></span>
+                <span> مسجد</span>
+              </div>
               <div class="kpi-sub down">تجاوزت الجدول الزمني</div>
             </div>
             <div class="kpi-card orange">
-              <div class="kpi-label">مستخلصات بانتظار الاعتماد</div>
-              <div class="kpi-value"><span id="kpi-pending-cert">—</span><span>مستخلص</span></div>
-              <div class="kpi-sub neutral">من الوقف</div>
+              <div class="kpi-label">إجراءات معلّقة</div>
+              <div class="kpi-value">
+                <span id="kpi-pending-cert">
+                  <t t-esc="summary.get('pending_certs', 0) + summary.get('pending_cos', 0)"/>
+                </span>
+              </div>
+              <div class="kpi-sub neutral">
+                مستخلصات + أوامر تغيير
+              </div>
             </div>
           </div>
 
@@ -129,11 +177,15 @@
           <div class="grid-2-1">
             <div class="card">
               <div class="card-hdr">
-                <div class="card-title">المخطط الزمني للمشروع</div>
-                <span style="font-size:10px;color:var(--text3)">اضغط على حزمة لعرض التفاصيل والانحراف</span>
+                <div class="card-title">المخطط الزمني — المراحل والمساجد</div>
+                <span style="font-size:10px;color:var(--text3)">
+                  اضغط على شريط المرحلة لعرض المساجد
+                </span>
               </div>
               <div class="card-body" style="overflow-x:auto">
-                <div class="gantt-months" id="gantt-months" style="margin-right:130px;display:flex"/>
+                <div id="gantt-months"
+                     class="gantt-months"
+                     style="margin-right:130px;display:flex;margin-bottom:6px"/>
                 <div id="gantt-rows"/>
               </div>
             </div>
@@ -143,12 +195,35 @@
                 <div class="card-title">خريطة أداء المساجد</div>
               </div>
               <div class="card-body">
+                <!-- Quick filters -->
+                <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+                  <button class="qf-btn active" data-filter="all"
+                          style="padding:3px 10px;border-radius:999px;font-size:10px;
+                                 font-weight:600;border:1px solid var(--border);
+                                 background:var(--surface2);cursor:pointer">الكل</button>
+                  <button class="qf-btn" data-filter="ok"
+                          style="padding:3px 10px;border-radius:999px;font-size:10px;
+                                 font-weight:600;border:1px solid rgba(46,204,138,.3);
+                                 color:#1A7A55;background:rgba(46,204,138,.08);cursor:pointer">جيد</button>
+                  <button class="qf-btn" data-filter="warn"
+                          style="padding:3px 10px;border-radius:999px;font-size:10px;
+                                 font-weight:600;border:1px solid rgba(240,165,0,.3);
+                                 color:#A67800;background:rgba(240,165,0,.08);cursor:pointer">متوسط</button>
+                  <button class="qf-btn" data-filter="critical"
+                          style="padding:3px 10px;border-radius:999px;font-size:10px;
+                                 font-weight:600;border:1px solid rgba(232,85,85,.3);
+                                 color:#A33;background:rgba(232,85,85,.07);cursor:pointer">ضعيف</button>
+                  <button class="qf-btn" data-filter="delayed"
+                          style="padding:3px 10px;border-radius:999px;font-size:10px;
+                                 font-weight:600;border:1px solid rgba(232,85,85,.3);
+                                 color:#A33;background:rgba(232,85,85,.07);cursor:pointer">متأخر</button>
+                </div>
                 <div class="hm-grid" id="heatmap-grid"/>
                 <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;font-size:10px;color:var(--text3)">
-                  <span><span style="display:inline-block;width:8px;height:8px;background:var(--green);border-radius:2px;margin-left:3px"></span>جيد ≥70%</span>
-                  <span><span style="display:inline-block;width:8px;height:8px;background:var(--orange);border-radius:2px;margin-left:3px"></span>50-70%</span>
-                  <span><span style="display:inline-block;width:8px;height:8px;background:var(--red);border-radius:2px;margin-left:3px"></span>أقل من 50%</span>
-                  <span><span style="display:inline-block;width:8px;height:8px;background:#C8D4DC;border-radius:2px;margin-left:3px"></span>لم يبدأ</span>
+                  <span><span style="display:inline-block;width:8px;height:8px;background:var(--green);border-radius:2px;margin-left:3px"/><b>≥70%</b> جيد</span>
+                  <span><span style="display:inline-block;width:8px;height:8px;background:var(--orange);border-radius:2px;margin-left:3px"/>50-70%</span>
+                  <span><span style="display:inline-block;width:8px;height:8px;background:var(--red);border-radius:2px;margin-left:3px"/>أقل 50%</span>
+                  <span><span style="display:inline-block;width:8px;height:8px;background:#C8D4DC;border-radius:2px;margin-left:3px"/>لم يبدأ</span>
                 </div>
               </div>
             </div>
@@ -159,8 +234,12 @@
             <div id="mosque-detail-content">
               <div style="padding:60px;text-align:center;color:var(--text3)">
                 <div style="font-size:32px;margin-bottom:12px">🕌</div>
-                <div style="font-size:14px;font-weight:600">اختر مسجداً من القائمة الجانبية</div>
-                <div style="font-size:12px;margin-top:4px">أو انقر على أي مربع في خريطة الأداء</div>
+                <div style="font-size:14px;font-weight:600">
+                  اختر مسجداً من القائمة الجانبية أو الخريطة
+                </div>
+                <div style="font-size:12px;margin-top:4px">
+                  أو استخدم البحث في الأعلى
+                </div>
               </div>
             </div>
           </div>
@@ -169,44 +248,68 @@
       </div><!-- /wd-main -->
     </div><!-- /wd-shell -->
 
-    <!-- ══ MODALS ════════════════════════════════════════════ -->
+    <!-- ══ MODALS ══════════════════════════════════════ -->
 
-    <!-- Subtask Detail Modal -->
+    <!-- Subtask modal -->
     <div class="modal-overlay" id="modal-subtask">
       <div class="modal">
         <div class="modal-hdr">
-          <div class="modal-title" id="modal-subtask-title">تفاصيل المهمة الفرعية</div>
+          <div class="modal-title" id="modal-subtask-title">تفاصيل المهمة</div>
           <button class="modal-close" onclick="closeModal('modal-subtask')">✕</button>
         </div>
-        <div class="modal-body" id="modal-subtask-body"></div>
+        <div class="modal-body" id="modal-subtask-body"/>
       </div>
     </div>
 
-    <!-- Photo Lightbox Modal -->
+    <!-- Cert detail modal -->
+    <div class="modal-overlay" id="modal-cert">
+      <div class="modal">
+        <div class="modal-hdr">
+          <div class="modal-title" id="modal-cert-title">تفاصيل المستخلص</div>
+          <button class="modal-close" onclick="closeModal('modal-cert')">✕</button>
+        </div>
+        <div class="modal-body" id="modal-cert-body"/>
+      </div>
+    </div>
+
+    <!-- CO detail modal -->
+    <div class="modal-overlay" id="modal-co">
+      <div class="modal">
+        <div class="modal-hdr">
+          <div class="modal-title" id="modal-co-title">تفاصيل أمر التغيير</div>
+          <button class="modal-close" onclick="closeModal('modal-co')">✕</button>
+        </div>
+        <div class="modal-body" id="modal-co-body"/>
+      </div>
+    </div>
+
+    <!-- Lightbox -->
     <div class="modal-overlay" id="modal-lightbox">
       <div class="modal" style="max-width:90%;background:transparent;box-shadow:none">
         <div style="text-align:center">
           <img id="lightbox-img" style="max-width:100%;max-height:80vh;border-radius:10px" src="" alt=""/>
-          <div id="lightbox-caption" style="color:#fff;margin-top:10px;font-size:13px"></div>
+          <div id="lightbox-caption" style="color:#fff;margin-top:10px;font-size:13px"/>
           <button onclick="closeModal('modal-lightbox')"
-                  style="margin-top:12px;background:rgba(255,255,255,.2);color:#fff;border:none;
-                         border-radius:7px;padding:8px 20px;cursor:pointer;font-size:13px">إغلاق</button>
+                  style="margin-top:12px;background:rgba(255,255,255,.2);color:#fff;
+                         border:none;border-radius:7px;padding:8px 20px;cursor:pointer;font-size:13px">
+            إغلاق
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Visit Detail Modal -->
+    <!-- Visit detail -->
     <div class="modal-overlay" id="modal-visit">
       <div class="modal">
         <div class="modal-hdr">
           <div class="modal-title" id="modal-visit-title">تقرير الزيارة</div>
           <button class="modal-close" onclick="closeModal('modal-visit')">✕</button>
         </div>
-        <div class="modal-body" id="modal-visit-body"></div>
+        <div class="modal-body" id="modal-visit-body"/>
       </div>
     </div>
 
-    <!-- On-site Panel Modal -->
+    <!-- On-site panel -->
     <div class="modal-overlay" id="modal-onsite">
       <div class="modal" style="max-width:400px">
         <div class="modal-hdr">
@@ -221,26 +324,25 @@
       </div>
     </div>
 
-    <!-- Live Stream Modal -->
+    <!-- Live stream -->
     <div class="modal-overlay" id="modal-stream">
       <div class="modal" style="max-width:850px">
         <div class="modal-hdr">
           <div class="modal-title" id="stream-modal-title">بث مباشر</div>
-          <span style="font-size:11px;color:var(--red);font-weight:700;animation:livePulse 1.5s infinite">● مباشر</span>
-          <button class="modal-close" onclick="closeModal('modal-stream');document.getElementById('stream-embed').innerHTML=''">✕</button>
+          <span style="font-size:11px;color:var(--red);font-weight:700">● مباشر</span>
+          <button class="modal-close" onclick="closeModal('modal-stream')">✕</button>
         </div>
         <div class="modal-body" style="padding:0">
-          <div class="stream-embed" id="stream-embed"></div>
-          <div style="padding:14px 16px;font-size:11px;color:var(--text3)">
+          <div class="stream-embed" id="stream-embed"/>
+          <div style="padding:12px 16px;font-size:11px;color:var(--text3)">
             البث من الموقع الميداني — مباشر
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ══ FLOATING CHATBOT ══════════════════════════════════ -->
-    <div class="chatbot-fab" id="chatbot-fab" title="مساعد الوقف الذكي">
-      🤖
+    <!-- ══ FLOATING CHATBOT ══════════════════════════════ -->
+    <div class="chatbot-fab" id="chatbot-fab" title="مساعد الوقف الذكي">🤖
       <div class="chatbot-fab-dot"/>
     </div>
 
@@ -256,21 +358,118 @@
       </div>
       <div class="chat-msgs" id="chat-msgs">
         <div class="chat-msg bot">
-          مرحباً، أنا مساعدك الذكي لمتابعة مشروع تأهيل المساجد.
-          اختر مسجداً من القائمة وسأعطيك تحليلاً فورياً.
+          مرحباً، اختر مسجداً وسأحلل بياناته فوراً.
         </div>
       </div>
       <div class="chat-sugs">
-        <button class="chat-sug">ما المهام المتأخرة؟</button>
+        <button class="chat-sug">المهام المتأخرة؟</button>
         <button class="chat-sug">المستخلصات المعلقة؟</button>
         <button class="chat-sug">مقارنة KPI بالخطة؟</button>
         <button class="chat-sug">آخر زيارات الاستشاري؟</button>
       </div>
       <div class="chat-input-row">
-        <input class="chat-input" id="chat-input" placeholder="اسأل عن أي مشروع..." autocomplete="off"/>
+        <input class="chat-input" id="chat-input"
+               placeholder="اسأل عن أي مشروع..."
+               autocomplete="off"/>
         <button class="chat-send" id="chat-send">إرسال</button>
       </div>
     </div>
+
+    <!-- Search dropdown CSS extra -->
+    <style>
+      /* Global Search */
+      .search-wrap { flex: 1; max-width: 340px; }
+      .global-search-input {
+        width: 100%; padding: 8px 16px;
+        border: 1.5px solid var(--border); border-radius: 10px;
+        font-size: 13px; font-family: inherit;
+        color: var(--text1); background: var(--surface2);
+        outline: none; transition: border-color .15s;
+      }
+      .global-search-input:focus { border-color: var(--teal); background: #fff; }
+      .search-dropdown {
+        position: absolute; top: calc(100% + 6px); right: 0; left: 0;
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: 10px; box-shadow: var(--shadow-md);
+        z-index: 200; display: none; overflow: hidden;
+      }
+      .search-dropdown.show { display: block; }
+      .search-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 14px; cursor: pointer; transition: background .1s;
+      }
+      .search-item:hover { background: var(--surface2); }
+      .search-item-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+      .search-item-label { font-size: 13px; font-weight: 600; color: var(--text1); }
+      .search-item-meta  { font-size: 11px; color: var(--text3); }
+      .search-item-type  { margin-right: auto; font-size: 16px; }
+      .search-empty { padding: 16px; text-align: center; color: var(--text3); font-size: 12px; }
+
+      /* Topbar badges */
+      .topbar-badge {
+        display: flex; align-items: center; gap: 5px;
+        padding: 4px 10px; border-radius: 999px;
+        font-size: 11px; font-weight: 700; cursor: default;
+      }
+      .topbar-badge.red    { background: rgba(232,85,85,.1);   color: var(--red); }
+      .topbar-badge.orange { background: rgba(240,165,0,.1);   color: var(--orange); }
+      .topbar-badge.yellow { background: rgba(200,164,84,.12); color: var(--gold); }
+
+      /* Tab badge */
+      .tab-badge {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 16px; height: 16px; border-radius: 50%;
+        font-size: 9px; font-weight: 800;
+        margin-right: 4px; margin-bottom: 1px;
+      }
+      .tab-badge.red    { background: var(--red);    color: #fff; }
+      .tab-badge.orange { background: var(--orange); color: #fff; }
+
+      /* Sidebar phase styles */
+      .sb-pkg-hdr.current { background: rgba(35,114,146,.15); color: var(--teal-light); }
+      .sb-pkg-live {
+        font-size: 8px; font-weight: 800; background: var(--teal);
+        color: #fff; padding: 1px 6px; border-radius: 999px;
+      }
+
+      /* Gantt phase styles */
+      .gantt-phase-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-left: 5px; vertical-align: middle; }
+      .gantt-live-badge {
+        font-size: 9px; font-weight: 800; background: var(--teal);
+        color: #fff; padding: 1px 6px; border-radius: 999px; margin-right: 4px;
+      }
+      .gantt-bar-bg {
+        position: absolute; top: 3px; bottom: 3px;
+        overflow: hidden; display: flex; align-items: center;
+      }
+      .gantt-bar-progress { position: absolute; top: 0; right: 0; bottom: 0; }
+      .gantt-bar-label {
+        position: relative; z-index: 1;
+        font-size: 9px; font-weight: 700;
+        padding: 0 8px; white-space: nowrap;
+      }
+      .gantt-mosques-list { display: flex; flex-direction: column; gap: 4px; }
+      .gantt-mosque-row {
+        display: flex; align-items: center; gap: 7px;
+        padding: 4px 6px; border-radius: 5px; cursor: pointer;
+        font-size: 11px; transition: background .1s;
+      }
+      .gantt-mosque-row:hover { background: var(--surface2); }
+      .gantt-m-dot  { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+      .gantt-m-code { font-family: monospace; font-size: 10px; color: var(--teal); font-weight: 600; min-width: 42px; }
+      .gantt-m-name { flex: 1; color: var(--text2); }
+      .gantt-m-kpi  { font-size: 10px; font-weight: 700; min-width: 32px; text-align: left; }
+      .gantt-m-delay { font-size: 9px; color: var(--red); font-weight: 700; }
+
+      /* Fin KPI mini cards */
+      .fin-kpi-card {
+        flex: 1; background: var(--surface2); border-radius: 10px;
+        padding: 12px 16px; min-width: 100px;
+        border: 1px solid var(--border);
+      }
+      .fin-kpi-val   { font-size: 18px; font-weight: 700; color: var(--text1); }
+      .fin-kpi-label { font-size: 11px; color: var(--text3); margin-top: 3px; }
+    </style>
 
     <script src="/waqf_dashboard/static/src/js/dashboard.js"/>
     </body>
