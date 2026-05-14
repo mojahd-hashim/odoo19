@@ -1,0 +1,5 @@
+/* Override Odoo default login styles when waqf-login class is present */
+body.waqf-login .o_login_wrap,
+body.waqf-login .o_web_client {
+  display: none !important;
+}
