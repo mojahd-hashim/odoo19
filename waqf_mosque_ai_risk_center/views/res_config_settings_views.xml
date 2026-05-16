@@ -6,21 +6,41 @@
         <field name="inherit_id" ref="base.res_config_settings_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//form" position="inside">
-                <app data-string="AI Risk Center" string="AI Risk Center" name="waqf_ai_risk_center" groups="waqf_mosque_ai_risk_center.group_ai_risk_admin">
+                <app data-string="AI Risk Center" string="AI Risk Center" name="waqf_ai_risk_center"
+                     groups="waqf_mosque_ai_risk_center.group_ai_risk_admin">
                     <block title="Azure OpenAI">
-                        <setting string="Enable AI Analysis"><field name="waqf_ai_enabled"/></setting>
-                        <setting string="Azure Endpoint"><field name="waqf_ai_azure_endpoint" placeholder="https://xxxx.openai.azure.com"/></setting>
-                        <setting string="Azure API Key"><field name="waqf_ai_azure_api_key" password="True"/></setting>
-                        <setting string="Deployment"><field name="waqf_ai_azure_deployment"/></setting>
+                        <setting string="Enable AI Analysis">
+                            <field name="waqf_ai_enabled"/>
+                        </setting>
+                        <setting string="Azure Endpoint">
+                            <field name="waqf_ai_azure_endpoint" placeholder="https://xxxx.openai.azure.com"/>
+                        </setting>
+                        <setting string="Azure API Key">
+                            <field name="waqf_ai_azure_api_key" password="True"/>
+                        </setting>
+                        <setting string="Deployment">
+                            <field name="waqf_ai_azure_deployment"/>
+                        </setting>
                     </block>
                     <block title="Run Settings">
-                        <setting string="Run Interval Hours"><field name="waqf_ai_run_interval_hours"/></setting>
-                        <setting string="Max Mosques Per Run"><field name="waqf_ai_max_mosques_per_run"/></setting>
-                        <setting string="Confidence Threshold"><field name="waqf_ai_confidence_threshold"/></setting>
+                        <setting string="Run Interval Hours">
+                            <field name="waqf_ai_run_interval_hours"/>
+                        </setting>
+                        <setting string="Max Mosques Per Run">
+                            <field name="waqf_ai_max_mosques_per_run"/>
+                        </setting>
+                        <setting string="Confidence Threshold">
+                            <field name="waqf_ai_confidence_threshold"/>
+                        </setting>
                     </block>
                 </app>
             </xpath>
         </field>
     </record>
-    <record id="action_ai_risk_config" model="ir.actions.act_window"><field name="name">AI Risk Configuration</field><field name="res_model">res.config.settings</field><field name="view_mode">form</field><field name="target">inline</field><field name="context">{'module' : 'waqf_mosque_ai_risk_center'}</field></record>
+    <record id="action_ai_risk_config" model="ir.actions.act_window">
+        <field name="name">AI Risk Configuration</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+    </record>
 </odoo>
