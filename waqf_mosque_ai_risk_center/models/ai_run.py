@@ -46,15 +46,47 @@ class WaqfAiSnapshotRun(models.Model):
     prediction_ids = fields.One2many('waqf.ai.prediction', 'run_id', string='Predictions')
     insight_id = fields.One2many('waqf.ai.phase.insight', 'run_id', string='Phase Insight')
 
-    @api.depends('alert_ids.severity')
     def _compute_counts(self):
+        Alert = self.env['waqf.ai.alert'].sudo()
+        Snapshot = self.env['waqf.ai.mosque.snapshot'].sudo()
+
         for rec in self:
-            alerts = rec.alert_ids
-            rec.alerts_count = len(alerts)
-            rec.critical_count = len(alerts.filtered(lambda a: a.severity == 'critical'))
-            rec.high_count = len(alerts.filtered(lambda a: a.severity == 'high'))
-            rec.medium_count = len(alerts.filtered(lambda a: a.severity == 'medium'))
-            rec.low_count = len(alerts.filtered(lambda a: a.severity == 'low'))
+            if not rec.id:
+                rec.mosque_count = 0
+                rec.alerts_count = 0
+                rec.critical_count = 0
+                rec.high_count = 0
+                rec.medium_count = 0
+                rec.low_count = 0
+                continue
+
+            rec.mosque_count = Snapshot.search_count([
+                ('run_id', '=', rec.id)
+            ])
+
+            rec.alerts_count = Alert.search_count([
+                ('run_id', '=', rec.id)
+            ])
+
+            rec.critical_count = Alert.search_count([
+                ('run_id', '=', rec.id),
+                ('severity', '=', 'critical')
+            ])
+
+            rec.high_count = Alert.search_count([
+                ('run_id', '=', rec.id),
+                ('severity', '=', 'high')
+            ])
+
+            rec.medium_count = Alert.search_count([
+                ('run_id', '=', rec.id),
+                ('severity', '=', 'medium')
+            ])
+
+            rec.low_count = Alert.search_count([
+                ('run_id', '=', rec.id),
+                ('severity', '=', 'low')
+            ])
 
     def action_run(self):
         self.ensure_one()
