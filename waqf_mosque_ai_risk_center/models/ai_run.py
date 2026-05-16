@@ -217,10 +217,54 @@ class WaqfAiSnapshotRun(models.Model):
 
     def _store_ai_response(self, ai_response):
         self.ensure_one()
-        run = self
-        confidence_threshold = float(self._get_param('waqf_ai_confidence_threshold', 0.55) or 0.55)
+
+        response = ai_response or {}
+
         for item in response.get('alerts', []) or []:
-            if float(item.get('confidence') or 0.0) >= confidence_threshold:
-                self.env['waqf.ai.alert']._create_or_update_alert(run, item, source='ai')
+            self.env['waqf.ai.alert'].create({
+                'run_id': self.id,
+                'phase_id': self.phase_id.id,
+                'mosque_id': item.get('mosque_id') or False,
+                'contractor': item.get('contractor'),
+                'alert_type': item.get('alert_type') or 'risk',
+                'severity': item.get('severity') or 'medium',
+                'title': item.get('title') or 'تنبيه ذكي',
+                'summary': item.get('summary'),
+                'root_cause': item.get('root_cause'),
+                'impact': item.get('impact'),
+                'phase_impact': item.get('phase_impact'),
+                'recommendation': item.get('recommendation'),
+                'confidence': item.get('confidence') or 0.0,
+                'priority_score': item.get('priority_score') or 0,
+                'impact_score': item.get('impact_score') or 0,
+                'probability_score': item.get('probability_score') or 0,
+                'related_metrics_json': json.dumps(
+                    item.get('related_metrics') or {},
+                    ensure_ascii=False,
+                    indent=2
+                ),
+                'ai_payload_json': json.dumps(
+                    item,
+                    ensure_ascii=False,
+                    indent=2
+                ),
+                'source': 'ai',
+            })
+
         for item in response.get('predictions', []) or []:
-            self.env['waqf.ai.prediction'].create_from_ai(run, item)
+            self.env['waqf.ai.prediction'].create({
+                'run_id': self.id,
+                'phase_id': self.phase_id.id,
+                'mosque_id': item.get('mosque_id') or False,
+                'prediction_type': item.get('prediction_type') or 'expected_delay',
+                'prediction_text': item.get('prediction_text'),
+                'probability': item.get('probability') or 0.0,
+                'expected_delay_days': item.get('expected_delay_days') or 0,
+                'confidence': item.get('confidence') or 0.0,
+                'evidence_json': json.dumps(
+                    item.get('evidence') or {},
+                    ensure_ascii=False,
+                    indent=2
+                ),
+                'recommendation': item.get('recommendation'),
+            })
