@@ -51,13 +51,51 @@ class WaqfDashboardAPI(http.Controller):
         has_ai           = 'waqf.ai.snapshot.run' in request.env
 
         if has_ai:
-            SnapshotRun = request.env['waqf.ai.snapshot.run'].sudo()
-            last_run = SnapshotRun.search(
-                [('state', '=', 'done')], order='run_date desc', limit=1)
-            if last_run:
-                prev_avg_kpi  = last_run.avg_kpi_prev or avg_kpi
-                prev_critical = last_run.critical_count_prev or len(critical)
-                prev_pending  = last_run.pending_certs_prev or pending_certs
+            Snap = request.env['waqf.ai.mosque.snapshot'].sudo()
+            Alert = request.env['waqf.ai.alert'].sudo() if 'waqf.ai.alert' in request.env else False
+
+            latest_run = request.env['waqf.ai.snapshot.run'].sudo().search(
+                [('status', 'in', ['done', 'done_with_ai_error'])],
+                order='run_datetime desc',
+                limit=1
+            )
+
+            domain = [('run_id', '=', latest_run.id)] if latest_run else []
+
+            for s in Snap.search(domain):
+                latest_alert = Alert.search([
+                    ('mosque_id', '=', s.mosque_id.id),
+                    ('active', '=', True),
+                    ('status', 'in', ['new', 'acknowledged', 'in_progress']),
+                ], order='priority_score desc, create_date desc', limit=1) if Alert else False
+
+                impact = latest_alert.impact_score if latest_alert else max(
+                    0,
+                    min(100, 100 - (s.overall_kpi or 0))
+                )
+
+                probability = latest_alert.probability_score if latest_alert else max(
+                    0,
+                    min(100, (s.days_delay or 0) * 2 + abs((s.financial_progress or 0) - (s.time_progress or 0)))
+                )
+
+                risk_level = latest_alert.severity if latest_alert else (
+                    'critical' if impact >= 75 and probability >= 60 else
+                    'high' if impact >= 60 or probability >= 60 else
+                    'medium' if impact >= 35 or probability >= 35 else
+                    'low'
+                )
+
+                points.append({
+                    'mosque_id': s.mosque_id.id,
+                    'mosque_name': s.mosque_id.name,
+                    'mosque_code': s.mosque_id.code,
+                    'impact': round(impact, 1),
+                    'probability': round(probability, 1),
+                    'size': s.contract_value or s.mosque_id.contract_value,
+                    'kpi': round(s.overall_kpi or 0, 1),
+                    'risk_level': risk_level,
+                })
 
         return _json({
             'total_contract_value': total_value,
@@ -738,17 +776,43 @@ class WaqfDashboardAPI(http.Controller):
         # AI snapshot for this mosque
         ai_data = {}
         if 'waqf.ai.mosque.snapshot' in request.env:
-            snap = request.env['waqf.ai.mosque.snapshot'].sudo().search(
-                [('mosque_id', '=', mosque_id)], limit=1)
+            Snap = request.env['waqf.ai.mosque.snapshot'].sudo()
+            Alert = request.env['waqf.ai.alert'].sudo() if 'waqf.ai.alert' in request.env else False
+            Pred = request.env['waqf.ai.prediction'].sudo() if 'waqf.ai.prediction' in request.env else False
+
+            snap = Snap.search([('mosque_id', '=', mosque_id)], order='id desc', limit=1)
+
             if snap:
+                latest_alert = Alert.search([
+                    ('mosque_id', '=', mosque_id),
+                    ('active', '=', True),
+                    ('status', 'in', ['new', 'acknowledged', 'in_progress']),
+                ], order='priority_score desc, create_date desc', limit=1) if Alert else False
+
+                latest_prediction = Pred.search([
+                    ('mosque_id', '=', mosque_id),
+                ], order='create_date desc', limit=1) if Pred else False
+
+                severity = latest_alert.severity if latest_alert else (
+                    'critical' if snap.overall_kpi and snap.overall_kpi < 40 else
+                    'high' if snap.overall_kpi and snap.overall_kpi < 55 else
+                    'medium' if snap.overall_kpi and snap.overall_kpi < 70 else
+                    'low'
+                )
+
                 ai_data = {
-                    'risk_level':      snap.severity,
-                    'risk_impact':     snap.risk_impact,
-                    'risk_probability':snap.risk_probability,
-                    'health_score':    snap.health_score,
-                    'forecast_finish': str(snap.forecast_finish_date) if snap.forecast_finish_date else '',
-                    'variance_days':   snap.variance_days,
-                    'confidence_pct':  snap.confidence_pct,
+                    'risk_level': severity,
+                    'risk_impact': latest_alert.impact_score if latest_alert else max(0, min(100, 100 - (
+                                snap.overall_kpi or 0))),
+                    'risk_probability': latest_alert.probability_score if latest_alert else max(0, min(100, (
+                                snap.days_delay or 0) * 2 + abs(
+                        (snap.financial_progress or 0) - (snap.time_progress or 0)))),
+                    'health_score': round(snap.overall_kpi or 0, 1),
+                    'forecast_finish': '',
+                    'variance_days': latest_prediction.expected_delay_days if latest_prediction else (
+                                snap.days_delay or 0),
+                    'confidence_pct': round((latest_alert.confidence or latest_prediction.confidence or 0) * 100,
+                                            1) if (latest_alert or latest_prediction) else 0,
                 }
 
         return _json({
