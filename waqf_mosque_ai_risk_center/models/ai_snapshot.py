@@ -50,8 +50,8 @@ class WaqfAiMosqueSnapshot(models.Model):
     rejected_tasks_count = fields.Integer()
     blocked_tasks_count = fields.Integer()
     overdue_tasks_count = fields.Integer()
-    numeric_snapshot_json = fields.Json()
-    text_snapshot_json = fields.Json()
+    numeric_snapshot_json = fields.Text()
+    text_snapshot_json = fields.Text()
 
     @api.model
     def _safe_num(self, value):

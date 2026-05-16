@@ -19,7 +19,7 @@ class WaqfAiPrediction(models.Model):
     probability = fields.Float()
     expected_delay_days = fields.Integer()
     confidence = fields.Float()
-    evidence_json = fields.Json()
+    evidence_json = fields.Text()
     recommendation = fields.Text()
 
     @api.model
@@ -56,8 +56,8 @@ class WaqfAiPhaseInsight(models.Model):
     total_pending_payments = fields.Float()
     total_change_orders_value = fields.Float()
     total_delay_days = fields.Integer()
-    executive_insights_json = fields.Json()
-    recommendations_json = fields.Json()
+    executive_insights_json = fields.Text()
+    recommendations_json = fields.Text()
 
     @api.model
     def _build_phase_insight(self, run, snapshots):

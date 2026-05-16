@@ -36,8 +36,8 @@ class WaqfAiSnapshotRun(models.Model):
     high_count = fields.Integer(compute='_compute_counts', store=True)
     medium_count = fields.Integer(compute='_compute_counts', store=True)
     low_count = fields.Integer(compute='_compute_counts', store=True)
-    raw_snapshot_json = fields.Json()
-    ai_response_json = fields.Json()
+    raw_snapshot_json = fields.Text()
+    ai_response_json = fields.Text()
     error_message = fields.Text()
     duration_seconds = fields.Float()
 
@@ -140,53 +140,101 @@ class WaqfAiSnapshotRun(models.Model):
         })
         try:
             max_mosques = int(self._get_param('waqf_ai_max_mosques_per_run', 0) or 0)
+
             mosques = phase.mosque_ids.sudo()
+
             if max_mosques:
                 mosques = mosques[:max_mosques]
+
             snapshots_payload = []
+
             for mosque in mosques:
-                snapshot_vals, payload = self.env['waqf.ai.mosque.snapshot']._prepare_snapshot_values(run, phase, mosque)
+                snapshot_vals, payload = (
+                    self.env['waqf.ai.mosque.snapshot']
+                    ._prepare_snapshot_values(run, phase, mosque)
+                )
+
                 self.env['waqf.ai.mosque.snapshot'].create(snapshot_vals)
+
                 snapshots_payload.append(payload)
 
             run.write({
                 'mosque_count': len(mosques),
                 'raw_snapshot_json': {
                     'phase': self._phase_payload(phase),
-                    'mosques': snapshots_payload,
+                    'mosques_count': len(snapshots_payload),
                 },
             })
 
-            rule_alert_payloads = self.env['waqf.ai.alert']._generate_rule_alerts(run, snapshots_payload)
+            self.env.cr.commit()
+
+            rule_alert_payloads = (
+                self.env['waqf.ai.alert']
+                ._generate_rule_alerts(run, snapshots_payload)
+            )
+
+            self.env.cr.commit()
+
             ai_error = False
+
             if run._get_param('waqf_ai_enabled', 'False') in ('True', 'true', '1'):
+
                 try:
                     ai_response = run._call_azure_openai({
                         'phase': self._phase_payload(phase),
                         'mosques': snapshots_payload,
                         'rule_alerts': rule_alert_payloads,
                     })
-                    run.ai_response_json = ai_response
+
+                    run.write({
+                        'ai_response_json': ai_response,
+                    })
+
+                    self.env.cr.commit()
+
                     run._store_ai_response(ai_response)
+
+                    self.env.cr.commit()
+
                 except Exception as exc:
+
+                    self.env.cr.rollback()
+
                     ai_error = str(exc)
+
                     _logger.exception('Azure OpenAI call failed')
 
-            run.env['waqf.ai.phase.insight']._build_phase_insight(run, snapshots_payload)
-            status = 'done_with_ai_error' if ai_error else 'done'
+            run.env['waqf.ai.phase.insight']._build_phase_insight(
+                run,
+                snapshots_payload
+            )
+
+            self.env.cr.commit()
+
             run.write({
-                'status': status,
+                'status': 'done_with_ai_error' if ai_error else 'done',
                 'error_message': ai_error or False,
                 'duration_seconds': time.time() - start,
             })
+
+            self.env.cr.commit()
+
             return run
+
         except Exception as exc:
+
+            self.env.cr.rollback()
+
             _logger.exception('AI Risk analysis failed')
-            run.write({
+
+            run.sudo().write({
                 'status': 'failed',
                 'error_message': str(exc),
                 'duration_seconds': time.time() - start,
             })
+
+            self.env.cr.commit()
+
             return run
 
     @api.model
@@ -219,7 +267,7 @@ class WaqfAiSnapshotRun(models.Model):
             'temperature': 0.1,
             'response_format': {'type': 'json_object'},
         }
-        data = json.dumps(payload, ensure_ascii=False).encode('utf-8')
+        data = json.dumps(payload, ensure_ascii=False, indent=2).encode('utf-8')
         req = urlrequest.Request(url, data=data, headers={
             'Content-Type': 'application/json',
             'api-key': api_key,
