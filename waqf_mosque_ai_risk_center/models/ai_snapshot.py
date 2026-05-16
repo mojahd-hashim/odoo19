@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
 from odoo import api, fields, models
+from datetime import datetime, date
 
 
 class WaqfAiMosqueSnapshot(models.Model):
@@ -93,7 +94,14 @@ class WaqfAiMosqueSnapshot(models.Model):
         tasks = Task.search([('mosque_id', '=', mosque.id)]) if 'mosque_id' in Task._fields else Task.browse()
         rejected_tasks = tasks.filtered(lambda t: getattr(t, 'review_state', False) in ('rejected', 'reject'))
         blocked_tasks = tasks.filtered(lambda t: bool(getattr(t, 'is_blocked_by_co', False) or getattr(t, 'blocking_co_id', False)))
-        overdue_tasks = tasks.filtered(lambda t: getattr(t, 'date_deadline', False) and t.date_deadline < today and getattr(t, 'stage_id', False))
+        today = fields.Date.today()
+
+        overdue_tasks = tasks.filtered(
+            lambda t:
+            t.date_deadline
+            and fields.Date.to_date(t.date_deadline) < today
+            and t.stage_id
+        )
 
         latest_workers = int(getattr(last_report, 'workers_on_site', 0) or 0) if last_report else 0
         latest_equipment = int(getattr(last_report, 'equipment_count', 0) or 0) if last_report else 0
