@@ -113,7 +113,7 @@ class MosqueMosque(models.Model):
 
     certified_amount    = fields.Monetary(compute='_compute_progress', store=True,
                                           currency_field='currency_id',
-                                          string='Certified Amount')
+                                          string='Payment value')
     total_boq_value     = fields.Monetary(compute='_compute_progress', store=True,
                                           currency_field='currency_id',
                                           string='Total BOQ Value')

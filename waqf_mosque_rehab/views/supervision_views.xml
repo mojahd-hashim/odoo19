@@ -149,7 +149,7 @@
                                 <span class="o_stat_value">
                                     <field name="certified_amount" widget="monetary"/>
                                 </span>
-                                <span class="o_stat_text">Certified Amount</span>
+                                <span class="o_stat_text">Payment value</span>
                             </div>
                         </div>
                         <div class="o_stat_button">

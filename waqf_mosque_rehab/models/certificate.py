@@ -24,7 +24,7 @@ class MosqueCertificate(models.Model):
                                string='BOQ Lines')
 
     # ── Amounts ───────────────────────────────────────────────────
-    certified_amount    = fields.Monetary(string='Certified Amount',
+    certified_amount    = fields.Monetary(string='Payment value',
                                           compute='_compute_amounts', store=True,
                                           currency_field='currency_id')
     retention_pct       = fields.Float(string='Retention %', default=10.0)
@@ -92,7 +92,7 @@ class MosqueCertificate(models.Model):
                 'state': 'consultant_review',
                 'consultant_review_date': date.today(),
             })
-            rec.message_post(body=_('Certificate submitted for consultant review.'))
+            rec.message_post(body=_('Payment submitted for consultant review.'))
 
     def action_consultant_approve(self):
         self.write({
@@ -117,7 +117,7 @@ class MosqueCertificate(models.Model):
         # Update executed quantities on BOQ
         for line in self.line_ids:
             line.boq_id.executed_qty += line.this_period_qty
-        self.message_post(body=_('Final Waqf approval granted. Certificate ready for payment.'))
+        self.message_post(body=_('Final Waqf approval granted. Payment ready for payment.'))
 
     def action_mark_paid(self):
         self.write({'state': 'paid', 'paid_date': date.today()})
@@ -125,7 +125,7 @@ class MosqueCertificate(models.Model):
     def action_reject(self):
         return {
             'type': 'ir.actions.act_window',
-            'name': _('Reject Certificate'),
+            'name': _('Reject Payment'),
             'res_model': 'mosque.certificate.reject.wizard',
             'view_mode': 'form',
             'target': 'new',
