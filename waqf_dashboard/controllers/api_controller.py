@@ -740,7 +740,7 @@ class WaqfDashboardAPI(http.Controller):
         ai_data = {}
         if 'waqf.ai.mosque.snapshot' in request.env:
             snap = request.env['waqf.ai.mosque.snapshot'].sudo().search(
-                [('mosque_id', '=', mosque_id), ('active', '=', True)], limit=1)
+                [('mosque_id', '=', mosque_id)], limit=1)
             if snap:
                 ai_data = {
                     'risk_level':      snap.risk_level,
