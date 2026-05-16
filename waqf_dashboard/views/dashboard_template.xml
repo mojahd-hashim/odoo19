@@ -1,485 +1,589 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-<template id="tmpl_dashboard" name="Waqf Executive Dashboard">
-  <t t-call="web.layout">
-    <t t-set="head">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-      <link rel="stylesheet" href="/waqf_dashboard/static/src/css/dashboard.css"/>
-     <div id="waqf-data"
-     t-att-data-config="json.dumps(config)"
-     t-att-data-packages="packages_json"
-     style="display:none"/>
-     <script>
-//<![CDATA[
-<t t-raw="'window.WAQF_DASH_CONFIG=' + json.dumps(config) + ';'"/>
-<t t-raw="'window.WAQF_PACKAGES=' + packages_json + ';'"/>
-//]]>
+<template id="tmpl_dashboard" name="Waqf Executive Dashboard v2">
+<t t-call="web.layout">
+<t t-set="head">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="/waqf_dashboard/static/src/css/dashboard.css"/>
+  <!-- Data bridge — no HTML escaping issues -->
+  <div id="waqf-data" style="display:none"
+       t-att-data-config="json.dumps(config)"
+       t-att-data-packages="packages_json"
+       t-att-data-summary="json.dumps(summary)"
+       t-att-data-onsite="json.dumps(on_site)"
+       t-att-data-has-ai="'1' if has_ai_module else '0'"/>
+</t>
+<body class="waqf-dashboard">
+<div class="wd-shell">
 
-</script>
-    </t>
-    <body class="waqf-dashboard">
-    <div class="wd-shell">
+  <!-- ══ SIDEBAR ══════════════════════════════════════════ -->
+  <div class="wd-sidebar">
 
-      <!-- ══ SIDEBAR ════════════════════════════════════ -->
-      <div class="wd-sidebar">
-        <div class="sb-brand">
-          <div class="sb-logo">
-            <t t-if="company.logo">
-              <img t-att-src="'/web/image/res.company/%d/logo' % company.id" alt="logo"/>
-            </t>
-            <t t-else=""><div class="sb-logo-text">و</div></t>
+    <!-- Brand -->
+    <div class="sb-brand">
+      <div class="sb-logo">
+        <t t-if="company and company.logo">
+          <img t-att-src="'/web/image/res.company/%d/logo' % company.id"
+               t-att-alt="company.name"/>
+        </t>
+        <t t-else=""><span class="sb-logo-fallback">و</span></t>
+      </div>
+      <div class="sb-brand-text">
+        <div class="sb-brand-name" t-esc="company.name"/>
+        <div class="sb-brand-tag">لوحة إدارة التأهيل</div>
+      </div>
+    </div>
+
+    <!-- Nav sections + packages (built by JS) -->
+    <div class="sb-nav-section">المشاريع</div>
+    <div id="sb-packages"/>
+
+    <!-- On-site (server-rendered) -->
+    <div class="sb-nav-section">في الموقع الآن</div>
+    <div style="padding:0 10px 8px">
+      <t t-foreach="on_site" t-as="p">
+        <div class="sb-mosque" style="cursor:default">
+          <div class="sb-mosque-dot" style="background:#2ECC8A"/>
+          <span class="sb-mosque-name">
+            <t t-esc="(p.get('name') or '')[:16]"/>
+          </span>
+          <span class="sb-mosque-code" t-esc="p.get('code','')"/>
+        </div>
+      </t>
+      <t t-if="not on_site">
+        <div style="padding:6px 10px;font-size:10px;color:rgba(255,255,255,.2)">
+          لا يوجد مستشارون في المواقع
+        </div>
+      </t>
+    </div>
+
+    <!-- Footer -->
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar"><t t-esc="(user.name or 'م')[0]"/></div>
+        <div class="sb-username" t-esc="user.name"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MAIN ═════════════════════════════════════════════ -->
+  <div class="wd-main">
+
+    <!-- Topbar -->
+    <div class="wd-topbar">
+      <div class="topbar-breadcrumb">
+        <div class="topbar-page" id="topbar-title">نظرة عامة</div>
+        <div class="topbar-sep">·</div>
+        <div class="topbar-sub" id="topbar-sub">
+          <t t-esc="company.name"/> · 29 مسجداً وجامعاً
+        </div>
+      </div>
+
+      <!-- Global Search -->
+      <div class="search-wrap">
+        <input id="global-search" class="tb-search"
+               type="text" placeholder="بحث عن مسجد أو مشروع..."
+               autocomplete="off"/>
+        <div id="search-dropdown" class="search-dropdown"/>
+      </div>
+
+      <div class="topbar-actions">
+        <!-- Live stream -->
+        <div class="tb-badge live" id="live-pill" style="display:none">
+          <div class="tb-live-dot"/>
+          <span>بث مباشر</span>
+        </div>
+
+        <!-- On-site -->
+        <div class="tb-badge success"
+             onclick="document.getElementById('modal-onsite').classList.add('show')"
+             style="cursor:pointer">
+          <span id="onsite-count-badge"><t t-esc="on_site_count"/> في الموقع</span>
+        </div>
+
+        <!-- Pending certs badge -->
+        <t t-if="summary.get('pending_certs', 0) > 0">
+          <div class="tb-badge danger" title="مستخلصات معلقة">
+            📋 <t t-esc="summary.get('pending_certs')"/>
           </div>
-          <div class="sb-brand-text">
-            <div class="sb-company" t-esc="company.name"/>
-            <div class="sb-tagline">لوحة إدارة التأهيل</div>
+        </t>
+
+        <!-- Pending COs -->
+        <t t-if="summary.get('pending_cos', 0) > 0">
+          <div class="tb-badge warning" title="أوامر تغيير">
+            🔄 <t t-esc="summary.get('pending_cos')"/>
+          </div>
+        </t>
+
+        <!-- Critical -->
+        <t t-if="summary.get('critical_count', 0) > 0">
+          <div class="tb-badge danger" title="مشاريع حرجة">
+            🚨 <t t-esc="summary.get('critical_count')"/>
+          </div>
+        </t>
+
+        <a href="/dashboard/settings" class="tb-btn">⚙ إعدادات</a>
+        <button class="tb-btn primary" onclick="window.location.reload()">↺</button>
+      </div>
+    </div>
+
+    <!-- ══ CONTENT ══════════════════════════════════════════ -->
+    <div class="wd-content">
+
+      <!-- ①  EXECUTIVE KPI STRIP ──────────────────────────── -->
+      <div class="exec-strip">
+
+        <div class="exec-kpi primary">
+          <div class="exec-kpi-label">إجمالي قيمة العقود</div>
+          <div class="exec-kpi-value">
+            <span id="kpi-total-value">—</span>
+            <span class="unit">م ر</span>
+          </div>
+          <div class="exec-kpi-trend flat" id="kpi-total-trend">
+            <span class="arrow">→</span> جاري التحميل
           </div>
         </div>
 
-        <div class="sb-section">المشاريع</div>
-        <div id="sb-packages"></div>
-
-        <!-- On-site (server-rendered fast) -->
-        <div class="sb-section">في الموقع الآن</div>
-        <div style="padding:0 10px;margin-bottom:8px">
-          <t t-foreach="on_site" t-as="person">
-            <div class="sb-mosque ok" style="cursor:default">
-              <div class="sb-mosque-dot" style="background:#2ECC8A"/>
-              <span t-esc="(person.get('name') or '')[:16]"/>
-              <span class="sb-mosque-code" t-esc="person.get('code','')"/>
-            </div>
-          </t>
-          <t t-if="not on_site">
-            <div style="padding:6px 10px;font-size:10px;color:rgba(255,255,255,.25)">
-              لا يوجد مستشارون في المواقع
-            </div>
-          </t>
+        <div class="exec-kpi gold">
+          <div class="exec-kpi-label">متوسط KPI الكلي</div>
+          <div class="exec-kpi-value">
+            <span id="kpi-avg-kpi">—</span>
+            <span class="unit">%</span>
+          </div>
+          <div class="exec-kpi-trend flat" id="kpi-avg-trend">
+            <span class="arrow">→</span>
+          </div>
         </div>
 
-        <div class="sb-footer">
-          <div class="sb-user">
-            <div class="sb-avatar"><t t-esc="(user.name or 'م')[0]"/></div>
-            <div class="sb-username" t-esc="user.name"/>
+        <div class="exec-kpi danger">
+          <div class="exec-kpi-label">مشاريع حرجة</div>
+          <div class="exec-kpi-value" id="kpi-critical">—</div>
+          <div class="exec-kpi-trend flat" id="kpi-critical-trend">
+            <span class="arrow">→</span>
+          </div>
+        </div>
+
+        <div class="exec-kpi warning">
+          <div class="exec-kpi-label">إجمالي التأخير</div>
+          <div class="exec-kpi-value">
+            <span id="kpi-total-delay">—</span>
+            <span class="unit">يوم</span>
+          </div>
+          <div class="exec-kpi-trend flat" id="kpi-delay-trend">
+            <span class="arrow">→</span>
+          </div>
+        </div>
+
+        <div class="exec-kpi purple">
+          <div class="exec-kpi-label">قيمة أوامر التغيير</div>
+          <div class="exec-kpi-value">
+            <span id="kpi-co-value">—</span>
+            <span class="unit">ألف</span>
+          </div>
+          <div class="exec-kpi-trend flat">
+            <span class="arrow">→</span>
+          </div>
+        </div>
+
+        <div class="exec-kpi navy">
+          <div class="exec-kpi-label">اعتمادات معلّقة</div>
+          <div class="exec-kpi-value" id="kpi-pending">—</div>
+          <div class="exec-kpi-trend flat" id="kpi-pending-trend">
+            <span class="arrow">→</span>
+          </div>
+        </div>
+
+        <div class="exec-kpi green">
+          <div class="exec-kpi-label">مشاريع في الموعد</div>
+          <div class="exec-kpi-value" id="kpi-ontime">—</div>
+          <div class="exec-kpi-trend up">
+            <span class="arrow">↑</span> جيد
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ②  SMART ALERT CENTER ───────────────────────────── -->
+      <div class="alert-center">
+        <div class="alert-center-hdr">
+          <div class="alert-center-title">
+            🚨 مركز التنبيهات الذكي
+            <span class="alert-count-badge" id="alert-count">—</span>
+          </div>
+          <div class="alert-filters">
+            <button class="alert-filter active" data-filter="all">الكل</button>
+            <button class="alert-filter" data-filter="critical">حرج</button>
+            <button class="alert-filter" data-filter="financial">مالي</button>
+            <button class="alert-filter" data-filter="delay">تأخير</button>
+            <button class="alert-filter" data-filter="quality">جودة</button>
+          </div>
+          <div style="margin-right:auto;font-size:9px;color:var(--text3)"
+               id="alert-source-badge"/>
+        </div>
+        <div class="alert-list" id="alert-list">
+          <div style="padding:20px;text-align:center;color:var(--text3)">
+            <div class="loading-spinner" style="width:20px;height:20px;margin:0 auto 8px"/>
+            جاري تحميل التنبيهات...
           </div>
         </div>
       </div>
 
-      <!-- ══ MAIN ═══════════════════════════════════════ -->
-      <div class="wd-main">
+      <!-- ③  GANTT + CRITICAL PROJECTS ───────────────────── -->
+      <div class="grid-2-1">
 
-        <!-- Topbar -->
-        <div class="wd-topbar">
-          <div>
-            <div class="topbar-title" id="topbar-title">
-              نظرة عامة — مشروع تأهيل المساجد
+        <div class="card accent-primary">
+          <div class="card-hdr">
+            <div class="card-title">
+              <span class="card-title-icon">📅</span>
+              المخطط الزمني — المراحل النشطة
             </div>
-            <div class="topbar-sub" id="topbar-sub">
-              <t t-esc="company.name"/> · 29 مسجداً وجامعاً
-            </div>
-          </div>
-
-          <!-- Global Search -->
-          <div class="search-wrap" style="margin-right:16px;position:relative">
-            <input id="global-search"
-                   class="global-search-input"
-                   type="text"
-                   placeholder="🔍  بحث عن مسجد أو مشروع..."
-                   autocomplete="off"/>
-            <div id="search-dropdown" class="search-dropdown"></div>
-          </div>
-
-          <div class="topbar-right">
-            <!-- Live badge -->
-            <div class="live-pill" id="live-pill" style="display:none">
-              <div class="live-dot"/>
-              <span>بث مباشر</span>
-            </div>
-
-            <!-- On-site pill -->
-            <div class="onsite-pill"
-                 onclick="document.getElementById('modal-onsite').classList.add('show')">
-              <div class="onsite-pulse"/>
-              <span id="onsite-pill">
-                <span><t t-esc="on_site_count"/> في الموقع</span>
+            <div class="card-hdr-actions">
+              <span style="font-size:9px;color:var(--text3)">
+                اضغط على المرحلة لعرض المساجد
               </span>
             </div>
-
-            <!-- Pending certs badge -->
-            <t t-if="summary.get('pending_certs', 0) > 0">
-              <div class="topbar-badge red"
-                   title="مستخلصات بانتظار الاعتماد">
-                <span>📋</span>
-                <span><t t-esc="summary.get('pending_certs')"/></span>
-              </div>
-            </t>
-
-            <!-- Pending COs badge -->
-            <t t-if="summary.get('pending_cos', 0) > 0">
-              <div class="topbar-badge orange"
-                   title="أوامر تغيير بانتظار المراجعة">
-                <span>🔄</span>
-                <span><t t-esc="summary.get('pending_cos')"/></span>
-              </div>
-            </t>
-
-            <!-- Delayed mosques badge -->
-            <t t-if="summary.get('delayed', 0) > 0">
-              <div class="topbar-badge yellow" title="مساجد متأخرة">
-                <span>⚠</span>
-                <span><t t-esc="summary.get('delayed')"/></span>
-              </div>
-            </t>
-
-            <a href="/dashboard/settings" class="btn btn-ghost">⚙ إعدادات</a>
-            <button class="btn btn-primary" onclick="window.location.reload()">↺</button>
+          </div>
+          <div class="card-body" style="overflow-x:auto">
+            <div id="gantt-months" class="gantt-months"
+                 style="margin-right:130px;display:flex;margin-bottom:5px"/>
+            <div id="gantt-rows"/>
           </div>
         </div>
 
-        <!-- ══ CONTENT ══════════════════════════════════ -->
-        <div class="wd-content">
+        <div class="card accent-danger">
+          <div class="card-hdr">
+            <div class="card-title">
+              <span class="card-title-icon">🔥</span>
+              المشاريع الحرجة
+            </div>
+            <div class="card-hdr-actions">
+              <span id="critical-count-badge"
+                    style="font-size:9px;background:rgba(232,85,85,.1);
+                           color:var(--red);padding:2px 8px;border-radius:999px;font-weight:700"/>
+            </div>
+          </div>
+          <div class="card-body" id="critical-projects-list">
+            <div class="skeleton" style="height:70px;margin-bottom:8px"/>
+            <div class="skeleton" style="height:70px;margin-bottom:8px"/>
+            <div class="skeleton" style="height:70px"/>
+          </div>
+        </div>
 
-          <!-- KPI Summary Cards -->
-          <div class="kpi-grid">
-            <div class="kpi-card teal">
-              <div class="kpi-label">إجمالي قيمة العقود</div>
-              <div class="kpi-value">
-                <span id="kpi-total-value">—</span><span> ر</span>
-              </div>
-              <div class="kpi-sub neutral">
-                <t t-esc="summary.get('mosque_count', 29)"/> مسجداً وجامعاً
-              </div>
+      </div>
+
+      <!-- ④  HEATMAP + RISK MATRIX + CONTRACTORS ─────────── -->
+      <div class="grid-3">
+
+        <!-- Heatmap -->
+        <div class="card accent-green">
+          <div class="card-hdr">
+            <div class="card-title">
+              <span class="card-title-icon">🗺</span>
+              خريطة أداء المساجد
             </div>
-            <div class="kpi-card gold">
-              <div class="kpi-label">متوسط KPI الكلي</div>
-              <div class="kpi-value">
-                <span id="kpi-avg-kpi">
-                  <t t-esc="str(summary.get('avg_kpi', '—')) + '%'"/>
-                </span>
-              </div>
-              <div class="kpi-sub neutral">
-                الإنجاز المالي: <span id="kpi-financial-pct">—</span>
-              </div>
+          </div>
+          <div class="card-body">
+            <div class="qf-row">
+              <button class="qf-btn active" data-filter="all">الكل</button>
+              <button class="qf-btn" data-filter="ok">جيد</button>
+              <button class="qf-btn" data-filter="warn">متوسط</button>
+              <button class="qf-btn" data-filter="critical">ضعيف</button>
+              <button class="qf-btn" data-filter="delayed">متأخر</button>
             </div>
-            <div class="kpi-card red">
-              <div class="kpi-label">مساجد متأخرة</div>
-              <div class="kpi-value">
-                <span id="kpi-delayed"><t t-esc="summary.get('delayed', '—')"/></span>
-                <span> مسجد</span>
-              </div>
-              <div class="kpi-sub down">تجاوزت الجدول الزمني</div>
+            <div class="hm-grid" id="heatmap-grid"/>
+            <div style="display:flex;gap:10px;margin-top:9px;flex-wrap:wrap;font-size:9px;color:var(--text3)">
+              <span><span style="display:inline-block;width:8px;height:8px;background:var(--green);border-radius:2px;margin-left:3px"/><b>≥70%</b></span>
+              <span><span style="display:inline-block;width:8px;height:8px;background:var(--orange);border-radius:2px;margin-left:3px"/>50-70%</span>
+              <span><span style="display:inline-block;width:8px;height:8px;background:var(--red);border-radius:2px;margin-left:3px"/>أقل 50%</span>
+              <span><span style="display:inline-block;width:8px;height:8px;background:#B0C0CC;border-radius:2px;margin-left:3px"/>لم يبدأ</span>
             </div>
-            <div class="kpi-card orange">
-              <div class="kpi-label">إجراءات معلّقة</div>
-              <div class="kpi-value">
-                <span id="kpi-pending-cert">
-                  <t t-esc="summary.get('pending_certs', 0) + summary.get('pending_cos', 0)"/>
-                </span>
-              </div>
-              <div class="kpi-sub neutral">
-                مستخلصات + أوامر تغيير
+          </div>
+        </div>
+
+        <!-- Risk Matrix -->
+        <div class="card accent-gold">
+          <div class="card-hdr">
+            <div class="card-title">
+              <span class="card-title-icon">⚖️</span>
+              مصفوفة المخاطر
+            </div>
+            <div class="card-hdr-actions">
+              <span style="font-size:9px;color:var(--text3)">احتمالية × تأثير</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div style="display:flex;justify-content:space-between;
+                        font-size:9px;color:var(--text3);margin-bottom:4px">
+              <span>احتمالية ↑</span><span>تأثير →</span>
+            </div>
+            <div class="risk-matrix-wrap" id="risk-matrix">
+              <!-- Quadrants -->
+              <div class="risk-q q1">خطر عالٍ</div>
+              <div class="risk-q q2"
+                   style="align-items:flex-end;justify-content:flex-end">حرج</div>
+              <div class="risk-q q3">منخفض</div>
+              <div class="risk-q q4" style="justify-content:flex-end">متوسط</div>
+              <!-- Axes -->
+              <div style="position:absolute;top:0;bottom:0;left:50%;
+                          width:1px;background:var(--border)"/>
+              <div style="position:absolute;right:0;left:0;top:50%;
+                          height:1px;background:var(--border)"/>
+              <!-- Dots injected by JS -->
+              <div id="risk-dots"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contractor Board -->
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">
+              <span class="card-title-icon">🏗</span>
+              أداء المقاولين
+            </div>
+            <div class="card-hdr-actions">
+              <span style="font-size:9px;color:var(--text3)">ترتيب حسب KPI</span>
+            </div>
+          </div>
+          <div class="card-body" style="padding:8px" id="contractor-list">
+            <div class="skeleton" style="height:36px;margin-bottom:4px"/>
+            <div class="skeleton" style="height:36px;margin-bottom:4px"/>
+            <div class="skeleton" style="height:36px;margin-bottom:4px"/>
+            <div class="skeleton" style="height:36px"/>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ⑤  FORECAST + QUALITY ───────────────────────────── -->
+      <div class="grid-2">
+
+        <!-- Forecast Engine -->
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">
+              <span class="card-title-icon">📊</span>
+              Forecast Engine — توقعات الإنجاز
+            </div>
+          </div>
+          <div class="card-body" style="padding:0" id="forecast-table">
+            <div style="display:grid;grid-template-columns:1fr 80px 80px 60px 100px;
+                        padding:7px 14px;border-bottom:1px solid var(--border);
+                        background:var(--surface2)">
+              <span style="font-size:9px;font-weight:700;color:var(--text3)">المسجد</span>
+              <span style="font-size:9px;font-weight:700;color:var(--text3)">المخطط</span>
+              <span style="font-size:9px;font-weight:700;color:var(--text3)">المتوقع</span>
+              <span style="font-size:9px;font-weight:700;color:var(--text3)">الانحراف</span>
+              <span style="font-size:9px;font-weight:700;color:var(--text3)">الثقة</span>
+            </div>
+            <div id="forecast-rows">
+              <div style="padding:20px;text-align:center">
+                <div class="loading-spinner" style="width:18px;height:18px;margin:0 auto"/>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Gantt + Heatmap -->
-          <div class="grid-2-1">
-            <div class="card">
-              <div class="card-hdr">
-                <div class="card-title">المخطط الزمني — المراحل والمساجد</div>
-                <span style="font-size:10px;color:var(--text3)">
-                  اضغط على شريط المرحلة لعرض المساجد
-                </span>
-              </div>
-              <div class="card-body" style="overflow-x:auto">
-                <div id="gantt-months"
-                     class="gantt-months"
-                     style="margin-right:130px;display:flex;margin-bottom:6px"/>
-                <div id="gantt-rows"/>
-              </div>
+        <!-- Quality Intelligence -->
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">
+              <span class="card-title-icon">🔍</span>
+              ذكاء الجودة
             </div>
-
-            <div class="card">
-              <div class="card-hdr">
-                <div class="card-title">خريطة أداء المساجد</div>
-              </div>
-              <div class="card-body">
-                <!-- Quick filters -->
-                <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
-                  <button class="qf-btn active" data-filter="all"
-                          style="padding:3px 10px;border-radius:999px;font-size:10px;
-                                 font-weight:600;border:1px solid var(--border);
-                                 background:var(--surface2);cursor:pointer">الكل</button>
-                  <button class="qf-btn" data-filter="ok"
-                          style="padding:3px 10px;border-radius:999px;font-size:10px;
-                                 font-weight:600;border:1px solid rgba(46,204,138,.3);
-                                 color:#1A7A55;background:rgba(46,204,138,.08);cursor:pointer">جيد</button>
-                  <button class="qf-btn" data-filter="warn"
-                          style="padding:3px 10px;border-radius:999px;font-size:10px;
-                                 font-weight:600;border:1px solid rgba(240,165,0,.3);
-                                 color:#A67800;background:rgba(240,165,0,.08);cursor:pointer">متوسط</button>
-                  <button class="qf-btn" data-filter="critical"
-                          style="padding:3px 10px;border-radius:999px;font-size:10px;
-                                 font-weight:600;border:1px solid rgba(232,85,85,.3);
-                                 color:#A33;background:rgba(232,85,85,.07);cursor:pointer">ضعيف</button>
-                  <button class="qf-btn" data-filter="delayed"
-                          style="padding:3px 10px;border-radius:999px;font-size:10px;
-                                 font-weight:600;border:1px solid rgba(232,85,85,.3);
-                                 color:#A33;background:rgba(232,85,85,.07);cursor:pointer">متأخر</button>
-                </div>
-                <div class="hm-grid" id="heatmap-grid"/>
-                <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;font-size:10px;color:var(--text3)">
-                  <span><span style="display:inline-block;width:8px;height:8px;background:var(--green);border-radius:2px;margin-left:3px"/><b>≥70%</b> جيد</span>
-                  <span><span style="display:inline-block;width:8px;height:8px;background:var(--orange);border-radius:2px;margin-left:3px"/>50-70%</span>
-                  <span><span style="display:inline-block;width:8px;height:8px;background:var(--red);border-radius:2px;margin-left:3px"/>أقل 50%</span>
-                  <span><span style="display:inline-block;width:8px;height:8px;background:#C8D4DC;border-radius:2px;margin-left:3px"/>لم يبدأ</span>
-                </div>
-              </div>
+            <div class="card-hdr-actions">
+              <span style="font-size:9px;color:var(--text3)">محسوب آليًا</span>
             </div>
           </div>
+          <div class="card-body" id="quality-panel">
+            <div class="skeleton" style="height:140px"/>
+          </div>
+        </div>
 
-          <!-- Mosque Detail Section -->
-          <div id="section-mosque" class="wd-section">
-            <div id="mosque-detail-content">
-              <div style="padding:60px;text-align:center;color:var(--text3)">
-                <div style="font-size:32px;margin-bottom:12px">🕌</div>
-                <div style="font-size:14px;font-weight:600">
-                  اختر مسجداً من القائمة الجانبية أو الخريطة
-                </div>
-                <div style="font-size:12px;margin-top:4px">
-                  أو استخدم البحث في الأعلى
-                </div>
-              </div>
+      </div>
+
+      <!-- ⑥  AI INSIGHTS ──────────────────────────────────── -->
+      <div class="ai-insights-panel" id="ai-insights-panel">
+        <div class="ai-insights-hdr">
+          <div class="ai-badge">
+            🤖 AI تحليلات ذكية
+            <div class="ai-typing-dot"/>
+          </div>
+          <span style="font-size:10px;color:var(--text3)"
+                id="ai-last-updated">
+            تحديث تلقائي كل 15 دقيقة
+          </span>
+          <span style="font-size:9px;color:var(--text3);margin-right:auto"
+                id="ai-source-label"/>
+        </div>
+        <div id="ai-insights-list">
+          <div style="padding:20px;text-align:center;color:var(--text3)">
+            <div class="loading-spinner"
+                 style="width:20px;height:20px;margin:0 auto 8px"/>
+            جاري تحليل البيانات...
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑦  MOSQUE DETAIL ─────────────────────────────────── -->
+      <div id="section-mosque" class="wd-section">
+        <div id="mosque-detail-content">
+          <div style="padding:60px;text-align:center;color:var(--text3);
+                      background:var(--surface);border-radius:var(--r-xl);
+                      border:1px solid var(--border)">
+            <div style="font-size:36px;margin-bottom:12px">🕌</div>
+            <div style="font-size:14px;font-weight:700">
+              اختر مسجداً من القائمة أو الخريطة
+            </div>
+            <div style="font-size:12px;margin-top:4px">
+              أو استخدم البحث في الأعلى
             </div>
           </div>
-
-        </div><!-- /wd-content -->
-      </div><!-- /wd-main -->
-    </div><!-- /wd-shell -->
-
-    <!-- ══ MODALS ══════════════════════════════════════ -->
-
-    <!-- Subtask modal -->
-    <div class="modal-overlay" id="modal-subtask">
-      <div class="modal">
-        <div class="modal-hdr">
-          <div class="modal-title" id="modal-subtask-title">تفاصيل المهمة</div>
-          <button class="modal-close" onclick="closeModal('modal-subtask')">✕</button>
-        </div>
-        <div class="modal-body" id="modal-subtask-body"/>
-      </div>
-    </div>
-
-    <!-- Cert detail modal -->
-    <div class="modal-overlay" id="modal-cert">
-      <div class="modal">
-        <div class="modal-hdr">
-          <div class="modal-title" id="modal-cert-title">تفاصيل المستخلص</div>
-          <button class="modal-close" onclick="closeModal('modal-cert')">✕</button>
-        </div>
-        <div class="modal-body" id="modal-cert-body"/>
-      </div>
-    </div>
-
-    <!-- CO detail modal -->
-    <div class="modal-overlay" id="modal-co">
-      <div class="modal">
-        <div class="modal-hdr">
-          <div class="modal-title" id="modal-co-title">تفاصيل أمر التغيير</div>
-          <button class="modal-close" onclick="closeModal('modal-co')">✕</button>
-        </div>
-        <div class="modal-body" id="modal-co-body"/>
-      </div>
-    </div>
-
-    <!-- Lightbox -->
-    <div class="modal-overlay" id="modal-lightbox">
-      <div class="modal" style="max-width:90%;background:transparent;box-shadow:none">
-        <div style="text-align:center">
-          <img id="lightbox-img" style="max-width:100%;max-height:80vh;border-radius:10px" src="" alt=""/>
-          <div id="lightbox-caption" style="color:#fff;margin-top:10px;font-size:13px"/>
-          <button onclick="closeModal('modal-lightbox')"
-                  style="margin-top:12px;background:rgba(255,255,255,.2);color:#fff;
-                         border:none;border-radius:7px;padding:8px 20px;cursor:pointer;font-size:13px">
-            إغلاق
-          </button>
         </div>
       </div>
-    </div>
 
-    <!-- Visit detail -->
-    <div class="modal-overlay" id="modal-visit">
-      <div class="modal">
-        <div class="modal-hdr">
-          <div class="modal-title" id="modal-visit-title">تقرير الزيارة</div>
-          <button class="modal-close" onclick="closeModal('modal-visit')">✕</button>
-        </div>
-        <div class="modal-body" id="modal-visit-body"/>
-      </div>
-    </div>
+    </div><!-- /wd-content -->
+  </div><!-- /wd-main -->
+</div><!-- /wd-shell -->
 
-    <!-- On-site panel -->
-    <div class="modal-overlay" id="modal-onsite">
-      <div class="modal" style="max-width:400px">
-        <div class="modal-hdr">
-          <div class="modal-title">المستشارون في المواقع الآن</div>
-          <button class="modal-close" onclick="closeModal('modal-onsite')">✕</button>
-        </div>
-        <div class="modal-body">
-          <div class="onsite-list" id="onsite-list">
-            <div style="text-align:center;padding:20px;color:var(--text3)">جاري التحميل...</div>
-          </div>
-        </div>
-      </div>
-    </div>
+<!-- ══ MODALS ════════════════════════════════════════════ -->
 
-    <!-- Live stream -->
-    <div class="modal-overlay" id="modal-stream">
-      <div class="modal" style="max-width:850px">
-        <div class="modal-hdr">
-          <div class="modal-title" id="stream-modal-title">بث مباشر</div>
-          <span style="font-size:11px;color:var(--red);font-weight:700">● مباشر</span>
-          <button class="modal-close" onclick="closeModal('modal-stream')">✕</button>
-        </div>
-        <div class="modal-body" style="padding:0">
-          <div class="stream-embed" id="stream-embed"/>
-          <div style="padding:12px 16px;font-size:11px;color:var(--text3)">
-            البث من الموقع الميداني — مباشر
-          </div>
+<!-- Subtask -->
+<div class="modal-overlay" id="modal-subtask">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modal-subtask-title">تفاصيل المهمة</div>
+      <button class="modal-close" onclick="closeModal('modal-subtask')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-subtask-body"/>
+  </div>
+</div>
+
+<!-- Cert detail -->
+<div class="modal-overlay" id="modal-cert">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modal-cert-title">تفاصيل المستخلص</div>
+      <button class="modal-close" onclick="closeModal('modal-cert')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-cert-body"/>
+  </div>
+</div>
+
+<!-- CO detail -->
+<div class="modal-overlay" id="modal-co">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modal-co-title">تفاصيل أمر التغيير</div>
+      <button class="modal-close" onclick="closeModal('modal-co')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-co-body"/>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="modal-overlay" id="modal-lightbox">
+  <div class="modal"
+       style="max-width:90%;background:transparent;box-shadow:none">
+    <div style="text-align:center">
+      <img id="lightbox-img"
+           style="max-width:100%;max-height:80vh;border-radius:var(--r-xl)"
+           src="" alt=""/>
+      <div id="lightbox-caption"
+           style="color:#fff;margin-top:10px;font-size:13px"/>
+      <button onclick="closeModal('modal-lightbox')"
+              style="margin-top:14px;background:rgba(255,255,255,.2);
+                     color:#fff;border:none;border-radius:var(--r-md);
+                     padding:9px 22px;cursor:pointer;font-size:13px">
+        إغلاق
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Visit detail -->
+<div class="modal-overlay" id="modal-visit">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modal-visit-title">تقرير الزيارة</div>
+      <button class="modal-close" onclick="closeModal('modal-visit')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-visit-body"/>
+  </div>
+</div>
+
+<!-- On-site -->
+<div class="modal-overlay" id="modal-onsite">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-hdr">
+      <div class="modal-title">المستشارون في المواقع الآن</div>
+      <button class="modal-close" onclick="closeModal('modal-onsite')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="onsite-list" id="onsite-list">
+        <div style="text-align:center;padding:20px;color:var(--text3)">
+          جاري التحميل...
         </div>
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- ══ FLOATING CHATBOT ══════════════════════════════ -->
-    <div class="chatbot-fab" id="chatbot-fab" title="مساعد الوقف الذكي">🤖
-      <div class="chatbot-fab-dot"/>
+<!-- Live Stream -->
+<div class="modal-overlay" id="modal-stream">
+  <div class="modal" style="max-width:860px">
+    <div class="modal-hdr">
+      <div class="modal-title" id="stream-modal-title">بث مباشر</div>
+      <span style="font-size:11px;color:var(--red);font-weight:700">● مباشر</span>
+      <button class="modal-close"
+              onclick="closeModal('modal-stream')">✕</button>
     </div>
-
-    <div class="chatbot-panel" id="chatbot-panel">
-      <div class="chat-hdr">
-        <div class="chat-av">AI</div>
-        <div>
-          <div class="chat-hdrtitle">مساعد الوقف الذكي</div>
-        </div>
-        <div class="chat-online"/>
-        <span style="font-size:10px;color:var(--text3)">Azure OpenAI</span>
-        <button class="chat-close" id="chat-close">✕</button>
-      </div>
-      <div class="chat-msgs" id="chat-msgs">
-        <div class="chat-msg bot">
-          مرحباً، اختر مسجداً وسأحلل بياناته فوراً.
-        </div>
-      </div>
-      <div class="chat-sugs">
-        <button class="chat-sug">المهام المتأخرة؟</button>
-        <button class="chat-sug">المستخلصات المعلقة؟</button>
-        <button class="chat-sug">مقارنة KPI بالخطة؟</button>
-        <button class="chat-sug">آخر زيارات الاستشاري؟</button>
-      </div>
-      <div class="chat-input-row">
-        <input class="chat-input" id="chat-input"
-               placeholder="اسأل عن أي مشروع..."
-               autocomplete="off"/>
-        <button class="chat-send" id="chat-send">إرسال</button>
+    <div class="modal-body" style="padding:0">
+      <div class="stream-embed" id="stream-embed"/>
+      <div style="padding:12px 18px;font-size:11px;color:var(--text3)">
+        البث من الموقع الميداني — مباشر
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- Search dropdown CSS extra -->
-    <style>
-      /* Global Search */
-      .search-wrap { flex: 1; max-width: 340px; }
-      .global-search-input {
-        width: 100%; padding: 8px 16px;
-        border: 1.5px solid var(--border); border-radius: 10px;
-        font-size: 13px; font-family: inherit;
-        color: var(--text1); background: var(--surface2);
-        outline: none; transition: border-color .15s;
-      }
-      .global-search-input:focus { border-color: var(--teal); background: #fff; }
-      .search-dropdown {
-        position: absolute; top: calc(100% + 6px); right: 0; left: 0;
-        background: var(--surface); border: 1px solid var(--border);
-        border-radius: 10px; box-shadow: var(--shadow-md);
-        z-index: 200; display: none; overflow: hidden;
-      }
-      .search-dropdown.show { display: block; }
-      .search-item {
-        display: flex; align-items: center; gap: 10px;
-        padding: 10px 14px; cursor: pointer; transition: background .1s;
-      }
-      .search-item:hover { background: var(--surface2); }
-      .search-item-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-      .search-item-label { font-size: 13px; font-weight: 600; color: var(--text1); }
-      .search-item-meta  { font-size: 11px; color: var(--text3); }
-      .search-item-type  { margin-right: auto; font-size: 16px; }
-      .search-empty { padding: 16px; text-align: center; color: var(--text3); font-size: 12px; }
+<!-- ══ FLOATING CHATBOT ══════════════════════════════════ -->
+<div class="chatbot-fab" id="chatbot-fab" title="مساعد الوقف الذكي">
+  🤖
+  <div class="chatbot-fab-dot"/>
+</div>
 
-      /* Topbar badges */
-      .topbar-badge {
-        display: flex; align-items: center; gap: 5px;
-        padding: 4px 10px; border-radius: 999px;
-        font-size: 11px; font-weight: 700; cursor: default;
-      }
-      .topbar-badge.red    { background: rgba(232,85,85,.1);   color: var(--red); }
-      .topbar-badge.orange { background: rgba(240,165,0,.1);   color: var(--orange); }
-      .topbar-badge.yellow { background: rgba(200,164,84,.12); color: var(--gold); }
+<div class="chatbot-panel" id="chatbot-panel">
+  <div class="chat-hdr">
+    <div class="chat-av">AI</div>
+    <div>
+      <div class="chat-hdr-title">مساعد الوقف الذكي</div>
+    </div>
+    <div class="chat-online"/>
+    <span style="font-size:10px;color:var(--text3)">Azure OpenAI</span>
+    <button class="chat-close" id="chat-close">✕</button>
+  </div>
+  <div class="chat-msgs" id="chat-msgs">
+    <div class="chat-msg bot">
+      مرحباً، اختر مسجداً وسأحلل بياناته فوراً. يمكنني الإجابة على أسئلة المخاطر والتأخير والمستخلصات.
+    </div>
+  </div>
+  <div class="chat-sugs">
+    <button class="chat-sug">المشاريع الحرجة؟</button>
+    <button class="chat-sug">المستخلصات المعلقة؟</button>
+    <button class="chat-sug">أسوأ المقاولين أداءً؟</button>
+    <button class="chat-sug">توقعات التأخير؟</button>
+  </div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="chat-input"
+           placeholder="اسأل عن أي مشروع..."
+           autocomplete="off"/>
+    <button class="chat-send" id="chat-send">إرسال</button>
+  </div>
+</div>
 
-      /* Tab badge */
-      .tab-badge {
-        display: inline-flex; align-items: center; justify-content: center;
-        width: 16px; height: 16px; border-radius: 50%;
-        font-size: 9px; font-weight: 800;
-        margin-right: 4px; margin-bottom: 1px;
-      }
-      .tab-badge.red    { background: var(--red);    color: #fff; }
-      .tab-badge.orange { background: var(--orange); color: #fff; }
-
-      /* Sidebar phase styles */
-      .sb-pkg-hdr.current { background: rgba(35,114,146,.15); color: var(--teal-light); }
-      .sb-pkg-live {
-        font-size: 8px; font-weight: 800; background: var(--teal);
-        color: #fff; padding: 1px 6px; border-radius: 999px;
-      }
-
-      /* Gantt phase styles */
-      .gantt-phase-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-left: 5px; vertical-align: middle; }
-      .gantt-live-badge {
-        font-size: 9px; font-weight: 800; background: var(--teal);
-        color: #fff; padding: 1px 6px; border-radius: 999px; margin-right: 4px;
-      }
-      .gantt-bar-bg {
-        position: absolute; top: 3px; bottom: 3px;
-        overflow: hidden; display: flex; align-items: center;
-      }
-      .gantt-bar-progress { position: absolute; top: 0; right: 0; bottom: 0; }
-      .gantt-bar-label {
-        position: relative; z-index: 1;
-        font-size: 9px; font-weight: 700;
-        padding: 0 8px; white-space: nowrap;
-      }
-      .gantt-mosques-list { display: flex; flex-direction: column; gap: 4px; }
-      .gantt-mosque-row {
-        display: flex; align-items: center; gap: 7px;
-        padding: 4px 6px; border-radius: 5px; cursor: pointer;
-        font-size: 11px; transition: background .1s;
-      }
-      .gantt-mosque-row:hover { background: var(--surface2); }
-      .gantt-m-dot  { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-      .gantt-m-code { font-family: monospace; font-size: 10px; color: var(--teal); font-weight: 600; min-width: 42px; }
-      .gantt-m-name { flex: 1; color: var(--text2); }
-      .gantt-m-kpi  { font-size: 10px; font-weight: 700; min-width: 32px; text-align: left; }
-      .gantt-m-delay { font-size: 9px; color: var(--red); font-weight: 700; }
-
-      /* Fin KPI mini cards */
-      .fin-kpi-card {
-        flex: 1; background: var(--surface2); border-radius: 10px;
-        padding: 12px 16px; min-width: 100px;
-        border: 1px solid var(--border);
-      }
-      .fin-kpi-val   { font-size: 18px; font-weight: 700; color: var(--text1); }
-      .fin-kpi-label { font-size: 11px; color: var(--text3); margin-top: 3px; }
-    </style>
-
-    <script src="/waqf_dashboard/static/src/js/dashboard.js"/>
-    </body>
-  </t>
+<script src="/waqf_dashboard/static/src/js/dashboard.js"/>
+</body>
+</t>
 </template>
 </odoo>
