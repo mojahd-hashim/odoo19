@@ -129,7 +129,7 @@ class WaqfAiSnapshotRun(models.Model):
             ai_error = False
             if run._get_param('waqf_ai_enabled', 'False') in ('True', 'true', '1'):
                 try:
-                    ai_response = self._call_azure_openai({
+                    ai_response = run._call_azure_openai({
                         'phase': self._phase_payload(phase),
                         'mosques': snapshots_payload,
                         'rule_alerts': rule_alert_payloads,
@@ -140,7 +140,7 @@ class WaqfAiSnapshotRun(models.Model):
                     ai_error = str(exc)
                     _logger.exception('Azure OpenAI call failed')
 
-            self.env['waqf.ai.phase.insight']._build_phase_insight(run, snapshots_payload)
+            run.env['waqf.ai.phase.insight']._build_phase_insight(run, snapshots_payload)
             status = 'done_with_ai_error' if ai_error else 'done'
             run.write({
                 'status': status,
