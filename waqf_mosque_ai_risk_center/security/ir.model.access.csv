@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ai_run_viewer,ai.run.viewer,model_waqf_ai_snapshot_run,group_ai_risk_viewer,1,0,0,0
+access_ai_run_manager,ai.run.manager,model_waqf_ai_snapshot_run,group_ai_risk_manager,1,0,0,0
+access_ai_run_admin,ai.run.admin,model_waqf_ai_snapshot_run,group_ai_risk_admin,1,1,1,1
+access_ai_snapshot_viewer,ai.snapshot.viewer,model_waqf_ai_mosque_snapshot,group_ai_risk_viewer,1,0,0,0
+access_ai_snapshot_admin,ai.snapshot.admin,model_waqf_ai_mosque_snapshot,group_ai_risk_admin,1,1,1,1
+access_ai_alert_viewer,ai.alert.viewer,model_waqf_ai_alert,group_ai_risk_viewer,1,0,0,0
+access_ai_alert_manager,ai.alert.manager,model_waqf_ai_alert,group_ai_risk_manager,1,1,0,0
+access_ai_alert_admin,ai.alert.admin,model_waqf_ai_alert,group_ai_risk_admin,1,1,1,1
+access_ai_prediction_viewer,ai.prediction.viewer,model_waqf_ai_prediction,group_ai_risk_viewer,1,0,0,0
+access_ai_prediction_admin,ai.prediction.admin,model_waqf_ai_prediction,group_ai_risk_admin,1,1,1,1
+access_ai_phase_insight_viewer,ai.phase.insight.viewer,model_waqf_ai_phase_insight,group_ai_risk_viewer,1,0,0,0
+access_ai_phase_insight_admin,ai.phase.insight.admin,model_waqf_ai_phase_insight,group_ai_risk_admin,1,1,1,1

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ai_snapshot_run_list" model="ir.ui.view">
+        <field name="name">waqf.ai.snapshot.run.list</field>
+        <field name="model">waqf.ai.snapshot.run</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="status in ('failed','failed_ai')" decoration-success="status == 'done'">
+                <field name="run_datetime"/><field name="name"/><field name="phase_id"/><field name="status"/>
+                <field name="mosque_count"/><field name="alerts_count"/><field name="critical_count"/><field name="high_count"/><field name="duration_seconds"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_ai_snapshot_run_form" model="ir.ui.view">
+        <field name="name">waqf.ai.snapshot.run.form</field>
+        <field name="model">waqf.ai.snapshot.run</field>
+        <field name="arch" type="xml">
+            <form>
+                <header><button name="action_run" type="object" string="Run Analysis" class="btn-primary" groups="waqf_mosque_ai_risk_center.group_ai_risk_admin"/><field name="status" widget="statusbar"/></header>
+                <sheet>
+                    <group><group><field name="name"/><field name="phase_id"/><field name="phase_name"/><field name="run_datetime"/></group><group><field name="mosque_count"/><field name="alerts_count"/><field name="critical_count"/><field name="duration_seconds"/></group></group>
+                    <notebook>
+                        <page string="Snapshots"><field name="snapshot_ids"/></page>
+                        <page string="Alerts"><field name="alert_ids"/></page>
+                        <page string="Predictions"><field name="prediction_ids"/></page>
+                        <page string="Raw Snapshot"><field name="raw_snapshot_json" widget="json"/></page>
+                        <page string="AI Response"><field name="ai_response_json" widget="json"/></page>
+                        <page string="Error"><field name="error_message"/></page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_ai_snapshot_run" model="ir.actions.act_window">
+        <field name="name">AI Risk Runs</field><field name="res_model">waqf.ai.snapshot.run</field><field name="view_mode">list,form</field>
+    </record>
+</odoo>
