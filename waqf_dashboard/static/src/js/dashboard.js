@@ -204,11 +204,11 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>`).join('');
 
       row.innerHTML = `
-        <div class="gantt-label" style="display:flex;align-items:center;gap:6px">
-          <span class="gantt-phase-dot" style="background:${color}"></span>
-          <span style="font-size:11px;font-weight:700">${pkg.code}</span>
-          ${pkg.is_current ? '<span class="gantt-live-badge">الآن</span>' : '<span style="font-size:9px;color:var(--text3)">✓ منتهية</span>'}
-        </div>
+        // <div class="gantt-label" style="display:flex;align-items:center;gap:6px">
+        //   <span class="gantt-phase-dot" style="background:${color}"></span>
+        //   <span style="font-size:11px;font-weight:700">${pkg.code}</span>
+        //   ${pkg.is_current ? '<span class="gantt-live-badge">الآن</span>' : '<span style="font-size:9px;color:var(--text3)">✓ منتهية</span>'}
+        // </div>
 
         <div style="flex:1">
           <!-- شريط التقدم -->
