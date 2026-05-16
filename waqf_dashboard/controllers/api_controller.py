@@ -181,7 +181,7 @@ class WaqfDashboardAPI(http.Controller):
             Pred  = request.env['waqf.ai.prediction'].sudo()
             Phase = request.env['waqf.ai.phase.insight'].sudo()
 
-            domain = [('active', '=', True)]
+            domain = []
             if mosque_id:
                 domain.append(('mosque_id', '=', int(mosque_id)))
 
@@ -198,7 +198,7 @@ class WaqfDashboardAPI(http.Controller):
                 })
 
             # Phase-level insights
-            for ph in Phase.search([('active', '=', True)], limit=3):
+            for ph in Phase.search([], limit=3):
                 insights.append({
                     'type':    'phase',
                     'icon':    '📦',
@@ -303,7 +303,7 @@ class WaqfDashboardAPI(http.Controller):
 
         if has_ai:
             Snap = request.env['waqf.ai.mosque.snapshot'].sudo()
-            for s in Snap.search([('active', '=', True)]):
+            for s in Snap.search([]):
                 points.append({
                     'mosque_id':   s.mosque_id.id,
                     'mosque_name': s.mosque_id.name,
@@ -312,7 +312,7 @@ class WaqfDashboardAPI(http.Controller):
                     'probability': s.risk_probability,  # 0-100
                     'size':        s.mosque_id.contract_value,
                     'kpi':         round(s.mosque_id.overall_kpi, 1),
-                    'risk_level':  s.risk_level,        # critical/high/medium/low
+                    'risk_level':  s.severity,        # critical/high/medium/low
                 })
         else:
             # Fallback: derive from KPI + delay
@@ -348,8 +348,7 @@ class WaqfDashboardAPI(http.Controller):
 
         if has_ai:
             Snap = request.env['waqf.ai.mosque.snapshot'].sudo()
-            for s in Snap.search([('active', '=', True),
-                                   ('forecast_finish_date', '!=', False)],
+            for s in Snap.search([('forecast_finish_date', '!=', False)],
                                   order='variance_days desc', limit=12):
                 m = s.mosque_id
                 rows.append({
@@ -743,7 +742,7 @@ class WaqfDashboardAPI(http.Controller):
                 [('mosque_id', '=', mosque_id)], limit=1)
             if snap:
                 ai_data = {
-                    'risk_level':      snap.risk_level,
+                    'risk_level':      snap.severity,
                     'risk_impact':     snap.risk_impact,
                     'risk_probability':snap.risk_probability,
                     'health_score':    snap.health_score,
