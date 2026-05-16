@@ -126,7 +126,13 @@ class WaqfAiMosqueSnapshot(models.Model):
             'latest_recommendations': self._truncate(getattr(last_report, 'recommendations', '') if last_report else ''),
             'latest_activities_done': self._truncate(getattr(last_report, 'activities_done', '') if last_report else ''),
             'latest_activities_planned': self._truncate(getattr(last_report, 'activities_planned', '') if last_report else ''),
-            'attendance_notes': self._truncate(' | '.join(attendance_7d.mapped('notes')[:5])) if attendance_7d else '',
+            'attendance_notes': self._truncate(
+    ' | '.join(
+        str(note).strip()
+        for note in attendance_7d.mapped('notes')[:5]
+        if note
+    )
+) if attendance_7d else '',
         }
         vals = {
             'run_id': run.id,
