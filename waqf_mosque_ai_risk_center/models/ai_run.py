@@ -123,7 +123,7 @@ class WaqfAiSnapshotRun(models.Model):
 
             rule_alert_payloads = self.env['waqf.ai.alert']._generate_rule_alerts(run, snapshots_payload)
             ai_error = False
-            if self._get_param('waqf_ai_enabled', 'False') in ('True', 'true', '1'):
+            if run._get_param('waqf_ai_enabled', 'False') in ('True', 'true', '1'):
                 try:
                     ai_response = self._call_azure_openai({
                         'phase': self._phase_payload(phase),
@@ -131,7 +131,7 @@ class WaqfAiSnapshotRun(models.Model):
                         'rule_alerts': rule_alert_payloads,
                     })
                     run.ai_response_json = ai_response
-                    self._store_ai_response(run, ai_response)
+                    run._store_ai_response(ai_response)
                 except Exception as exc:
                     ai_error = str(exc)
                     _logger.exception('Azure OpenAI call failed')
@@ -211,7 +211,9 @@ class WaqfAiSnapshotRun(models.Model):
 اكتب بالعربية الإدارية المختصرة.
 أعد JSON فقط بالشكل المطلوب: phase_summary, alerts, predictions.'''
 
-    def _store_ai_response(self, run, response):
+    def _store_ai_response(self, ai_response):
+        self.ensure_one()
+        run = self
         confidence_threshold = float(self._get_param('waqf_ai_confidence_threshold', 0.55) or 0.55)
         for item in response.get('alerts', []) or []:
             if float(item.get('confidence') or 0.0) >= confidence_threshold:
