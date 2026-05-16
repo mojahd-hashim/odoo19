@@ -37,10 +37,10 @@
             </xpath>
         </field>
     </record>
-    <record id="action_ai_risk_config" model="ir.actions.act_window">
-        <field name="name">AI Risk Configuration</field>
-        <field name="res_model">res.config.settings</field>
-        <field name="view_mode">form</field>
-        <field name="target">inline</field>
-    </record>
+<!--    <record id="action_ai_risk_config" model="ir.actions.act_window">-->
+<!--        <field name="name">AI Risk Configuration</field>-->
+<!--        <field name="res_model">res.config.settings</field>-->
+<!--        <field name="view_mode">form</field>-->
+<!--        <field name="target">inline</field>-->
+<!--    </record>-->
 </odoo>

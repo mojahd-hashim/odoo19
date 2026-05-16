@@ -6,5 +6,4 @@
     <menuitem id="menu_ai_alerts" name="Smart Alerts" parent="menu_ai_risk_root" action="action_ai_alert" sequence="30"/>
     <menuitem id="menu_ai_predictions" name="Predictions" parent="menu_ai_risk_root" action="action_ai_prediction" sequence="40"/>
     <menuitem id="menu_ai_phase_insights" name="Phase Insights" parent="menu_ai_risk_root" action="action_ai_phase_insight" sequence="50"/>
-    <menuitem id="menu_ai_config" name="Configuration" parent="menu_ai_risk_root" action="action_ai_risk_config" sequence="90" groups="waqf_mosque_ai_risk_center.group_ai_risk_admin"/>
 </odoo>
