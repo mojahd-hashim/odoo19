@@ -131,7 +131,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const monthsEl = $('gantt-months');
     if (!el) return;
 
-    // Project date range
+    // ── فلتر: فقط المراحل التي بدأت (current + past) ──────
+    const activePkgs = pkgs.filter(pkg => pkg.is_current || pkg.is_past);
+    if (!activePkgs.length) {
+      el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-size:12px">لا توجد مراحل نشطة حتى الآن</div>';
+      return;
+    }
+
+    // نطاق زمني مبني على المراحل الفعلية فقط
     const projectStart = new Date('2026-04-01');
     const projectEnd   = new Date('2027-04-30');
     const totalMs      = projectEnd - projectStart;
@@ -152,101 +159,108 @@ document.addEventListener('DOMContentLoaded', function () {
 
     el.innerHTML = '';
 
-    // Color per phase
-    const phaseColors = {
-      current: '#237292',
-      past:    '#2ECC8A',
-      future:  '#8FA3B3',
-    };
+    const phaseColors = { current: '#237292', past: '#2ECC8A' };
 
-    pkgs.forEach(pkg => {
+    activePkgs.forEach(pkg => {
       if (!pkg.planned_start || !pkg.planned_end) return;
       const start = new Date(pkg.planned_start);
       const end   = new Date(pkg.planned_end);
       const leftPct  = Math.max(0, (start - projectStart) / totalMs * 100);
       const widthPct = Math.min(100 - leftPct, (end - start) / totalMs * 100);
-      const phase    = pkg.is_current ? 'current' : pkg.is_past ? 'past' : 'future';
+      const phase    = pkg.is_current ? 'current' : 'past';
       const color    = phaseColors[phase];
 
-      // progress fill inside bar
       let progressPct = 0;
       if (phase === 'past') progressPct = 100;
       else if (phase === 'current') {
         const elapsed = Math.max(0, today - start);
-        const total   = end - start;
-        progressPct = Math.min(100, elapsed / total * 100);
+        progressPct   = Math.min(100, elapsed / (end - start) * 100);
       }
 
       const row = document.createElement('div');
       row.className = 'gantt-row';
+      row.style.cssText = 'margin-bottom:10px'; // مساحة أكبر بين الصفوف
+
+      // ── بناء قائمة المساجد التفاعلية ──────────────────
+      const mosqueRows = pkg.mosques.map(m => `
+        <div class="gantt-mosque-row" onclick="loadMosqueDetailGlobal(${m.id})"
+             style="display:flex;align-items:center;gap:8px;
+                    padding:6px 10px;border-radius:7px;cursor:pointer;
+                    border:1px solid transparent;transition:.15s"
+             onmouseover="this.style.background='var(--surface2)';this.style.borderColor='var(--border)'"
+             onmouseout="this.style.background='';this.style.borderColor='transparent'">
+          <div style="width:8px;height:8px;border-radius:50%;flex-shrink:0;
+                      background:${dotColor(m.overall_kpi)}"></div>
+          <span style="font-family:monospace;font-size:10px;color:var(--teal);
+                       font-weight:600;min-width:55px">${m.code}</span>
+          <span style="flex:1;font-size:12px;color:var(--text2)">${truncate(m.name, 18)}</span>
+          <span style="font-size:11px;font-weight:700;
+                       color:${dotColor(m.overall_kpi)}">${m.overall_kpi}%</span>
+          ${m.days_delay > 0 ? `
+            <span style="font-size:10px;color:var(--red);font-weight:700">
+              -${m.days_delay}د
+            </span>` : ''}
+          <span style="font-size:10px;color:var(--text3)">›</span>
+        </div>`).join('');
+
       row.innerHTML = `
-        <div class="gantt-label" title="${pkg.name}">
+        <div class="gantt-label" style="display:flex;align-items:center;gap:6px">
           <span class="gantt-phase-dot" style="background:${color}"></span>
-          ${pkg.code}
-          ${pkg.is_current ? '<span class="gantt-live-badge">الآن</span>' : ''}
+          <span style="font-size:11px;font-weight:700">${pkg.code}</span>
+          ${pkg.is_current ? '<span class="gantt-live-badge">الآن</span>' : '<span style="font-size:9px;color:var(--text3)">✓ منتهية</span>'}
         </div>
-        <div class="gantt-track" data-pkg="${pkg.id}">
-          <!-- background bar -->
-          <div class="gantt-bar-bg" style="right:${leftPct}%;width:${widthPct}%;background:${color}22;border:1px solid ${color}44;border-radius:6px">
-            <!-- progress fill -->
-            <div class="gantt-bar-progress" style="width:${progressPct}%;background:${color};border-radius:5px;height:100%;transition:width 1s ease"></div>
-            <!-- label -->
-            <span class="gantt-bar-label" style="color:${color}">
-              ${pkg.avg_kpi}% · ${pkg.mosque_count}م
-            </span>
+
+        <div style="flex:1">
+          <!-- شريط التقدم -->
+          <div class="gantt-track" data-pkg="${pkg.id}"
+               style="position:relative;margin-bottom:10px">
+            <div class="gantt-bar-bg"
+                 style="right:${leftPct}%;width:${widthPct}%;background:${color}22;
+                        border:1px solid ${color}44;border-radius:6px;
+                        position:absolute;top:3px;bottom:3px">
+              <div class="gantt-bar-progress"
+                   style="width:${progressPct}%;background:${color};
+                          border-radius:5px;height:100%;transition:width 1s ease"></div>
+              <span class="gantt-bar-label" style="color:${color}">
+                ${pkg.avg_kpi}% · ${pkg.mosque_count}م
+              </span>
+            </div>
+            <div class="gantt-today" style="right:${todayPct}%">
+              <div class="gantt-today-label">اليوم</div>
+            </div>
           </div>
-          <!-- today line -->
-          <div class="gantt-today" style="right:${todayPct}%">
-            <div class="gantt-today-label">اليوم</div>
-          </div>
-          <!-- popup -->
-          <div class="gantt-popup" id="gantt-popup-${pkg.id}">
-            <div class="gantt-popup-title">${pkg.name}</div>
-            <div class="gantt-popup-meta">
-              ${pkg.planned_start} — ${pkg.planned_end}
+
+          <!-- قائمة المساجد — تملأ المساحة ──────────────── -->
+          <div style="background:var(--surface2);border-radius:10px;
+                      border:1px solid var(--border);overflow:hidden">
+            <!-- header -->
+            <div style="display:flex;align-items:center;justify-content:space-between;
+                        padding:8px 12px;border-bottom:1px solid var(--border);
+                        background:white">
+              <span style="font-size:11px;font-weight:700;color:var(--text1)">
+                مساجد ${pkg.name}
+              </span>
+              <span style="font-size:10px;color:var(--text3)">
+                ${pkg.mosques.filter(m => m.days_delay > 0).length > 0
+                  ? `<span style="color:var(--red);font-weight:600">${pkg.mosques.filter(m => m.days_delay > 0).length} متأخر</span> · `
+                  : ''}
+                ${pkg.mosque_count} مسجد
+              </span>
             </div>
-            <div class="gantt-popup-row">
-              <span class="gantt-popup-label">KPI الحالي</span>
-              <span class="gantt-popup-val" style="color:${color}">${pkg.avg_kpi}%</span>
-            </div>
-            <div class="gantt-popup-row">
-              <span class="gantt-popup-label">المرحلة</span>
-              <span class="gantt-popup-val">${phase === 'current' ? '🟢 نشطة الآن' : phase === 'past' ? '✅ منتهية' : '⏳ قادمة'}</span>
-            </div>
-            <!-- Mosques list in popup -->
-            <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px">
-              <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px">المساجد (${pkg.mosque_count})</div>
-              <div class="gantt-mosques-list">
-                ${pkg.mosques.slice(0, 6).map(m => `
-                  <div class="gantt-mosque-row" onclick="loadMosqueDetailGlobal(${m.id})">
-                    <div class="gantt-m-dot" style="background:${dotColor(m.overall_kpi)}"></div>
-                    <span class="gantt-m-code">${m.code}</span>
-                    <span class="gantt-m-name">${truncate(m.name, 14)}</span>
-                    <span class="gantt-m-kpi" style="color:${dotColor(m.overall_kpi)}">${m.overall_kpi}%</span>
-                    ${m.days_delay > 0 ? `<span class="gantt-m-delay">-${m.days_delay}د</span>` : ''}
-                  </div>`).join('')}
-                ${pkg.mosques.length > 6 ? `
-                  <div style="font-size:10px;color:var(--text3);text-align:center;padding-top:4px">
-                    +${pkg.mosques.length - 6} مسجد آخر
-                  </div>` : ''}
-              </div>
+            <!-- rows -->
+            <div style="padding:6px">
+              ${mosqueRows}
             </div>
           </div>
         </div>`;
+
       el.appendChild(row);
 
-      // Toggle popup on track click
-      const track = row.querySelector('.gantt-track');
-      const popup  = row.querySelector('.gantt-popup');
-      track.addEventListener('click', e => {
+      // click على الشريط يفتح/يغلق القائمة (اختياري — القائمة دائماً مرئية هنا)
+      row.querySelector('.gantt-track')?.addEventListener('click', e => {
         e.stopPropagation();
-        document.querySelectorAll('.gantt-popup').forEach(p => p !== popup && p.classList.remove('show'));
-        popup.classList.toggle('show');
       });
     });
-
-    document.addEventListener('click', () =>
-      document.querySelectorAll('.gantt-popup').forEach(p => p.classList.remove('show')));
   }
 
   // global helper so inline onclick can call it
