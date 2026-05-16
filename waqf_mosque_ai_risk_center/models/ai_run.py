@@ -77,9 +77,13 @@ class WaqfAiSnapshotRun(models.Model):
     def _find_current_phase(self):
         Package = self.env['mosque.package'].sudo()
         today = fields.Date.context_today(self)
+        #todo
+        # phase = Package.search([
+        #     ('planned_start', '<=', today),
+        #     ('planned_end', '>=', today),
+        # ], order='planned_start desc', limit=1)
         phase = Package.search([
-            ('planned_start', '<=', today),
-            ('planned_end', '>=', today),
+            ('id', '=', 6)
         ], order='planned_start desc', limit=1)
         if phase:
             return phase
