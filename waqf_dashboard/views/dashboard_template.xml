@@ -248,7 +248,7 @@
       </div>
 
       <!-- RISK MATRIX + CONTRACTORS -->
-      <div class="grid-2">
+      <div>
         <div class="card accent-gold">
           <div class="card-hdr">
             <div class="card-title"><span class="card-title-icon">⚖️</span>مصفوفة المخاطر</div>
