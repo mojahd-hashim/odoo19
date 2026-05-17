@@ -128,7 +128,7 @@ class WaqfDashboardAPI(http.Controller):
 
         if has_ai:
             Alert = request.env['waqf.ai.alert'].sudo()
-            domain = [('state', 'in', ['new', 'acknowledged'])]
+            domain = [('status', 'in', ['new', 'acknowledged'])]
             if severity:
                 domain.append(('severity', '=', severity))
             if category:
@@ -145,7 +145,7 @@ class WaqfDashboardAPI(http.Controller):
                     'mosque_name': a.mosque_id.name if a.mosque_id else '',
                     'mosque_code': a.mosque_id.code if a.mosque_id else '',
                     'cta_label':   a.cta_label or 'عرض التفاصيل',
-                    'state':       a.state,
+                    'state':       a.status,
                     'created_at':  str(a.create_date),
                 })
         else:
