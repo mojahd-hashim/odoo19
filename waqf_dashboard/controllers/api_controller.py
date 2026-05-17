@@ -223,7 +223,7 @@ class WaqfDashboardAPI(http.Controller):
             if mosque_id:
                 domain.append(('mosque_id', '=', int(mosque_id)))
 
-            for p in Pred.search(domain, order='priority asc', limit=8):
+            for p in Pred.search(domain, limit=8):
                 insights.append({
                     'type':    p.insight_type,   # risk / opportunity / action / info
                     'icon':    p.icon or '📊',
@@ -250,9 +250,10 @@ class WaqfDashboardAPI(http.Controller):
             # Last snapshot time
             SnapshotRun = request.env['waqf.ai.snapshot.run'].sudo()
             last_run = SnapshotRun.search(
-                [('state', '=', 'done')], order='run_date desc', limit=1)
+                [('status', 'in', ['done', 'done_with_ai_error'])],
+                order='run_datetime desc', limit=1)
             if last_run:
-                last_updated = str(last_run.run_date)
+                last_updated = str(last_run.run_datetime)
 
         else:
             # ── Rule-based fallback insights ──────────────
@@ -343,7 +344,8 @@ class WaqfDashboardAPI(http.Controller):
             Snap = request.env['waqf.ai.mosque.snapshot'].sudo()
             # نأخذ آخر run فقط
             last_run = request.env['waqf.ai.snapshot.run'].sudo().search(
-                [('state', '=', 'done')], order='run_date desc', limit=1)
+                [('status', 'in', ['done', 'done_with_ai_error'])],
+                order='run_datetime desc', limit=1)
 
             domain = [('run_id', '=', last_run.id)] if last_run else []
 
