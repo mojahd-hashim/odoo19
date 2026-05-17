@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', function () {
         mosqueContext: null,
         chatHistory: [],
         refreshTimer: null,
+        map: null,
+        mapMarkers: {},
+        liveStreams: {},   // ← تأكد أنه موجود هنا
     };
 
     /* ── Helpers ────────────────────────────────────────────── */
@@ -489,13 +492,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function _addMapMarker(m) {
         if (!S.map || !window.L) return;
+        if (!m || m.lat === undefined || m.lng === undefined) return;  // ← أضف
+        if (isNaN(m.lat) || isNaN(m.lng)) return;  // ← أضف
 
         const kpiColor = m.kpi_color === 'green' ? '#2ECC8A' :
             m.kpi_color === 'yellow' ? '#F0A500' :
                 m.kpi_color === 'red' ? '#E85555' : '#8FA3B3';
 
-        const hasStream = !!S.liveStreams[m.id];
-        const hasAlert = S.allAlerts.some(a => a.mosque_id === m.id && a.severity === 'critical');
+        const hasStream = S.liveStreams ? !!S.liveStreams[m.id] : false;  // ← آمن
+        const hasAlert = S.allAlerts
+            ? S.allAlerts.some(a => a.mosque_id === m.id && a.severity === 'critical')
+            : false;  // ← آمن
 
         const icon = L.divIcon({
             className: '',
@@ -629,85 +636,85 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function _addDemoMarkers(mosques) {
-  const cityBases = {
-    riyadh: {lat: 24.7136, lng: 46.6753},
-    jeddah: {lat: 21.4858, lng: 39.1925},
-    taif:   {lat: 21.2703, lng: 40.4158},
-    jazan:  {lat: 16.8892, lng: 42.5511},
-    yara:   {lat: 18.3059, lng: 42.7337},
-    aflaj:  {lat: 22.2641, lng: 46.7159},
-    rafha:  {lat: 29.6267, lng: 43.4914},
-  };
+        const cityBases = {
+            riyadh: {lat: 24.7136, lng: 46.6753},
+            jeddah: {lat: 21.4858, lng: 39.1925},
+            taif: {lat: 21.2703, lng: 40.4158},
+            jazan: {lat: 16.8892, lng: 42.5511},
+            yara: {lat: 18.3059, lng: 42.7337},
+            aflaj: {lat: 22.2641, lng: 46.7159},
+            rafha: {lat: 29.6267, lng: 43.4914},
+        };
 
-  // أضف دائرة ملونة لكل مدينة فيها مساجد
-  const citiesWithMosques = {};
-  mosques.forEach(m => {
-    if (!m) return;
-    const city = m.city || 'riyadh';
-    if (!citiesWithMosques[city]) citiesWithMosques[city] = [];
-    citiesWithMosques[city].push(m);
-  });
+        // أضف دائرة ملونة لكل مدينة فيها مساجد
+        const citiesWithMosques = {};
+        mosques.forEach(m => {
+            if (!m) return;
+            const city = m.city || 'riyadh';
+            if (!citiesWithMosques[city]) citiesWithMosques[city] = [];
+            citiesWithMosques[city].push(m);
+        });
 
-  Object.entries(citiesWithMosques).forEach(([city, cityMosques]) => {
-    const base = cityBases[city] || cityBases.riyadh;
+        Object.entries(citiesWithMosques).forEach(([city, cityMosques]) => {
+            const base = cityBases[city] || cityBases.riyadh;
 
-    // دائرة المدينة
-    const avgKpi = cityMosques.reduce((s, m) => s + (m.overall_kpi || 0), 0)
-                   / cityMosques.length;
-    const cityColor = avgKpi >= 70 ? '#2ECC8A' :
-                      avgKpi >= 50 ? '#F0A500' : '#E85555';
+            // دائرة المدينة
+            const avgKpi = cityMosques.reduce((s, m) => s + (m.overall_kpi || 0), 0)
+                / cityMosques.length;
+            const cityColor = avgKpi >= 70 ? '#2ECC8A' :
+                avgKpi >= 50 ? '#F0A500' : '#E85555';
 
-    // إضافة دائرة للمدينة
-    if (S.map && window.L) {
-      L.circle([base.lat, base.lng], {
-        radius:      cityMosques.length * 3000,
-        color:       cityColor,
-        fillColor:   cityColor,
-        fillOpacity: 0.08,
-        weight:      1.5,
-        dashArray:   '4 4',
-      }).addTo(S.map).bindTooltip(
-        `${city === 'riyadh' ? 'الرياض' :
-           city === 'jeddah' ? 'جدة' :
-           city === 'taif'   ? 'الطائف' :
-           city === 'jazan'  ? 'جازان' :
-           city === 'yara'   ? 'يرى' :
-           city === 'aflaj'  ? 'الأفلاج' :
-           city === 'rafha'  ? 'رفحاء' : city}
+            // إضافة دائرة للمدينة
+            if (S.map && window.L) {
+                L.circle([base.lat, base.lng], {
+                    radius: cityMosques.length * 3000,
+                    color: cityColor,
+                    fillColor: cityColor,
+                    fillOpacity: 0.08,
+                    weight: 1.5,
+                    dashArray: '4 4',
+                }).addTo(S.map).bindTooltip(
+                    `${city === 'riyadh' ? 'الرياض' :
+                        city === 'jeddah' ? 'جدة' :
+                            city === 'taif' ? 'الطائف' :
+                                city === 'jazan' ? 'جازان' :
+                                    city === 'yara' ? 'يرى' :
+                                        city === 'aflaj' ? 'الأفلاج' :
+                                            city === 'rafha' ? 'رفحاء' : city}
          — ${cityMosques.length} مسجد`,
-        {direction: 'top', className: 'waqf-city-tooltip'}
-      );
+                    {direction: 'top', className: 'waqf-city-tooltip'}
+                );
+            }
+
+            // توزيع المساجد داخل المدينة
+            cityMosques.forEach((m, i) => {
+                const total = cityMosques.length;
+                const angle = (i / total) * Math.PI * 2 - Math.PI / 2;
+                const rings = Math.ceil(total / 8);
+                const ring = Math.floor(i / 8);
+                const radius = 0.035 + ring * 0.035;
+
+                const lat = base.lat + Math.cos(angle) * radius;
+                const lng = base.lng + Math.sin(angle) * radius;
+
+                // نمرر الـ mosque مع إحداثيات محسوبة
+                _addMapMarker({...m, lat, lng});
+            });
+        });
+
+        // Fit map على كل المدن
+        if (S.map && window.L) {
+            const allBases = Object.keys(citiesWithMosques)
+                .map(city => cityBases[city] || cityBases.riyadh)
+                .map(b => [b.lat, b.lng]);
+
+            if (allBases.length === 1) {
+                S.map.setView(allBases[0], 11);
+            } else if (allBases.length > 1) {
+                S.map.fitBounds(allBases, {padding: [60, 60]});
+            }
+        }
     }
-
-    // توزيع المساجد داخل المدينة
-    cityMosques.forEach((m, i) => {
-      const total  = cityMosques.length;
-      const angle  = (i / total) * Math.PI * 2 - Math.PI / 2;
-      const rings  = Math.ceil(total / 8);
-      const ring   = Math.floor(i / 8);
-      const radius = 0.035 + ring * 0.035;
-
-      const lat = base.lat + Math.cos(angle) * radius;
-      const lng = base.lng + Math.sin(angle) * radius;
-
-      // نمرر الـ mosque مع إحداثيات محسوبة
-      _addMapMarker({...m, lat, lng});
-    });
-  });
-
-  // Fit map على كل المدن
-  if (S.map && window.L) {
-    const allBases = Object.keys(citiesWithMosques)
-      .map(city => cityBases[city] || cityBases.riyadh)
-      .map(b => [b.lat, b.lng]);
-
-    if (allBases.length === 1) {
-      S.map.setView(allBases[0], 11);
-    } else if (allBases.length > 1) {
-      S.map.fitBounds(allBases, {padding: [60, 60]});
-    }
-  }
-}
 
     function filterMapByPackage(pkgId) {
         if (!S.map || !window.L) return;
