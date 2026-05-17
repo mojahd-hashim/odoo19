@@ -220,44 +220,44 @@ class WaqfDashboardAPI(http.Controller):
         last_updated = ''
 
         if has_ai:
-            Pred  = request.env['waqf.ai.prediction'].sudo()
-            Phase = request.env['waqf.ai.phase.insight'].sudo()
+            Pred  = request.env['waqf.ai.prediction'].sudo()()
+            Phase = request.env['waqf.ai.phase.insight'].sudo()udo()
 
             domain = []
             if mosque_id:
-                domain.append(('mosque_id', '=', int(mosque_id)))
+                domain.append(('mosque_id', '=', int(mosque_id)))e_id)))
 
+            # من waqf.ai.prediction — الحقول الصحيحة
             for p in Pred.search(domain, limit=8):
+                type_map = {opportunity / action / info
+                    'expected_delay':      'risk',
+                    'financial_overrun':   'risk',
+                    'quality_risk':        'risk',
+                    'supervision_gap':     'warning',
+                    'approval_bottleneck': 'action',que_id else None,
+                    'phase_delay':         'risk',osque_id else '',
+                }
+                icon_map = {
+            'expected_delay':      '⏱',
+                    'financial_overrun':   '💰',
+                    'quality_risk':        '🔍',
+                    'supervision_gap':     '👷',
+                    'approval_bottleneck': '📋',
+                    'phase_delay':         '📅',
+                }
                 insights.append({
-                    'type':    p.insight_type,   # risk / opportunity / action / info
-                    'icon':    p.icon or '📊',
-                    'title':   p.title,
-                    'body':    p.body,
-                    'priority': p.priority,
-                    'mosque_id':   p.mosque_id.id if p.mosque_id else None,
-                    'mosque_name': p.mosque_id.name if p.mosque_id else '',
-                    'action_label': p.action_label or '',
-                })
+                    'type':         type_map.get(p.prediction_type, 'info'),
+                    'icon':         icon_map.get(p.prediction_type, '📊'),
+                    'title':        dict(p._fields['prediction_type'].selection).get(p.prediction_type, p.prediction_type),
+                    'body':         p.prediction_text or p.recommendation or '',
+            'priority':     1 if p.probability > 0.7 else 2 if p.probability > 0.4 else 3,
+                    'mosque_id':    p.mosque_id.id if p.mosque_id else None,
+                    'mosque_name':  p.mosque_id.name if p.mosque_id else '',n'].sudo()
+                    'action_label': p.recommendation[:25] + '...' if p.recommendation and len(p.recommendation) > 25 else (p.recommendation or ''),
+                })rror'])],
 
-            # Phase-level insights
+            # من waqf.ai.phase.insight — الحقول الصحيحة
             for ph in Phase.search([], limit=3):
-                insights.append({
-                    'type':    'phase',
-                    'icon':    '📦',
-                    'title':   ph.title,
-                    'body':    ph.summary,
-                    'priority': 99,
-                    'mosque_id': None, 'mosque_name': '',
-                    'action_label': '',
-                })
-
-            # Last snapshot time
-            SnapshotRun = request.env['waqf.ai.snapshot.run'].sudo()
-            last_run = SnapshotRun.search(
-                [('status', 'in', ['done', 'done_with_ai_error'])],
-                order='run_datetime desc', limit=1)
-            if last_run:
-                last_updated = str(last_run.run_datetime)
 
         else:
             # ── Rule-based fallback insights ──────────────
