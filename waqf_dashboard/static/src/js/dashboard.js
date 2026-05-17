@@ -952,54 +952,119 @@ document.addEventListener('DOMContentLoaded', function () {
        AI INSIGHTS
        ══════════════════════════════════════════════════════════ */
     function renderAIInsights(data) {
-        const el = $('ai-insights-list');
-        const src = $('ai-source-label');
-        const upd = $('ai-last-updated');
-        if (!el) return;
+  const el  = $('merged-panel');
+  if (!el) return;
 
-        if (src) src.textContent = data.source === 'ai_center' ? '🤖 AI Risk Center' : '⚙ محسوب';
-        if (upd && data.last_updated)
-            upd.textContent = 'آخر تحديث: ' + data.last_updated.substring(0, 16);
+  const insights = data?.insights || [];
+  const src = data?.source || 'computed';
+  const upd = data?.last_updated || '';
 
-        const insights = data.insights || [];
-        if (!insights.length) {
-            el.innerHTML = `<div style="padding:16px;text-align:center;color:var(--text3)">
-        لا توجد تحليلات متاحة حالياً</div>`;
-            return;
-        }
+  // إحضار بيانات الجودة
+  apiGet('/dashboard/api/quality').then(quality => {
+    const q = quality || {};
+    const score = q.quality_score || 0;
+    const scoreColor = score >= 85 ? 'var(--green)' : score >= 70 ? 'var(--primary)' :
+                       score >= 55 ? 'var(--orange)' : 'var(--red)';
+    const scoreLabel = score >= 85 ? 'ممتاز' : score >= 70 ? 'جيد' :
+                       score >= 55 ? 'يحتاج تحسين' : 'حرج';
 
-        const typeColor = {
-            risk: 'var(--red)',
-            opportunity: 'var(--green)',
-            action: 'var(--gold)',
-            info: 'var(--primary)',
-            phase: 'var(--primary)',
-        };
+    const typeColor = {
+      risk:'var(--red)', opportunity:'var(--green)',
+      action:'var(--gold)', info:'var(--primary)', phase:'var(--primary)',
+    };
 
-        el.innerHTML = insights.slice(0, 6).map(ins => `
-      <div class="ai-insight-item"
-           style="${ins.mosque_id ? 'cursor:pointer' : ''}"
-           ${ins.mosque_id ? `onclick="loadMosqueDetailGlobal(${ins.mosque_id})"` : ''}>
-        <div class="ai-insight-icon">${ins.icon || '📊'}</div>
-        <div class="ai-insight-text">
-          <strong style="color:${typeColor[ins.type] || 'var(--text1)'}">
-            ${ins.title}:
-          </strong>
-          <span>${ins.body || ''}</span>
-          ${ins.mosque_name
-            ? `<span style="font-size:10px;color:var(--text3);margin-right:6px">
-               — ${ins.mosque_name}</span>` : ''}
-          ${ins.action_label
-            ? `<button onclick="event.stopPropagation();
-               ${ins.mosque_id ? `loadMosqueDetailGlobal(${ins.mosque_id})` : ''}"
-               style="font-size:10px;font-weight:700;padding:2px 10px;
-                      border-radius:999px;border:1px solid var(--border);
-                      background:transparent;color:var(--primary);cursor:pointer;
-                      margin-right:8px;margin-top:4px;display:inline-block">
-               ${ins.action_label} ›</button>` : ''}
+    el.innerHTML = `
+      <!-- Tabs -->
+      <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:14px">
+        <button class="merged-tab active" data-panel="insights">
+          🤖 تحليلات ذكية
+          ${src === 'ai_center' ? '<span style="font-size:9px;color:var(--primary);margin-right:4px">AI</span>' : ''}
+        </button>
+        <button class="merged-tab" data-panel="quality">🔍 جودة التنفيذ</button>
+        <button class="merged-tab" data-panel="forecast">📊 توقعات الإنجاز</button>
+      </div>
+
+      <!-- AI Insights -->
+      <div class="merged-panel-content active" data-panel-content="insights">
+        ${upd ? `<div style="font-size:10px;color:var(--text3);margin-bottom:10px;text-align:left">
+          آخر تحديث: ${upd.substring(0,16)}</div>` : ''}
+        ${insights.length ? insights.slice(0,5).map(ins => `
+          <div class="ai-insight-item"
+               style="${ins.mosque_id ? 'cursor:pointer' : ''}"
+               ${ins.mosque_id ? `onclick="loadMosqueDetailGlobal(${ins.mosque_id})"` : ''}>
+            <div class="ai-insight-icon">${ins.icon || '📊'}</div>
+            <div class="ai-insight-text">
+              <strong style="color:${typeColor[ins.type] || 'var(--text1)'}">
+                ${ins.title}:
+              </strong>
+              <span>${ins.body || ''}</span>
+              ${ins.mosque_name ? `<span style="font-size:10px;color:var(--text3);margin-right:6px">
+                — ${ins.mosque_name}</span>` : ''}
+              ${ins.action_label ? `
+                <button onclick="event.stopPropagation();
+                  ${ins.mosque_id ? `loadMosqueDetailGlobal(${ins.mosque_id})` : ''}"
+                  style="font-size:10px;font-weight:700;padding:2px 10px;border-radius:999px;
+                  border:1px solid var(--border);background:transparent;color:var(--primary);
+                  cursor:pointer;margin-right:8px;margin-top:4px;display:inline-block">
+                  ${ins.action_label} ›
+                </button>` : ''}
+            </div>
+          </div>`).join('')
+        : `<div style="padding:16px;text-align:center;color:var(--text3)">
+           لا توجد تحليلات متاحة حالياً</div>`}
+      </div>
+
+      <!-- Quality -->
+      <div class="merged-panel-content" data-panel-content="quality">
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:14px;margin-bottom:14px">
+          <div style="display:flex;flex-direction:column;align-items:center;
+            justify-content:center;padding:20px;background:${scoreColor}12;
+            border-radius:var(--r-lg);border:1px solid ${scoreColor}30;min-width:100px">
+            <div style="font-size:42px;font-weight:800;color:${scoreColor};line-height:1">
+              ${Math.round(score)}
+            </div>
+            <div style="font-size:10px;color:var(--text3);margin-top:4px">Quality Score</div>
+            <div style="margin-top:8px;font-size:9px;font-weight:700;
+              background:${scoreColor}18;color:${scoreColor};
+              padding:3px 10px;border-radius:999px">${scoreLabel}</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            ${[
+              ['NCR مفتوح',     q.ncr_total||0,             'var(--red)'],
+              ['إعادة العمل',   q.itp_rate?(100-q.itp_rate).toFixed(0)+'%':'—','var(--orange)'],
+              ['فحوصات فاشلة', q.failed_inspections||0,    'var(--red)'],
+              ['مشاكل مفتوحة', q.open_issues||0,           'var(--orange)'],
+            ].map(([lbl,val,col]) => `
+              <div style="background:var(--surface2);border-radius:var(--r-md);
+                padding:10px 12px;border:1px solid var(--border)">
+                <div style="font-size:17px;font-weight:800;color:${col}">${val}</div>
+                <div style="font-size:10px;color:var(--text3);margin-top:2px">${lbl}</div>
+              </div>`).join('')}
+          </div>
         </div>
-      </div>`).join('');
-    }
+      </div>
+
+      <!-- Forecast -->
+      <div class="merged-panel-content" data-panel-content="forecast">
+        <div id="forecast-rows-merged">
+          <div style="text-align:center;padding:20px">
+            <div class="loading-spinner" style="width:18px;height:18px;margin:0 auto"></div>
+          </div>
+        </div>
+      </div>`;
+
+    // Tab events
+    el.querySelectorAll('.merged-tab').forEach(btn => {
+      btn.addEventListener('click', function() {
+        el.querySelectorAll('.merged-tab').forEach(b => b.classList.remove('active'));
+        el.querySelectorAll('.merged-panel-content').forEach(p => p.classList.remove('active'));
+        this.classList.add('active');
+        el.querySelector(`[data-panel-content="${this.dataset.panel}"]`)?.classList.add('active');
+        if (this.dataset.panel === 'forecast') loadForecast();
+      });
+    });
+  });
+}
 
     /* ══════════════════════════════════════════════════════════
        CONTRACTORS
