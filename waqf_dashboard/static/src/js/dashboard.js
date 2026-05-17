@@ -445,42 +445,59 @@ document.addEventListener('DOMContentLoaded', function () {
         const mapEl = document.getElementById('mosque-map');
         if (!mapEl || !window.L) return;
 
-        // تجنب إعادة البناء إذا كانت الخريطة موجودة
         if (S.map) {
             S.map.remove();
             S.map = null;
             S.mapMarkers = {};
         }
 
-        // تحديد المركز
-        const withCoords = mosques.filter(m => m.lat && m.lng && m.lat !== 0 && m.lng !== 0);
-        const center = withCoords.length
-            ? [
-                withCoords.reduce((s, m) => s + m.lat, 0) / withCoords.length,
-                withCoords.reduce((s, m) => s + m.lng, 0) / withCoords.length,
-            ]
-            : [24.7136, 46.6753]; // الرياض افتراضي
-
-        // إنشاء الخريطة
+        // إنشاء الخريطة — مركز السعودية دائماً
         S.map = L.map('mosque-map', {
-            center,
-            zoom: withCoords.length ? 10 : 9,
+            center: [23.8859, 45.0792],
+            zoom: 5,
             zoomControl: true,
             attributionControl: false,
         });
 
         // Tile layer داكن
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        // L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        //   maxZoom: 19,
+        //   subdomains: 'abcd',
+        // }).addTo(S.map);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             maxZoom: 19,
-            subdomains: 'abcd',
         }).addTo(S.map);
 
+        // حدود السعودية باللون الأخضر
+        fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+            .then(r => r.json())
+            .then(data => {
+                const saudi = data.features.find(f =>
+                    f.properties.ISO_A3 === 'SAU' || f.properties.ADMIN === 'Saudi Arabia'
+                );
+                if (!saudi || !S.map) return;
+
+                L.geoJSON(saudi, {
+                    style: {
+                        color: '#2ECC8A',
+                        weight: 2,
+                        fillColor: '#2ECC8A',
+                        fillOpacity: 0.06,
+                        dashArray: '5 3',
+                    },
+                }).addTo(S.map);
+            })
+            .catch(() => {
+            });
+
         // إضافة markers
-        // استبدله بهذا
+        const withCoords = mosques.filter(m =>
+            m && m.lat && m.lng && m.lat !== 0 && m.lng !== 0
+        );
+
         if (withCoords.length) {
             withCoords.forEach(m => _addMapMarker(m));
         } else {
-            // Demo markers لكل مساجد المرحلة الحالية فقط
             const currentPkg = S.packages.find(p => p.is_current);
             const currentIds = (currentPkg?.mosques || []).map(m => m.id);
             const currentMosques = currentIds.length
