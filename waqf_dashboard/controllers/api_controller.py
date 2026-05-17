@@ -445,8 +445,8 @@ class WaqfDashboardAPI(http.Controller):
                 variance = m.days_delay
                 confidence = max(20, min(95, 95 - variance * 1.5))
                 if m.planned_end:
-                    from datetime import timedelta
-                    forecast = m.planned_end + timedelta(days=variance)
+                    from datetime import timedelta as td
+                    forecast = m.planned_end + td(days=variance)
                 else:
                     forecast = None
                 rows.append({
