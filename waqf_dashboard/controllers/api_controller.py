@@ -413,18 +413,28 @@ class WaqfDashboardAPI(http.Controller):
 
         if has_ai:
             Snap = request.env['waqf.ai.mosque.snapshot'].sudo()
-            for s in Snap.search([('forecast_finish_date', '!=', False)],
-                                  order='variance_days desc', limit=12):
+            last_run = request.env['waqf.ai.snapshot.run'].sudo().search(
+                [('status', 'in', ['done', 'done_with_ai_error'])],
+                order='run_datetime desc', limit=1)
+
+            domain = [('run_id', '=', last_run.id)] if last_run else []
+
+            for s in Snap.search(domain, order='days_delay desc', limit=12):
                 m = s.mosque_id
+                if not m.planned_end:
+                    continue
+                variance = s.days_delay or 0
+                forecast = m.planned_end + timedelta(days=variance)
+                confidence = max(20, min(95, 95 - variance * 1.5))
                 rows.append({
-                    'mosque_id':       m.id,
-                    'mosque_name':     m.name,
-                    'mosque_code':     m.code,
-                    'planned_finish':  str(m.planned_end) if m.planned_end else '',
-                    'forecast_finish': str(s.forecast_finish_date),
-                    'variance_days':   s.variance_days,
-                    'confidence_pct':  s.confidence_pct,
-                    'is_at_risk':      s.variance_days > 0,
+                    'mosque_id': m.id,
+                    'mosque_name': s.mosque_name or m.name,
+                    'mosque_code': s.mosque_code or m.code,
+                    'planned_finish': str(m.planned_end),
+                    'forecast_finish': str(forecast),
+                    'variance_days': variance,
+                    'confidence_pct': round(confidence, 0),
+                    'is_at_risk': variance > 0,
                 })
         else:
             # Fallback: linear projection
