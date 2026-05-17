@@ -341,16 +341,41 @@ class WaqfDashboardAPI(http.Controller):
 
         if has_ai:
             Snap = request.env['waqf.ai.mosque.snapshot'].sudo()
-            for s in Snap.search([]):
+            # نأخذ آخر run فقط
+            last_run = request.env['waqf.ai.snapshot.run'].sudo().search(
+                [('state', '=', 'done')], order='run_date desc', limit=1)
+
+            domain = [('run_id', '=', last_run.id)] if last_run else []
+
+            for s in Snap.search(domain):
+                # نحسب impact و probability من الحقول الموجودة
+                impact = max(0, min(100, 100 - s.overall_kpi))
+
+                probability = min(100, (
+                        (s.days_delay * 1.5) +
+                        (s.pending_certificates_count * 5) +
+                        (s.ncr_count_30d * 3) +
+                        (s.days_since_last_report * 0.5 if s.days_since_last_report < 999 else 30) +
+                        (s.rejected_tasks_count * 4) +
+                        (s.blocked_tasks_count * 3)
+                ))
+
+                risk_level = (
+                    'critical' if impact > 60 and probability > 60 else
+                    'high' if impact > 45 or probability > 45 else
+                    'medium' if impact > 30 or probability > 30 else
+                    'low'
+                )
+
                 points.append({
-                    'mosque_id':   s.mosque_id.id,
-                    'mosque_name': s.mosque_id.name,
-                    'mosque_code': s.mosque_id.code,
-                    'impact':      s.risk_impact,       # 0-100
-                    'probability': s.risk_probability,  # 0-100
-                    'size':        s.mosque_id.contract_value,
-                    'kpi':         round(s.mosque_id.overall_kpi, 1),
-                    'risk_level':  s.severity,        # critical/high/medium/low
+                    'mosque_id': s.mosque_id.id,
+                    'mosque_name': s.mosque_name or s.mosque_id.name,
+                    'mosque_code': s.mosque_code or s.mosque_id.code,
+                    'impact': round(impact, 1),
+                    'probability': round(probability, 1),
+                    'size': s.contract_value,
+                    'kpi': round(s.overall_kpi, 1),
+                    'risk_level': risk_level,
                 })
         else:
             # Fallback: derive from KPI + delay
