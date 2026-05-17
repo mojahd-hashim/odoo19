@@ -233,105 +233,125 @@ document.addEventListener('DOMContentLoaded', function () {
      PHASE GANTT
      ══════════════════════════════════════════════════════════ */
   function buildPhaseGantt(pkgs) {
-    const el = $('gantt-rows'), monthsEl = $('gantt-months');
-    if (!el) return;
+  const el = $('gantt-rows'), monthsEl = $('gantt-months');
+  if (!el) return;
 
-    const active = pkgs.filter(p => p.is_current || p.is_past);
-    if (!active.length) {
-      el.innerHTML = `<div style="padding:30px;text-align:center;color:var(--text3)">
-        لا توجد مراحل نشطة حتى الآن</div>`;
-      return;
-    }
+  // فقط المرحلة الحالية
+  const currentPkg = pkgs.find(p => p.is_current);
+  if (!currentPkg) {
+    el.innerHTML = `<div style="padding:30px;text-align:center;color:var(--text3)">
+      لا توجد مرحلة نشطة حالياً</div>`;
+    return;
+  }
 
-    const pStart = new Date('2026-04-01');
-    const pEnd   = new Date('2027-04-30');
-    const total  = pEnd - pStart;
-    const today  = new Date();
-    const todayP = Math.min(100, Math.max(0, (today - pStart) / total * 100));
+  const pStart = new Date('2026-04-01');
+  const pEnd   = new Date('2027-04-30');
+  const total  = pEnd - pStart;
+  const today  = new Date();
+  const todayP = Math.min(100, Math.max(0, (today - pStart) / total * 100));
 
-    if (monthsEl) {
-      monthsEl.innerHTML = '';
-      ['أبر٢٦','مايو','يون','يول','أغس','سبت',
-       'أكت','نوف','ديس','يناير٢٧','فبر','مارس'].forEach(m => {
-        const d = document.createElement('div');
-        d.className = 'gantt-month'; d.textContent = m;
-        monthsEl.appendChild(d);
-      });
-    }
-
-    el.innerHTML = '';
-    const colors = { current: '#237292', past: '#2ECC8A' };
-
-    active.forEach(pkg => {
-      if (!pkg.planned_start || !pkg.planned_end) return;
-      const start  = new Date(pkg.planned_start);
-      const end    = new Date(pkg.planned_end);
-      const leftP  = Math.max(0, (start - pStart) / total * 100);
-      const widthP = Math.min(100 - leftP, (end - start) / total * 100);
-      const phase  = pkg.is_current ? 'current' : 'past';
-      const color  = colors[phase];
-
-      let progP = phase === 'past' ? 100 :
-        Math.min(100, Math.max(0, (today - start) / (end - start) * 100));
-
-      const delayedCount = (pkg.mosques || []).filter(m => m.days_delay > 0).length;
-
-      const row = document.createElement('div');
-      row.className = 'gantt-row';
-      row.innerHTML = `
-        <div class="gantt-label">
-          <span class="gantt-phase-dot" style="background:${color}"></span>
-          <span style="font-size:10px;font-weight:700">${pkg.code}</span>
-          ${pkg.is_current
-            ? '<span class="gantt-live-badge">الآن</span>'
-            : '<span style="font-size:9px;color:var(--text3)">✓</span>'}
-        </div>
-        <div style="flex:1">
-          <!-- Progress bar -->
-          <div class="gantt-track" style="position:relative;height:22px;margin-bottom:8px">
-            <div class="gantt-bar-bg" style="right:${leftP}%;width:${widthP}%;
-              background:${color}22;border:1px solid ${color}44;
-              position:absolute;top:0;bottom:0;border-radius:6px;overflow:hidden">
-              <div class="gantt-bar-progress"
-                   style="width:${progP}%;background:${color};
-                          height:100%;border-radius:5px;
-                          transition:width 1.2s ease"></div>
-              <span class="gantt-bar-label" style="color:${color}">
-                ${pkg.avg_kpi}% · ${pkg.mosque_count}م
-              </span>
-            </div>
-            <div class="gantt-today" style="right:${todayP}%">
-              <div class="gantt-today-label">اليوم</div>
-            </div>
-          </div>
-          <!-- Mosques panel -->
-          <div class="gantt-mosques-panel">
-            <div class="gantt-mosques-panel-hdr">
-              <span class="gantt-mosques-panel-title">${pkg.name}</span>
-              <span class="gantt-mosques-panel-meta">
-                ${delayedCount > 0
-                  ? `<span style="color:var(--red);font-weight:600">${delayedCount} متأخر</span> · `
-                  : ''}
-                ${pkg.mosque_count} مسجد
-              </span>
-            </div>
-            ${(pkg.mosques || []).map(m => `
-              <div class="gantt-mosque-row" onclick="loadMosqueDetailGlobal(${m.id})">
-                <div class="gantt-m-dot" style="background:${dotColor(m.overall_kpi)}"></div>
-                <span class="gantt-m-code">${m.code}</span>
-                <span class="gantt-m-name">${truncate(m.name, 18)}</span>
-                <span class="gantt-m-kpi" style="color:${dotColor(m.overall_kpi)}">
-                  ${m.overall_kpi}%
-                </span>
-                ${m.days_delay > 0
-                  ? `<span class="gantt-m-delay">-${m.days_delay}د</span>` : ''}
-                <span class="gantt-m-arrow">›</span>
-              </div>`).join('')}
-          </div>
-        </div>`;
-      el.appendChild(row);
+  // Months header
+  if (monthsEl) {
+    monthsEl.innerHTML = '';
+    ['أبر٢٦','مايو','يون','يول','أغس','سبت',
+     'أكت','نوف','ديس','يناير٢٧','فبر','مارس'].forEach(m => {
+      const d = document.createElement('div');
+      d.className = 'gantt-month'; d.textContent = m;
+      monthsEl.appendChild(d);
     });
   }
+
+  // شريط تقدم المرحلة
+  const start  = new Date(currentPkg.planned_start);
+  const end    = new Date(currentPkg.planned_end);
+  const leftP  = Math.max(0, (start - pStart) / total * 100);
+  const widthP = Math.min(100 - leftP, (end - start) / total * 100);
+  const progP  = Math.min(100, Math.max(0, (today - start) / (end - start) * 100));
+  const color  = '#237292';
+
+  el.innerHTML = `
+    <!-- شريط التقدم الزمني -->
+    <div style="position:relative;height:28px;margin-bottom:20px">
+      <div style="position:absolute;right:${leftP}%;width:${widthP}%;
+        top:0;bottom:0;background:${color}22;border:1px solid ${color}44;
+        border-radius:8px;overflow:hidden">
+        <div style="width:${progP}%;background:${color};height:100%;
+          border-radius:7px;transition:width 1.2s ease"></div>
+        <span style="position:relative;z-index:1;font-size:10px;font-weight:700;
+          padding:0 10px;line-height:28px;color:${color}">
+          ${currentPkg.avg_kpi}% · ${currentPkg.mosque_count} مسجد
+          · ${currentPkg.planned_start} → ${currentPkg.planned_end}
+        </span>
+      </div>
+      <div class="gantt-today" style="right:${todayP}%">
+        <div class="gantt-today-label">اليوم</div>
+      </div>
+    </div>
+
+    <!-- قائمة المساجد -->
+    <div style="display:flex;flex-direction:column;gap:5px">
+      ${(currentPkg.mosques||[]).map(m => {
+        const kpiColor = dotColor(m.overall_kpi);
+        const kpiBg = m.overall_kpi >= 70 ? 'rgba(46,204,138,0.08)' :
+                      m.overall_kpi >= 50 ? 'rgba(240,165,0,0.08)'  :
+                                            'rgba(232,85,85,0.08)';
+        const kpiBorder = m.overall_kpi >= 70 ? 'rgba(46,204,138,0.2)' :
+                          m.overall_kpi >= 50 ? 'rgba(240,165,0,0.2)'  :
+                                                'rgba(232,85,85,0.2)';
+        return `
+          <div onclick="loadMosqueDetailGlobal(${m.id})"
+               style="display:flex;align-items:center;gap:12px;
+                      padding:10px 14px;border-radius:10px;cursor:pointer;
+                      background:${kpiBg};border:1px solid ${kpiBorder};
+                      transition:.15s ease"
+               onmouseover="this.style.transform='translateX(-3px)';this.style.boxShadow='0 4px 12px rgba(27,58,82,0.1)'"
+               onmouseout="this.style.transform='';this.style.boxShadow=''">
+
+            <!-- Dot -->
+            <div style="width:10px;height:10px;border-radius:50%;
+              flex-shrink:0;background:${kpiColor};
+              box-shadow:0 0 0 3px ${kpiColor}30"></div>
+
+            <!-- Code -->
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;
+              font-weight:700;color:var(--primary);min-width:60px">
+              ${m.code}
+            </span>
+
+            <!-- Name — كامل -->
+            <span style="flex:1;font-size:12px;font-weight:600;color:var(--text1)">
+              ${m.name}
+            </span>
+
+            <!-- KPI bar -->
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+              <div style="width:80px;height:5px;background:var(--surface3);
+                border-radius:3px;overflow:hidden">
+                <div style="width:${m.overall_kpi}%;height:100%;
+                  background:${kpiColor};border-radius:3px;
+                  transition:width 1s ease"></div>
+              </div>
+              <span style="font-size:12px;font-weight:800;color:${kpiColor};
+                min-width:38px;text-align:left">
+                ${m.overall_kpi}%
+              </span>
+            </div>
+
+            <!-- Delay -->
+            ${m.days_delay > 0 ? `
+              <span style="font-size:10px;font-weight:700;color:var(--red);
+                background:rgba(232,85,85,0.1);padding:2px 8px;
+                border-radius:999px;flex-shrink:0">
+                -${m.days_delay}د
+              </span>` : `
+              <span style="font-size:10px;color:var(--green);flex-shrink:0">✓</span>`}
+
+            <!-- Arrow -->
+            <span style="color:var(--text4);font-size:14px">›</span>
+          </div>`;
+      }).join('')}
+    </div>`;
+}
 
   window.loadMosqueDetailGlobal = id => {
     document.querySelectorAll('.gantt-popup').forEach(p => p.classList.remove('show'));
