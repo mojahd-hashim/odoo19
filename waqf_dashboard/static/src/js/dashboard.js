@@ -656,51 +656,54 @@ document.addEventListener('DOMContentLoaded', function () {
      SIDEBAR
      ══════════════════════════════════════════════════════════ */
   function buildSidebar(pkgs) {
-    const container = $('sb-packages');
-    if (!container) return;
-    container.innerHTML = '';
+  const container = $('sb-packages');
+  if (!container) return;
+  container.innerHTML = '';
 
-    pkgs.forEach(pkg => {
-      const div = document.createElement('div');
-      div.className = 'sb-pkg';
-      const phase = pkg.is_current ? 'current' : pkg.is_past ? 'past' : 'future';
-      div.innerHTML = `
-        <div class="sb-pkg-hdr ${phase === 'current' ? 'open' : ''}" data-pkg="${pkg.id}">
-          <div class="sb-pkg-indicator"
-               style="background:${phase==='current'?'var(--primary)':
-                                   phase==='past'?'var(--green)':'var(--text4)'}"></div>
-          <span class="sb-pkg-name">${pkg.name}</span>
-          ${pkg.is_current ? '<span class="sb-pkg-now">نشط</span>' : ''}
-          <span class="sb-pkg-count">${pkg.mosque_count}</span>
-          <span class="sb-pkg-arrow">›</span>
+  pkgs.forEach(pkg => {
+    const isCurrent = pkg.is_current;
+    const isPast    = pkg.is_past;
+    const color     = isCurrent ? '#237292' : isPast ? '#2ECC8A' : '#8FA3B3';
+    const delayedCount = (pkg.mosques||[]).filter(m => m.days_delay > 0).length;
+
+    const card = document.createElement('div');
+    card.className = `sb-pkg-card ${isCurrent ? 'current' : isPast ? 'past' : 'future'}`;
+    card.dataset.pkgId = pkg.id;
+    card.innerHTML = `
+      <div class="sb-pkg-card-inner" onclick="loadMosqueDetailGlobal(${pkg.mosques?.[0]?.id||0})">
+        <div class="sb-pkg-top">
+          <div class="sb-pkg-dot" style="background:${color}"></div>
+          <div style="flex:1;min-width:0">
+            <div class="sb-pkg-code">${pkg.code}</div>
+            <div class="sb-pkg-name">${pkg.name}</div>
+          </div>
+          ${isCurrent ? '<div class="sb-pkg-live">● نشط</div>' : ''}
+          ${isPast    ? '<div class="sb-pkg-done">✓</div>' : ''}
         </div>
-        <div class="sb-mosques" style="${pkg.is_current ? '' : 'display:none'}">
-          ${(pkg.mosques || []).map(m => `
-            <div class="sb-mosque" data-id="${m.id}">
-              <div class="sb-mosque-dot" style="background:${dotColor(m.overall_kpi)}"></div>
-              <span class="sb-mosque-name">${truncate(m.name, 16)}</span>
-              <span class="sb-mosque-code">${m.code}</span>
-            </div>`).join('')}
-        </div>`;
+        <div class="sb-pkg-stats">
+          <div class="sb-pkg-stat">
+            <span class="sb-pkg-stat-val" style="color:${color}">${pkg.avg_kpi}%</span>
+            <span class="sb-pkg-stat-lbl">KPI</span>
+          </div>
+          <div class="sb-pkg-stat">
+            <span class="sb-pkg-stat-val">${pkg.mosque_count}</span>
+            <span class="sb-pkg-stat-lbl">مسجد</span>
+          </div>
+          ${delayedCount > 0 ? `
+          <div class="sb-pkg-stat">
+            <span class="sb-pkg-stat-val" style="color:var(--red)">${delayedCount}</span>
+            <span class="sb-pkg-stat-lbl">متأخر</span>
+          </div>` : ''}
+        </div>
+        <div class="sb-pkg-bar">
+          <div class="sb-pkg-bar-fill"
+               style="width:${pkg.avg_kpi}%;background:${color}"></div>
+        </div>
+      </div>`;
 
-      container.appendChild(div);
-
-      div.querySelector('.sb-pkg-hdr').addEventListener('click', function () {
-        const mosques = div.querySelector('.sb-mosques');
-        const open = mosques.style.display !== 'none';
-        mosques.style.display = open ? 'none' : '';
-        this.classList.toggle('open', !open);
-      });
-
-      div.querySelectorAll('.sb-mosque').forEach(el => {
-        el.addEventListener('click', function () {
-          document.querySelectorAll('.sb-mosque').forEach(m => m.classList.remove('active'));
-          this.classList.add('active');
-          loadMosqueDetail(parseInt(this.dataset.id));
-        });
-      });
-    });
-  }
+    container.appendChild(card);
+  });
+}
 
   /* ══════════════════════════════════════════════════════════
      GLOBAL SEARCH

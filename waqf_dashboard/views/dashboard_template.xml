@@ -415,7 +415,7 @@
   <div class="chat-sugs">
     <button class="chat-sug">المشاريع الحرجة؟</button>
     <button class="chat-sug">المستخلصات المعلقة؟</button>
-    <button class="chat-sug">أسوأ المقاولين؟</button>
+<!--    <button class="chat-sug">أسوأ المقاولين؟</button>-->
     <button class="chat-sug">توقعات التأخير؟</button>
   </div>
   <div class="chat-input-row">
