@@ -1296,10 +1296,3 @@ button { font-family: inherit; cursor: pointer; }
   direction: rtl;
 }
 .waqf-city-tooltip::before { display: none; }
-.leaflet-interactive {
-  transition: fill-opacity .3s ease;
-}
-#mosque-map {
-  transform: perspective(800px) rotateX(15deg);
-  transform-origin: center bottom;
-}
