@@ -109,6 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       S.mosques = mosques;
       buildHeatmap(mosques);
+      initMap(mosques);
       renderAlerts(alerts);
       renderAIInsights(insights);
       renderRiskMatrix(risk.points || []);
@@ -389,6 +390,305 @@ document.addEventListener('DOMContentLoaded', function () {
       el.appendChild(cell);
     });
   }
+    function initMap(mosques) {
+    const mapEl = document.getElementById('mosque-map');
+    if (!mapEl) return;
+
+    // Load Leaflet CSS
+    if (!document.getElementById('leaflet-css')) {
+      const css = document.createElement('link');
+      css.id   = 'leaflet-css';
+      css.rel  = 'stylesheet';
+      css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(css);
+    }
+
+    // Load Leaflet JS then build
+    if (!window.L) {
+      const script = document.createElement('script');
+      script.src   = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.onload = () => _buildMap(mosques);
+      script.onerror = () => {
+        mapEl.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:center;
+            height:100%;color:var(--text3);flex-direction:column;gap:8px">
+            <div style="font-size:24px">🗺</div>
+            <div style="font-size:12px">تعذر تحميل الخريطة</div>
+          </div>`;
+      };
+      document.head.appendChild(script);
+    } else {
+      _buildMap(mosques);
+    }
+  }
+
+  function _buildMap(mosques) {
+    const mapEl = document.getElementById('mosque-map');
+    if (!mapEl || !window.L) return;
+
+    // تجنب إعادة البناء إذا كانت الخريطة موجودة
+    if (S.map) {
+      S.map.remove();
+      S.map = null;
+      S.mapMarkers = {};
+    }
+
+    // تحديد المركز
+    const withCoords = mosques.filter(m => m.lat && m.lng && m.lat !== 0 && m.lng !== 0);
+    const center = withCoords.length
+      ? [
+          withCoords.reduce((s, m) => s + m.lat, 0) / withCoords.length,
+          withCoords.reduce((s, m) => s + m.lng, 0) / withCoords.length,
+        ]
+      : [24.7136, 46.6753]; // الرياض افتراضي
+
+    // إنشاء الخريطة
+    S.map = L.map('mosque-map', {
+      center,
+      zoom: withCoords.length ? 10 : 9,
+      zoomControl: true,
+      attributionControl: false,
+    });
+
+    // Tile layer داكن
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      subdomains: 'abcd',
+    }).addTo(S.map);
+
+    // إضافة markers
+    if (withCoords.length) {
+      withCoords.forEach(m => _addMapMarker(m));
+      // Fit bounds
+      if (withCoords.length >= 2) {
+        S.map.fitBounds(withCoords.map(m => [m.lat, m.lng]), {padding: [30, 30]});
+      }
+    } else {
+      // Demo markers حول الرياض إذا لا توجد إحداثيات
+      _addDemoMarkers(mosques);
+    }
+  }
+
+  function _addMapMarker(m) {
+    if (!S.map || !window.L) return;
+
+    const kpiColor = m.kpi_color === 'green'  ? '#2ECC8A' :
+                     m.kpi_color === 'yellow' ? '#F0A500' :
+                     m.kpi_color === 'red'    ? '#E85555' : '#8FA3B3';
+
+    const hasStream = !!S.liveStreams[m.id];
+    const hasAlert  = S.allAlerts.some(a => a.mosque_id === m.id && a.severity === 'critical');
+
+    const icon = L.divIcon({
+      className: '',
+      html: `
+        <div style="position:relative;cursor:pointer">
+          <div style="
+            width:36px;height:36px;border-radius:50%;
+            background:${kpiColor};
+            border:3px solid rgba(255,255,255,0.85);
+            display:flex;align-items:center;justify-content:center;
+            font-size:9px;font-weight:800;color:#fff;
+            box-shadow:0 4px 14px rgba(0,0,0,0.35);
+            transition:.15s ease">
+            ${Math.round(m.overall_kpi)}%
+          </div>
+          ${hasStream ? `
+            <div style="position:absolute;top:-3px;right:-3px;
+              width:13px;height:13px;background:#E85555;
+              border-radius:50%;border:2px solid #fff;
+              animation:mapLivePulse 1s infinite"></div>` : ''}
+          ${hasAlert && !hasStream ? `
+            <div style="position:absolute;top:-3px;right:-3px;
+              width:13px;height:13px;background:#F0A500;
+              border-radius:50%;border:2px solid #fff"></div>` : ''}
+        </div>`,
+      iconSize:   [36, 36],
+      iconAnchor: [18, 18],
+      popupAnchor:[0, -20],
+    });
+
+    const marker = L.marker([m.lat, m.lng], {icon}).addTo(S.map);
+    marker.bindPopup(_buildMapPopup(m), {
+      maxWidth:  260,
+      className: 'waqf-map-popup',
+    });
+
+    marker.on('popupopen', () => {
+      setTimeout(() => {
+        const btn = document.querySelector('.map-detail-btn');
+        if (btn) btn.addEventListener('click', () => {
+          marker.closePopup();
+          loadMosqueDetail(m.id);
+        });
+        const streamBtn = document.querySelector('.map-stream-btn');
+        if (streamBtn) streamBtn.addEventListener('click', () => {
+          marker.closePopup();
+          _openMosqueStream(m.id, m.name);
+        });
+      }, 50);
+    });
+
+    S.mapMarkers[m.id] = marker;
+  }
+
+  function _buildMapPopup(m) {
+    const kpiColor = m.kpi_color === 'green'  ? '#2ECC8A' :
+                     m.kpi_color === 'yellow' ? '#F0A500' :
+                     m.kpi_color === 'red'    ? '#E85555' : '#8FA3B3';
+    const alert    = S.allAlerts.find(a => a.mosque_id === m.id);
+    const hasStream= !!S.liveStreams[m.id];
+
+    return `
+      <div style="font-family:'IBM Plex Sans Arabic',sans-serif;
+                  direction:rtl;min-width:210px">
+        <div style="font-size:13px;font-weight:800;color:#1B3A52;margin-bottom:3px">
+          ${m.name}
+        </div>
+        <div style="font-size:10px;color:#7A90A4;margin-bottom:10px">
+          ${m.code} · ${m.package || ''}
+        </div>
+ 
+        <!-- KPI stats -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);
+                    gap:6px;margin-bottom:10px">
+          <div style="text-align:center;background:#F7F9FC;
+                      border-radius:8px;padding:7px 4px">
+            <div style="font-size:15px;font-weight:800;color:${kpiColor}">
+              ${m.overall_kpi}%
+            </div>
+            <div style="font-size:9px;color:#7A90A4">KPI</div>
+          </div>
+          <div style="text-align:center;background:#F7F9FC;
+                      border-radius:8px;padding:7px 4px">
+            <div style="font-size:15px;font-weight:800;
+                        color:${m.days_delay > 0 ? '#E85555' : '#2ECC8A'}">
+              ${m.days_delay > 0 ? m.days_delay + 'د' : '✓'}
+            </div>
+            <div style="font-size:9px;color:#7A90A4">تأخير</div>
+          </div>
+          <div style="text-align:center;background:#F7F9FC;
+                      border-radius:8px;padding:7px 4px">
+            <div style="font-size:11px;font-weight:700;color:#237292">
+              ${m.state === 'active' ? 'نشط' :
+                m.state === 'draft'  ? 'جديد' : (m.state || '—')}
+            </div>
+            <div style="font-size:9px;color:#7A90A4">الحالة</div>
+          </div>
+        </div>
+ 
+        <!-- Alert -->
+        ${alert ? `
+          <div style="background:rgba(232,85,85,0.08);
+                      border:1px solid rgba(232,85,85,0.2);
+                      border-radius:8px;padding:7px 9px;
+                      margin-bottom:8px;font-size:11px;color:#E85555">
+            ⚠ ${alert.title}
+          </div>` : ''}
+ 
+        <!-- Live stream button -->
+        ${hasStream ? `
+          <button class="map-stream-btn"
+            style="width:100%;padding:7px;background:#E85555;color:#fff;
+                   border:none;border-radius:8px;font-size:11px;
+                   font-weight:700;cursor:pointer;margin-bottom:6px;
+                   font-family:inherit;display:flex;align-items:center;
+                   justify-content:center;gap:5px">
+            <span style="width:7px;height:7px;background:#fff;
+                         border-radius:50%;display:inline-block;
+                         animation:mapLivePulse 1s infinite"></span>
+            مشاهدة البث المباشر
+          </button>` : ''}
+ 
+        <!-- Detail button -->
+        <button class="map-detail-btn"
+          style="width:100%;padding:8px;background:#237292;color:#fff;
+                 border:none;border-radius:8px;font-size:11px;
+                 font-weight:700;cursor:pointer;font-family:inherit">
+          عرض التفاصيل ›
+        </button>
+      </div>`;
+  }
+
+  function _addDemoMarkers(mosques) {
+    // مواقع تجريبية حول الرياض
+    const base = {lat: 24.7136, lng: 46.6753};
+    mosques.slice(0, 20).forEach((m, i) => {
+      const angle = (i / 20) * Math.PI * 2;
+      const radius = 0.1 + (i % 4) * 0.05;
+      _addMapMarker({
+        ...m,
+        lat: base.lat + Math.cos(angle) * radius,
+        lng: base.lng + Math.sin(angle) * radius,
+      });
+    });
+  }
+
+  function filterMapByPackage(pkgId) {
+    if (!S.map || !window.L) return;
+    if (!pkgId) {
+      Object.values(S.mapMarkers).forEach(m => {
+        if (!S.map.hasLayer(m)) m.addTo(S.map);
+      });
+      return;
+    }
+    const pkg = S.packages.find(p => p.id === pkgId);
+    if (!pkg) return;
+    const mosqueIds = (pkg.mosques || []).map(m => m.id);
+    Object.entries(S.mapMarkers).forEach(([id, marker]) => {
+      if (mosqueIds.includes(parseInt(id))) {
+        if (!S.map.hasLayer(marker)) marker.addTo(S.map);
+      } else {
+        if (S.map.hasLayer(marker)) S.map.removeLayer(marker);
+      }
+    });
+  }
+
+  function updateMapMarkers() {
+    if (!S.map || !window.L) return;
+    Object.entries(S.mapMarkers).forEach(([id, marker]) => {
+      S.map.removeLayer(marker);
+    });
+    S.mapMarkers = {};
+    S.mosques.forEach(m => {
+      if (m.lat && m.lng && m.lat !== 0 && m.lng !== 0) {
+        _addMapMarker(m);
+      }
+    });
+  }
+
+  function _openMosqueStream(mosqueId, mosqueName) {
+    const url = S.liveStreams[mosqueId];
+    if (!url) return;
+    const titleEl = document.getElementById('stream-modal-title');
+    if (titleEl) titleEl.textContent = mosqueName || 'بث مباشر';
+    const embed = document.getElementById('stream-embed');
+    if (!embed) return;
+    if (url.includes('.m3u8')) {
+      embed.innerHTML = `
+        <video id="live-video" autoplay muted playsinline controls
+               style="width:100%;height:100%;background:#000"
+               src="${url}"></video>`;
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js';
+      s.onload = () => {
+        const video = document.getElementById('live-video');
+        if (window.Hls?.isSupported()) {
+          const hls = new Hls({lowLatencyMode: true});
+          hls.loadSource(url);
+          hls.attachMedia(video);
+        }
+      };
+      document.head.appendChild(s);
+    } else {
+      embed.innerHTML = `
+        <iframe src="${url}" allowfullscreen
+                allow="camera;microphone;autoplay"
+                style="width:100%;height:100%;border:none"></iframe>`;
+    }
+    document.getElementById('modal-stream')?.classList.add('show');
+  }
+
 
   function initQuickFilters() {
     document.querySelectorAll('.qf-btn').forEach(btn => {
