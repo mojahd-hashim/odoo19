@@ -134,19 +134,23 @@ class WaqfDashboardAPI(http.Controller):
             if category:
                 domain.append(('category', '=', category))
 
-            for a in Alert.search(domain, order='severity_order asc, create_date desc', limit=25):
+            # استبدله بهذا
+            sev_map = {'critical': 0, 'high': 1, 'medium': 2, 'low': 3}
+            alerts_raw = Alert.search(domain, order='priority_score desc, create_date desc', limit=25)
+            alerts_raw = sorted(alerts_raw, key=lambda a: sev_map.get(a.severity, 9))
+            for a in alerts_raw:
                 alerts.append({
-                    'id':          a.id,
-                    'title':       a.title,
-                    'description': a.description or '',
-                    'severity':    a.severity,   # critical / high / medium / low
-                    'category':    a.category,   # financial / delay / quality / contractor
-                    'mosque_id':   a.mosque_id.id if a.mosque_id else None,
+                    'id': a.id,
+                    'title': a.title,
+                    'description': a.summary or '',
+                    'severity': a.severity,
+                    'category': a.alert_type,
+                    'mosque_id': a.mosque_id.id if a.mosque_id else None,
                     'mosque_name': a.mosque_id.name if a.mosque_id else '',
                     'mosque_code': a.mosque_id.code if a.mosque_id else '',
-                    'cta_label':   a.cta_label or 'عرض التفاصيل',
-                    'state':       a.status,
-                    'created_at':  str(a.create_date),
+                    'cta_label': 'عرض التفاصيل',
+                    'state': a.status,
+                    'created_at': str(a.create_date),
                 })
         else:
             # ── Fallback: compute from raw data ──────────────
