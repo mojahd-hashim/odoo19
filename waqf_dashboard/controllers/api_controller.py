@@ -19,20 +19,20 @@ class WaqfDashboardAPI(http.Controller):
     @http.route('/dashboard/api/summary', type='http', auth='user', csrf=False)
     def api_summary(self, **kw):
         Mosque = request.env['mosque.mosque'].sudo()
-        Cert   = request.env['mosque.certificate'].sudo()
-        CO     = request.env['mosque.change.order'].sudo()
+        Cert = request.env['mosque.certificate'].sudo()
+        CO = request.env['mosque.change.order'].sudo()
 
-        mosques     = Mosque.search([('is_demo', '=', False)])
+        mosques = Mosque.search([('is_demo', '=', False)])
         total_value = sum(mosques.mapped('contract_value'))
-        avg_kpi     = sum(mosques.mapped('overall_kpi')) / len(mosques) if mosques else 0
-        delayed     = mosques.filtered(lambda m: m.days_delay > 0)
-        critical    = mosques.filtered(lambda m: m.overall_kpi < 50 and m.overall_kpi > 0)
+        avg_kpi = sum(mosques.mapped('overall_kpi')) / len(mosques) if mosques else 0
+        delayed = mosques.filtered(lambda m: m.days_delay > 0)
+        critical = mosques.filtered(lambda m: m.overall_kpi < 50 and m.overall_kpi > 0)
 
         # Pending certs & COs
         pending_certs = Cert.search_count(
             [('state', 'in', ['submitted', 'consultant_approved'])])
-        pending_cos   = CO.search_count([('state', '=', 'review')])
-        co_value      = sum(CO.search([('state', 'not in', ['rejected'])]).mapped('amount'))
+        pending_cos = CO.search_count([('state', '=', 'review')])
+        co_value = sum(CO.search([('state', 'not in', ['rejected'])]).mapped('amount'))
 
         # Total delay days
         total_delay = sum(delayed.mapped('days_delay'))
@@ -45,10 +45,10 @@ class WaqfDashboardAPI(http.Controller):
                          if mosques else 0)
 
         # Compare vs last week — from AI snapshots if available
-        prev_avg_kpi     = avg_kpi
-        prev_critical    = len(critical)
-        prev_pending     = pending_certs
-        has_ai           = 'waqf.ai.snapshot.run' in request.env
+        prev_avg_kpi = avg_kpi
+        prev_critical = len(critical)
+        prev_pending = pending_certs
+        has_ai = 'waqf.ai.snapshot.run' in request.env
 
         if has_ai:
             Snap = request.env['waqf.ai.mosque.snapshot'].sudo()
@@ -99,19 +99,19 @@ class WaqfDashboardAPI(http.Controller):
 
         return _json({
             'total_contract_value': total_value,
-            'avg_kpi':             round(avg_kpi, 1),
-            'avg_kpi_delta':       round(avg_kpi - prev_avg_kpi, 1),
-            'delayed_count':       len(delayed),
-            'critical_count':      len(critical),
-            'critical_delta':      len(critical) - prev_critical,
-            'total_delay_days':    total_delay,
-            'pending_certs':       pending_certs,
+            'avg_kpi': round(avg_kpi, 1),
+            'avg_kpi_delta': round(avg_kpi - prev_avg_kpi, 1),
+            'delayed_count': len(delayed),
+            'critical_count': len(critical),
+            'critical_delta': len(critical) - prev_critical,
+            'total_delay_days': total_delay,
+            'pending_certs': pending_certs,
             'pending_certs_delta': pending_certs - prev_pending,
-            'pending_cos':         pending_cos,
-            'co_value':            co_value,
-            'on_time_count':       on_time,
-            'mosque_count':        len(mosques),
-            'avg_financial':       round(avg_financial, 1),
+            'pending_cos': pending_cos,
+            'co_value': co_value,
+            'on_time_count': on_time,
+            'mosque_count': len(mosques),
+            'avg_financial': round(avg_financial, 1),
         })
 
     # ══════════════════════════════════════════════════════
@@ -155,18 +155,18 @@ class WaqfDashboardAPI(http.Controller):
         else:
             # ── Fallback: compute from raw data ──────────────
             Mosque = request.env['mosque.mosque'].sudo()
-            Cert   = request.env['mosque.certificate'].sudo()
-            CO     = request.env['mosque.change.order'].sudo()
+            Cert = request.env['mosque.certificate'].sudo()
+            CO = request.env['mosque.change.order'].sudo()
 
             # Critical mosques
             for m in Mosque.search([('overall_kpi', '<', 45), ('overall_kpi', '>', 0),
                                     ('is_demo', '=', False)]):
                 alerts.append({
                     'id': m.id, 'severity': 'critical', 'category': 'delay',
-                    'title':       f'{m.name} — KPI حرج {round(m.overall_kpi)}%',
+                    'title': f'{m.name} — KPI حرج {round(m.overall_kpi)}%',
                     'description': f'تأخير {m.days_delay} يوم · يحتاج تدخل فوري',
-                    'mosque_id':   m.id, 'mosque_name': m.name, 'mosque_code': m.code,
-                    'cta_label':   'فتح المسجد', 'state': 'new', 'created_at': '',
+                    'mosque_id': m.id, 'mosque_name': m.name, 'mosque_code': m.code,
+                    'cta_label': 'فتح المسجد', 'state': 'new', 'created_at': '',
                 })
 
             # Pending certs > 7 days
@@ -175,24 +175,24 @@ class WaqfDashboardAPI(http.Controller):
                                   ('create_date', '<', cutoff)]):
                 alerts.append({
                     'id': 10000 + c.id, 'severity': 'high', 'category': 'financial',
-                    'title':       f'مستخلص #{c.cert_number} معلق منذ أكثر من 7 أيام',
+                    'title': f'مستخلص #{c.cert_number} معلق منذ أكثر من 7 أيام',
                     'description': f'{c.mosque_id.name} · {round(c.certified_amount or 0):,} ريال',
-                    'mosque_id':   c.mosque_id.id if c.mosque_id else None,
+                    'mosque_id': c.mosque_id.id if c.mosque_id else None,
                     'mosque_name': c.mosque_id.name if c.mosque_id else '',
                     'mosque_code': c.mosque_id.code if c.mosque_id else '',
-                    'cta_label':   'مراجعة', 'state': 'new', 'created_at': '',
+                    'cta_label': 'مراجعة', 'state': 'new', 'created_at': '',
                 })
 
             # High value COs pending
             for co in CO.search([('state', '=', 'review'), ('amount', '>', 100000)]):
                 alerts.append({
                     'id': 20000 + co.id, 'severity': 'high', 'category': 'financial',
-                    'title':       f'أمر تغيير {co.name} بقيمة عالية — {round(co.amount):,} ريال',
+                    'title': f'أمر تغيير {co.name} بقيمة عالية — {round(co.amount):,} ريال',
                     'description': f'{co.mosque_id.name} · {co.reason or ""}',
-                    'mosque_id':   co.mosque_id.id if co.mosque_id else None,
+                    'mosque_id': co.mosque_id.id if co.mosque_id else None,
                     'mosque_name': co.mosque_id.name if co.mosque_id else '',
                     'mosque_code': co.mosque_id.code if co.mosque_id else '',
-                    'cta_label':   'اعتماد', 'state': 'new', 'created_at': '',
+                    'cta_label': 'اعتماد', 'state': 'new', 'created_at': '',
                 })
 
             # Sort by severity
@@ -202,7 +202,7 @@ class WaqfDashboardAPI(http.Controller):
 
         return _json({
             'alerts': alerts,
-            'total':  len(alerts),
+            'total': len(alerts),
             'source': 'ai_center' if has_ai else 'computed',
         })
 
@@ -294,9 +294,9 @@ class WaqfDashboardAPI(http.Controller):
                 insights.append({
                     'type': 'risk', 'icon': '🔴', 'priority': 1,
                     'title': 'خطر تعثر فوري',
-                    'body':  (f'<strong>{m.name}</strong> يسجل أدنى KPI بنسبة '
-                              f'{round(m.overall_kpi)}% مع تأخير {m.days_delay} يوم. '
-                              f'يُنصح بعقد اجتماع طارئ مع المقاول وإصدار إنذار رسمي.'),
+                    'body': (f'<strong>{m.name}</strong> يسجل أدنى KPI بنسبة '
+                             f'{round(m.overall_kpi)}% مع تأخير {m.days_delay} يوم. '
+                             f'يُنصح بعقد اجتماع طارئ مع المقاول وإصدار إنذار رسمي.'),
                     'mosque_id': m.id, 'mosque_name': m.name,
                     'action_label': 'فتح تفاصيل المسجد',
                 })
@@ -308,8 +308,8 @@ class WaqfDashboardAPI(http.Controller):
                 insights.append({
                     'type': 'risk', 'icon': '📊', 'priority': 2,
                     'title': 'انحراف مالي متسارع',
-                    'body':  (f'{len(over_budget)} مسجد ينفق أسرع من معدل الإنجاز الزمني '
-                              f'بفارق يتجاوز 15%. السبب الأرجح أوامر تغيير تُنفَّذ قبل الاعتماد.'),
+                    'body': (f'{len(over_budget)} مسجد ينفق أسرع من معدل الإنجاز الزمني '
+                             f'بفارق يتجاوز 15%. السبب الأرجح أوامر تغيير تُنفَّذ قبل الاعتماد.'),
                     'mosque_id': None, 'mosque_name': '',
                     'action_label': '',
                 })
@@ -321,9 +321,9 @@ class WaqfDashboardAPI(http.Controller):
                 insights.append({
                     'type': 'opportunity', 'icon': '✅', 'priority': 3,
                     'title': 'أفضل مقاول أداءً',
-                    'body':  (f'<strong>{m.contractor or m.name}</strong> يحقق KPI '
-                              f'{round(m.overall_kpi)}% مع الالتزام الزمني. '
-                              f'يُنصح بتحليل أسلوبه وتطبيقه على باقي المقاولين.'),
+                    'body': (f'<strong>{m.contractor or m.name}</strong> يحقق KPI '
+                             f'{round(m.overall_kpi)}% مع الالتزام الزمني. '
+                             f'يُنصح بتحليل أسلوبه وتطبيقه على باقي المقاولين.'),
                     'mosque_id': m.id, 'mosque_name': m.name,
                     'action_label': '',
                 })
@@ -339,17 +339,17 @@ class WaqfDashboardAPI(http.Controller):
                 insights.append({
                     'type': 'action', 'icon': '🎯', 'priority': 4,
                     'title': 'قرار اعتماد عاجل',
-                    'body':  (f'{pending} مستخلص بإجمالي '
-                              f'{round(total_val / 1000):,} ألف ريال '
-                              f'بانتظار الاعتماد. التأخير يُعيق استمرارية التنفيذ.'),
+                    'body': (f'{pending} مستخلص بإجمالي '
+                             f'{round(total_val / 1000):,} ألف ريال '
+                             f'بانتظار الاعتماد. التأخير يُعيق استمرارية التنفيذ.'),
                     'mosque_id': None, 'mosque_name': '',
                     'action_label': 'مراجعة المستخلصات',
                 })
 
         return _json({
-            'insights':     insights,
+            'insights': insights,
             'last_updated': last_updated,
-            'source':       'ai_center' if has_ai else 'computed',
+            'source': 'ai_center' if has_ai else 'computed',
         })
 
     # ══════════════════════════════════════════════════════
@@ -412,17 +412,17 @@ class WaqfDashboardAPI(http.Controller):
                 # Impact = inverse of KPI
                 impact = max(0, min(100, 100 - m.overall_kpi))
                 # Probability = based on delay + financial deviation
-                fin_dev  = abs(m.financial_progress - m.time_progress)
-                prob     = max(0, min(100, (m.days_delay / 2) + fin_dev))
+                fin_dev = abs(m.financial_progress - m.time_progress)
+                prob = max(0, min(100, (m.days_delay / 2) + fin_dev))
                 risk_lvl = ('critical' if impact > 60 and prob > 60 else
-                            'high'     if impact > 45 or prob > 45 else
-                            'medium'   if impact > 30 or prob > 30 else 'low')
+                            'high' if impact > 45 or prob > 45 else
+                            'medium' if impact > 30 or prob > 30 else 'low')
                 points.append({
-                    'mosque_id':   m.id, 'mosque_name': m.name, 'mosque_code': m.code,
-                    'impact':      round(impact, 1), 'probability': round(prob, 1),
-                    'size':        m.contract_value,
-                    'kpi':         round(m.overall_kpi, 1),
-                    'risk_level':  risk_lvl,
+                    'mosque_id': m.id, 'mosque_name': m.name, 'mosque_code': m.code,
+                    'impact': round(impact, 1), 'probability': round(prob, 1),
+                    'size': m.contract_value,
+                    'kpi': round(m.overall_kpi, 1),
+                    'risk_level': risk_lvl,
                 })
 
         return _json({'points': points})
@@ -433,7 +433,7 @@ class WaqfDashboardAPI(http.Controller):
     @http.route('/dashboard/api/forecast', type='http', auth='user', csrf=False)
     def api_forecast(self, **kw):
         has_ai = 'waqf.ai.mosque.snapshot' in request.env
-        rows   = []
+        rows = []
 
         if has_ai:
             Snap = request.env['waqf.ai.mosque.snapshot'].sudo()
@@ -474,14 +474,14 @@ class WaqfDashboardAPI(http.Controller):
                 else:
                     forecast = None
                 rows.append({
-                    'mosque_id':       m.id,
-                    'mosque_name':     m.name,
-                    'mosque_code':     m.code,
-                    'planned_finish':  str(m.planned_end) if m.planned_end else '',
+                    'mosque_id': m.id,
+                    'mosque_name': m.name,
+                    'mosque_code': m.code,
+                    'planned_finish': str(m.planned_end) if m.planned_end else '',
                     'forecast_finish': str(forecast) if forecast else '',
-                    'variance_days':   variance,
-                    'confidence_pct':  round(confidence, 0),
-                    'is_at_risk':      variance > 0,
+                    'variance_days': variance,
+                    'confidence_pct': round(confidence, 0),
+                    'is_at_risk': variance > 0,
                 })
             rows.sort(key=lambda r: r['variance_days'], reverse=True)
             rows = rows[:10]
@@ -494,13 +494,13 @@ class WaqfDashboardAPI(http.Controller):
     @http.route('/dashboard/api/contractors', type='http', auth='user', csrf=False)
     def api_contractors(self, **kw):
         Mosque = request.env['mosque.mosque'].sudo()
-        CO     = request.env['mosque.change.order'].sudo()
-        Sup    = request.env['mosque.supervision'].sudo()
+        CO = request.env['mosque.change.order'].sudo()
+        Sup = request.env['mosque.supervision'].sudo()
 
         # Group by contractor
         contractor_data = {}
         for m in Mosque.search([('is_demo', '=', False),
-                                 ('contractor', '!=', False)]):
+                                ('contractor', '!=', False)]):
             c = m.contractor
             if c not in contractor_data:
                 contractor_data[c] = {
@@ -526,15 +526,15 @@ class WaqfDashboardAPI(http.Controller):
 
         result = []
         for c, d in contractor_data.items():
-            avg_kpi   = sum(d['kpis']) / len(d['kpis']) if d['kpis'] else 0
+            avg_kpi = sum(d['kpis']) / len(d['kpis']) if d['kpis'] else 0
             avg_delay = sum(d['delays']) / len(d['delays']) if d['delays'] else 0
             result.append({
-                'name':         c,
+                'name': c,
                 'mosque_count': len(d['mosques']),
-                'avg_kpi':      round(avg_kpi, 1),
-                'avg_delay':    round(avg_delay, 1),
-                'co_count':     d['co_count'],
-                'ncr_total':    d['ncr_total'],
+                'avg_kpi': round(avg_kpi, 1),
+                'avg_delay': round(avg_delay, 1),
+                'co_count': d['co_count'],
+                'ncr_total': d['ncr_total'],
                 'rating': ('good' if avg_kpi >= 70 else
                            'warn' if avg_kpi >= 50 else 'bad'),
             })
@@ -550,11 +550,11 @@ class WaqfDashboardAPI(http.Controller):
         Sup = request.env['mosque.supervision'].sudo()
         sups = Sup.search([])
 
-        ncr_total  = sum(sups.mapped('ncr_count'))
+        ncr_total = sum(sups.mapped('ncr_count'))
         safety_inc = sum(sups.mapped('safety_incidents'))
-        itp_check  = sum(sups.mapped('itp_hold_points_checked'))
-        itp_appr   = sum(sups.mapped('itp_hold_points_approved'))
-        itp_rate   = round(itp_appr / itp_check * 100, 1) if itp_check else 0
+        itp_check = sum(sups.mapped('itp_hold_points_checked'))
+        itp_appr = sum(sups.mapped('itp_hold_points_approved'))
+        itp_rate = round(itp_appr / itp_check * 100, 1) if itp_check else 0
 
         # Failed inspections
         failed_itp = itp_check - itp_appr
@@ -563,23 +563,23 @@ class WaqfDashboardAPI(http.Controller):
         open_issues = len(sups.filtered(lambda s: s.issues))
 
         # Quality score: weighted formula
-        ncr_score     = max(0, 100 - ncr_total * 2)
-        safety_score  = max(0, 100 - safety_inc * 5)
-        itp_score     = itp_rate
+        ncr_score = max(0, 100 - ncr_total * 2)
+        safety_score = max(0, 100 - safety_inc * 5)
+        itp_score = itp_rate
         quality_score = round(ncr_score * 0.4 + safety_score * 0.3 + itp_score * 0.3, 1)
 
         rating = ('excellent' if quality_score >= 85 else
-                  'good'      if quality_score >= 70 else
-                  'warning'   if quality_score >= 55 else 'critical')
+                  'good' if quality_score >= 70 else
+                  'warning' if quality_score >= 55 else 'critical')
 
         return _json({
             'quality_score': quality_score,
-            'rating':        rating,
-            'ncr_total':     ncr_total,
+            'rating': rating,
+            'ncr_total': ncr_total,
             'safety_incidents': safety_inc,
             'failed_inspections': failed_itp,
-            'open_issues':   open_issues,
-            'itp_rate':      itp_rate,
+            'open_issues': open_issues,
+            'itp_rate': itp_rate,
         })
 
     # ══════════════════════════════════════════════════════
@@ -592,26 +592,26 @@ class WaqfDashboardAPI(http.Controller):
         result = []
         for m in mosques:
             result.append({
-                'id':            m.id,
-                'code':          m.code,
-                'name':          m.name,
-                'city':          m.city,
-                'district':      m.district or '',
-                'state':         m.state,
-                'package':       m.package_id.name if m.package_id else '',
-                'package_id':    m.package_id.id if m.package_id else 0,
-                'overall_kpi':   round(m.overall_kpi, 1),
+                'id': m.id,
+                'code': m.code,
+                'name': m.name,
+                'city': m.city,
+                'district': m.district or '',
+                'state': m.state,
+                'package': m.package_id.name if m.package_id else '',
+                'package_id': m.package_id.id if m.package_id else 0,
+                'overall_kpi': round(m.overall_kpi, 1),
                 'financial_pct': round(m.financial_progress, 1),
-                'time_pct':      round(m.time_progress, 1),
-                'days_delay':    m.days_delay,
+                'time_pct': round(m.time_progress, 1),
+                'days_delay': m.days_delay,
                 'contract_value': m.contract_value,
                 'planned_start': str(m.planned_start) if m.planned_start else '',
-                'planned_end':   str(m.planned_end)   if m.planned_end   else '',
-                'lat':           m.latitude  if hasattr(m, 'latitude')  else 0,
-                'lng':           m.longitude if hasattr(m, 'longitude') else 0,
-                'kpi_color': ('green'  if m.overall_kpi >= 70 else
-                               'yellow' if m.overall_kpi >= 50 else
-                               'red'    if m.overall_kpi > 0  else 'gray'),
+                'planned_end': str(m.planned_end) if m.planned_end else '',
+                'lat': m.latitude,
+                'lng': m.longitude,
+                'kpi_color': ('green' if m.overall_kpi >= 70 else
+                              'yellow' if m.overall_kpi >= 50 else
+                              'red' if m.overall_kpi > 0 else 'gray'),
             })
         return _json(result)
 
@@ -621,51 +621,51 @@ class WaqfDashboardAPI(http.Controller):
     @http.route('/dashboard/api/packages', type='http', auth='user', csrf=False)
     def api_packages(self, **kw):
         packages = request.env['mosque.package'].sudo().search([], order='sequence')
-        today    = date.today()
-        result   = []
+        today = date.today()
+        result = []
 
         for pkg in packages:
-            mosques  = pkg.mosque_ids.filtered(lambda m: not m.is_demo)
-            avg_kpi  = sum(mosques.mapped('overall_kpi')) / len(mosques) if mosques else 0
+            mosques = pkg.mosque_ids.filtered(lambda m: not m.is_demo)
+            avg_kpi = sum(mosques.mapped('overall_kpi')) / len(mosques) if mosques else 0
             avg_time = sum(mosques.mapped('time_progress')) / len(mosques) if mosques else 0
-            delayed  = len(mosques.filtered(lambda m: m.days_delay > 0))
+            delayed = len(mosques.filtered(lambda m: m.days_delay > 0))
 
             is_current = is_past = is_future = False
             expected_pct = 0
             if pkg.planned_start and pkg.planned_end:
                 is_current = pkg.planned_start <= today <= pkg.planned_end
-                is_past    = pkg.planned_end < today
-                is_future  = pkg.planned_start > today
+                is_past = pkg.planned_end < today
+                is_future = pkg.planned_start > today
                 total_days = (pkg.planned_end - pkg.planned_start).days
-                elapsed    = (today - pkg.planned_start).days
+                elapsed = (today - pkg.planned_start).days
                 if total_days > 0:
                     expected_pct = min(100, round(elapsed / total_days * 100, 1))
 
             result.append({
-                'id':            pkg.id,
-                'code':          pkg.code,
-                'name':          pkg.name,
+                'id': pkg.id,
+                'code': pkg.code,
+                'name': pkg.name,
                 'planned_start': str(pkg.planned_start) if pkg.planned_start else '',
-                'planned_end':   str(pkg.planned_end)   if pkg.planned_end   else '',
-                'mosque_count':  len(mosques),
-                'avg_kpi':       round(avg_kpi, 1),
-                'avg_time':      round(avg_time, 1),
+                'planned_end': str(pkg.planned_end) if pkg.planned_end else '',
+                'mosque_count': len(mosques),
+                'avg_kpi': round(avg_kpi, 1),
+                'avg_time': round(avg_time, 1),
                 'delayed_count': delayed,
-                'expected_pct':  expected_pct,
-                'deviation':     round(avg_time - expected_pct, 1),
-                'is_current':    is_current,
-                'is_past':       is_past,
-                'is_future':     is_future,
+                'expected_pct': expected_pct,
+                'deviation': round(avg_time - expected_pct, 1),
+                'is_current': is_current,
+                'is_past': is_past,
+                'is_future': is_future,
                 'mosques': [{
-                    'id':          m.id,
-                    'code':        m.code,
-                    'name':        m.name,
+                    'id': m.id,
+                    'code': m.code,
+                    'name': m.name,
                     'overall_kpi': round(m.overall_kpi, 1),
-                    'state':       m.state,
-                    'days_delay':  m.days_delay,
-                    'kpi_color': ('green'  if m.overall_kpi >= 70 else
-                                   'yellow' if m.overall_kpi >= 50 else
-                                   'red'    if m.overall_kpi > 0  else 'gray'),
+                    'state': m.state,
+                    'days_delay': m.days_delay,
+                    'kpi_color': ('green' if m.overall_kpi >= 70 else
+                                  'yellow' if m.overall_kpi >= 50 else
+                                  'red' if m.overall_kpi > 0 else 'gray'),
                 } for m in mosques],
             })
         return _json(result)
@@ -686,22 +686,22 @@ class WaqfDashboardAPI(http.Controller):
             if cat not in boq_cats:
                 boq_cats[cat] = {'contracted': 0, 'executed': 0}
             boq_cats[cat]['contracted'] += boq.contracted_qty * boq.unit_price
-            boq_cats[cat]['executed']   += boq.executed_qty   * boq.unit_price
+            boq_cats[cat]['executed'] += boq.executed_qty * boq.unit_price
 
         # Tasks
         tasks = []
         if m.project_id:
             for t in request.env['project.task'].sudo().search([
                 ('project_id', '=', m.project_id.id),
-                ('parent_id',  '=', False),
+                ('parent_id', '=', False),
             ], order='sequence'):
                 subtasks = []
                 for s in t.child_ids:
                     photos = []
                     for att in request.env['ir.attachment'].sudo().search([
                         ('res_model', '=', 'project.task'),
-                        ('res_id',    '=', s.id),
-                        ('mimetype',  'like', 'image'),
+                        ('res_id', '=', s.id),
+                        ('mimetype', 'like', 'image'),
                     ]):
                         n = (att.name or '').lower()
                         is_360 = ('360' in n or 'pano' in n or
@@ -713,35 +713,35 @@ class WaqfDashboardAPI(http.Controller):
                     docs = []
                     for att in request.env['ir.attachment'].sudo().search([
                         ('res_model', '=', 'project.task'),
-                        ('res_id',    '=', s.id),
-                        ('mimetype',  'not like', 'image'),
+                        ('res_id', '=', s.id),
+                        ('mimetype', 'not like', 'image'),
                     ]):
                         docs.append({'id': att.id, 'name': att.name,
                                      'mimetype': att.mimetype,
                                      'url': '/web/content/%d' % att.id})
                     subtasks.append({
-                        'id':             s.id,
-                        'name':           s.name,
-                        'review_state':   s.review_state,
-                        'kanban_color':   s.kanban_color,
-                        'stage':          s.stage_id.name if s.stage_id else '',
+                        'id': s.id,
+                        'name': s.name,
+                        'review_state': s.review_state,
+                        'kanban_color': s.kanban_color,
+                        'stage': s.stage_id.name if s.stage_id else '',
                         'rejection_note': s.rejection_note or '',
-                        'photos':         photos,
-                        'docs':           docs,
+                        'photos': photos,
+                        'docs': docs,
                     })
                 tasks.append({
-                    'id':            t.id,
-                    'name':          t.name,
-                    'review_state':  t.review_state,
-                    'kanban_color':  t.kanban_color,
-                    'stage':         t.stage_id.name if t.stage_id else '',
-                    'deadline':      str(t.date_deadline) if t.date_deadline else '',
+                    'id': t.id,
+                    'name': t.name,
+                    'review_state': t.review_state,
+                    'kanban_color': t.kanban_color,
+                    'stage': t.stage_id.name if t.stage_id else '',
+                    'deadline': str(t.date_deadline) if t.date_deadline else '',
                     'approved_count': t.approved_subtask_count,
-                    'pending_count':  t.pending_subtask_count,
+                    'pending_count': t.pending_subtask_count,
                     'rejected_count': t.rejected_subtask_count,
-                    'subtask_count':  len(t.child_ids),
-                    'subtasks':       subtasks,
-                    'blocking_co':    t.blocking_co_id.name if t.blocking_co_id else '',
+                    'subtask_count': len(t.child_ids),
+                    'subtasks': subtasks,
+                    'blocking_co': t.blocking_co_id.name if t.blocking_co_id else '',
                     'subtasks_all_green': t.subtasks_all_green,
                 })
 
@@ -753,21 +753,21 @@ class WaqfDashboardAPI(http.Controller):
             for line in c.line_ids:
                 lines.append({
                     'boq_code': line.boq_id.item_code if line.boq_id else '',
-                    'desc':     (line.boq_id.description[:40]
-                                 if line.boq_id else ''),
-                    'qty':      line.this_period_qty,
-                    'value':    (line.this_period_qty * (line.boq_id.unit_price or 0)
-                                 if line.boq_id else 0),
+                    'desc': (line.boq_id.description[:40]
+                             if line.boq_id else ''),
+                    'qty': line.this_period_qty,
+                    'value': (line.this_period_qty * (line.boq_id.unit_price or 0)
+                              if line.boq_id else 0),
                 })
             certs.append({
-                'id':          c.id,
-                'number':      c.cert_number,
-                'state':       c.state,
+                'id': c.id,
+                'number': c.cert_number,
+                'state': c.state,
                 'period_from': str(c.period_from) if c.period_from else '',
-                'period_to':   str(c.period_to)   if c.period_to   else '',
+                'period_to': str(c.period_to) if c.period_to else '',
                 'total_value': c.certified_amount,
-                'net_value':   c.net_payable,
-                'lines':       lines,
+                'net_value': c.net_payable,
+                'lines': lines,
             })
 
         # Change Orders
@@ -775,13 +775,13 @@ class WaqfDashboardAPI(http.Controller):
         for co in request.env['mosque.change.order'].sudo().search(
                 [('mosque_id', '=', mosque_id)], order='id desc'):
             cos.append({
-                'id':             co.id,
-                'name':           co.name,
-                'type':           co.type,
-                'reason':         co.reason,
-                'amount':         co.amount,
+                'id': co.id,
+                'name': co.name,
+                'type': co.type,
+                'reason': co.reason,
+                'amount': co.amount,
                 'days_extension': co.days_extension,
-                'state':          co.state,
+                'state': co.state,
             })
 
         # Visit reports with photos
@@ -792,8 +792,8 @@ class WaqfDashboardAPI(http.Controller):
             photos = []
             for att in request.env['ir.attachment'].sudo().search([
                 ('res_model', '=', 'mosque.supervision'),
-                ('res_id',    '=', sup.id),
-                ('mimetype',  'like', 'image'),
+                ('res_id', '=', sup.id),
+                ('mimetype', 'like', 'image'),
             ]):
                 n = (att.name or '').lower()
                 is_360 = ('360' in n or 'pano' in n or 'equirect' in n or
@@ -802,35 +802,35 @@ class WaqfDashboardAPI(http.Controller):
                                'url': '/web/image/%d' % att.id,
                                'is_360': is_360})
             visits.append({
-                'id':           sup.id,
-                'date':         str(sup.report_date) if sup.report_date else '',
-                'engineer':     sup.engineer_id.name if sup.engineer_id else '',
-                'type':         sup.report_type,
-                'workers':      sup.workers_on_site,
-                'ncr':          sup.ncr_count,
-                'state':        sup.state,
-                'activities':   sup.activities_done or '',
-                'issues':       sup.issues or '',
-                'photo_count':  len(sup.photo_ids),
-                'photos':       photos,
+                'id': sup.id,
+                'date': str(sup.report_date) if sup.report_date else '',
+                'engineer': sup.engineer_id.name if sup.engineer_id else '',
+                'type': sup.report_type,
+                'workers': sup.workers_on_site,
+                'ncr': sup.ncr_count,
+                'state': sup.state,
+                'activities': sup.activities_done or '',
+                'issues': sup.issues or '',
+                'photo_count': len(sup.photo_ids),
+                'photos': photos,
                 'photo_360_url': sup.photo_360_url or '',
                 'gps_validated': sup.gps_validated,
             })
 
         # Attendance
-        today   = date.today()
-        since   = datetime.combine(today - timedelta(days=30), datetime.min.time())
+        today = date.today()
+        since = datetime.combine(today - timedelta(days=30), datetime.min.time())
         attendance = []
         for att in request.env['mosque.attendance'].sudo().search([
             ('mosque_id', '=', mosque_id),
-            ('check_in',  '>=', since),
+            ('check_in', '>=', since),
         ], order='check_in desc', limit=30):
             attendance.append({
-                'id':        att.id,
-                'engineer':  att.engineer_id.name if att.engineer_id else '',
-                'check_in':  str(att.check_in.strftime('%Y-%m-%d %H:%M')) if att.check_in else '',
+                'id': att.id,
+                'engineer': att.engineer_id.name if att.engineer_id else '',
+                'check_in': str(att.check_in.strftime('%Y-%m-%d %H:%M')) if att.check_in else '',
                 'check_out': str(att.check_out.strftime('%H:%M')) if att.check_out else None,
-                'duration':  att.duration,
+                'duration': att.duration,
                 'validated': att.is_validated,
             })
 
@@ -864,43 +864,43 @@ class WaqfDashboardAPI(http.Controller):
                 ai_data = {
                     'risk_level': severity,
                     'risk_impact': latest_alert.impact_score if latest_alert else max(0, min(100, 100 - (
-                                snap.overall_kpi or 0))),
+                            snap.overall_kpi or 0))),
                     'risk_probability': latest_alert.probability_score if latest_alert else max(0, min(100, (
-                                snap.days_delay or 0) * 2 + abs(
+                            snap.days_delay or 0) * 2 + abs(
                         (snap.financial_progress or 0) - (snap.time_progress or 0)))),
                     'health_score': round(snap.overall_kpi or 0, 1),
                     'forecast_finish': '',
                     'variance_days': latest_prediction.expected_delay_days if latest_prediction else (
-                                snap.days_delay or 0),
+                            snap.days_delay or 0),
                     'confidence_pct': round((latest_alert.confidence or latest_prediction.confidence or 0) * 100,
                                             1) if (latest_alert or latest_prediction) else 0,
                 }
 
         return _json({
             'mosque': {
-                'id':              m.id,
-                'code':            m.code,
-                'name':            m.name,
-                'city':            m.city,
-                'district':        m.district or '',
-                'state':           m.state,
-                'overall_kpi':     round(m.overall_kpi, 1),
-                'financial_kpi':   round(m.financial_progress, 1),
-                'time_kpi':        round(m.time_progress, 1),
-                'visit_compliance':round(m.visit_compliance, 1),
-                'days_delay':      m.days_delay,
-                'contract_value':  m.contract_value,
-                'planned_start':   str(m.planned_start) if m.planned_start else '',
-                'planned_end':     str(m.planned_end)   if m.planned_end   else '',
-                'contractor':      m.contractor or '',
+                'id': m.id,
+                'code': m.code,
+                'name': m.name,
+                'city': m.city,
+                'district': m.district or '',
+                'state': m.state,
+                'overall_kpi': round(m.overall_kpi, 1),
+                'financial_kpi': round(m.financial_progress, 1),
+                'time_kpi': round(m.time_progress, 1),
+                'visit_compliance': round(m.visit_compliance, 1),
+                'days_delay': m.days_delay,
+                'contract_value': m.contract_value,
+                'planned_start': str(m.planned_start) if m.planned_start else '',
+                'planned_end': str(m.planned_end) if m.planned_end else '',
+                'contractor': m.contractor or '',
             },
-            'ai':            ai_data,
-            'boq_categories':[{'name': k, **v} for k, v in boq_cats.items()],
-            'tasks':         tasks,
-            'certs':         certs,
+            'ai': ai_data,
+            'boq_categories': [{'name': k, **v} for k, v in boq_cats.items()],
+            'tasks': tasks,
+            'certs': certs,
             'change_orders': cos,
-            'visits':        visits,
-            'attendance':    attendance,
+            'visits': visits,
+            'attendance': attendance,
         })
 
     # ══════════════════════════════════════════════════════
@@ -911,15 +911,15 @@ class WaqfDashboardAPI(http.Controller):
         today_start = datetime.combine(date.today(), datetime.min.time())
         result = []
         for a in request.env['mosque.attendance'].sudo().search([
-            ('check_in',  '>=', today_start),
-            ('check_out', '=',  False),
+            ('check_in', '>=', today_start),
+            ('check_out', '=', False),
         ]):
             elapsed = ((datetime.now() - a.check_in).total_seconds() / 3600
                        if a.check_in else 0)
             result.append({
-                'name':    a.engineer_id.name if a.engineer_id else '',
-                'mosque':  a.mosque_id.name   if a.mosque_id   else '',
-                'code':    a.mosque_id.code   if a.mosque_id   else '',
+                'name': a.engineer_id.name if a.engineer_id else '',
+                'mosque': a.mosque_id.name if a.mosque_id else '',
+                'code': a.mosque_id.code if a.mosque_id else '',
                 'checkin': a.check_in.strftime('%H:%M') if a.check_in else '',
                 'elapsed': round(elapsed, 1),
                 'validated': a.is_validated,

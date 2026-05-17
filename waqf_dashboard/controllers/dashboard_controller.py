@@ -68,6 +68,7 @@ class WaqfDashboardController(http.Controller):
         }
 
         active_stream = request.env['waqf.live.stream'].sudo().get_active_stream()
+        has_ai_module = 'waqf.ai.snapshot.run' in request.env
 
         return request.render('waqf_dashboard.tmpl_dashboard', {
             'company':       company,
@@ -79,6 +80,8 @@ class WaqfDashboardController(http.Controller):
             'on_site_count': len(on_site),
             'summary':       summary,
             'user':          request.env.user,
+            'has_ai_module': has_ai_module,  # ← أضف
+            'mosque_count': len(all_m),
         })
 
     @http.route('/dashboard/settings', type='http', auth='user', website=True)
