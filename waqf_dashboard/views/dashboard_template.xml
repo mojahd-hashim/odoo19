@@ -269,18 +269,18 @@
             </div>
           </div>
         </div>
-        <div class="card">
-          <div class="card-hdr">
-            <div class="card-title"><span class="card-title-icon">🏗</span>أداء المقاولين</div>
-            <span style="font-size:9px;color:var(--text3)">ترتيب حسب KPI</span>
-          </div>
-          <div class="card-body" style="padding:8px" id="contractor-list">
-            <div class="skeleton" style="height:36px;margin-bottom:4px"/>
-            <div class="skeleton" style="height:36px;margin-bottom:4px"/>
-            <div class="skeleton" style="height:36px;margin-bottom:4px"/>
-            <div class="skeleton" style="height:36px"/>
-          </div>
-        </div>
+<!--        <div class="card">-->
+<!--          <div class="card-hdr">-->
+<!--            <div class="card-title"><span class="card-title-icon">🏗</span>أداء المقاولين</div>-->
+<!--            <span style="font-size:9px;color:var(&#45;&#45;text3)">ترتيب حسب KPI</span>-->
+<!--          </div>-->
+<!--          <div class="card-body" style="padding:8px" id="contractor-list">-->
+<!--            <div class="skeleton" style="height:36px;margin-bottom:4px"/>-->
+<!--            <div class="skeleton" style="height:36px;margin-bottom:4px"/>-->
+<!--            <div class="skeleton" style="height:36px;margin-bottom:4px"/>-->
+<!--            <div class="skeleton" style="height:36px"/>-->
+<!--          </div>-->
+<!--        </div>-->
       </div>
 
       <!-- MERGED: AI + Quality + Forecast -->
