@@ -690,7 +690,7 @@ class WaqfDashboardAPI(http.Controller):
             boq_cats[cat]['boq_lines'].append({
                 'code': boq.item_code or '',
                 'description': boq.description or '',
-                'unit': boq.uom_id.name if boq.uom_id else '',
+                'unit': boq.uom,
                 'contracted_qty': boq.contracted_qty,
                 'executed_qty': boq.executed_qty,
                 'unit_price': boq.unit_price,
