@@ -119,6 +119,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     apiGet('/dashboard/api/forecast'),
                     apiGet('/dashboard/api/quality'),
                     apiGet('/dashboard/api/contractors'),
+                    apiGet('/dashboard/api/summary'),
                 ]);
 
             S.mosques = mosques;
@@ -136,6 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
             initSearch();
             initQuickFilters();
             startRefresh();
+            renderSummary(summary);
         });
     }
 
@@ -1360,7 +1362,7 @@ document.addEventListener('DOMContentLoaded', function () {
       </div>
       <div style="display:flex;justify-content:space-between;margin-top:8px;
         font-size:10px;color:rgba(255,255,255,0.5)">
-        <span>تعاقدي: ${fmt(total_contracted)} ر</span>
+        <span>الكمية الكلية: ${fmt(total_contracted)} ر</span>
         <span>منفذ: <span style="color:var(--green);font-weight:700">${fmt(total_executed)} ر</span></span>
       </div>
     </div>
@@ -1424,7 +1426,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
               </div>
               <div style="text-align:left;min-width:110px">
-                <div style="font-size:10px;color:var(--text3)">تعاقدي</div>
+                <div style="font-size:10px;color:var(--text3)">الكلي</div>
                 <div style="font-size:13px;font-weight:600;color:var(--text2)">
                   ${fmt(cat.contracted)} ر
                 </div>
@@ -1458,7 +1460,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         <th style="padding:9px 14px;text-align:center;font-size:10px;
                           font-weight:700;color:var(--text3)">الوحدة</th>
                         <th style="padding:9px 14px;text-align:center;font-size:10px;
-                          font-weight:700;color:var(--text3)">تعاقدي</th>
+                          font-weight:700;color:var(--text3)">الكلي</th>
                         <th style="padding:9px 14px;text-align:center;font-size:10px;
                           font-weight:700;color:var(--text3)">منفذ</th>
                         <th style="padding:9px 14px;text-align:left;font-size:10px;
