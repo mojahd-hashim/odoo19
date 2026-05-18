@@ -415,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // بيانات افتراضية إذا كانت القائمة فارغة
         if (mosques || mosques.length) {
             mosques = [
-                {id:1,  code:'DEMO-01', name:'[DEMO] جامع تجريبي — الملقا',                         city:'riyadh', overall_kpi:39, days_delay:4,  kpi_color:'red'},
+                {id:31,  code:'DEMO-01', name:'[DEMO] جامع تجريبي — الملقا',                         city:'riyadh', overall_kpi:39, days_delay:4,  kpi_color:'red'},
                 {id:2,  code:'RUH-09',  name:'جامع الأميرة نورة بنت عبد الله – النخيل',              city:'riyadh', overall_kpi:42, days_delay:9,  kpi_color:'red'},
                 {id:3,  code:'RUH-16',  name:'مسجد الملك عبد الله – الملقا 1',                      city:'riyadh', overall_kpi:29, days_delay:4,  kpi_color:'red'},
                 {id:4,  code:'RUH-17',  name:'مسجد الملك عبد الله – الملقا 2',                      city:'riyadh', overall_kpi:89, days_delay:0,  kpi_color:'green'},
