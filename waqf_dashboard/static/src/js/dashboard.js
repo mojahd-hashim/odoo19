@@ -380,35 +380,94 @@ document.addEventListener('DOMContentLoaded', function () {
     /* ══════════════════════════════════════════════════════════
        HEATMAP
        ══════════════════════════════════════════════════════════ */
+    // function buildHeatmap(mosques) {
+    //     const el = $('heatmap-grid');
+    //     if (!el) return;
+    //     el.innerHTML = '';
+    //     mosques.forEach(m => {
+    //         const cell = document.createElement('div');
+    //         cell.className = `hm-cell ${m.kpi_color}`;
+    //         cell.dataset.id = m.id;
+    //         cell.textContent = (m.code || '').replace(/^(RUH|JED|TIF|RFH|AFJ|YRA|GIZ)-0?/, '');
+    //
+    //         const tip = document.createElement('div');
+    //         tip.className = 'hm-tooltip';
+    //         tip.innerHTML = `<strong>${m.code}</strong><br/>${truncate(m.name, 18)}<br/>
+    //     KPI: ${m.overall_kpi}%
+    //     ${m.days_delay > 0
+    //             ? `<br/><span style="color:#F87171">تأخير ${m.days_delay} يوم</span>` : ''}`;
+    //         cell.appendChild(tip);
+    //
+    //         cell.addEventListener('click', function () {
+    //             document.querySelectorAll('.hm-cell').forEach(c => c.classList.remove('active'));
+    //             this.classList.add('active');
+    //             document.querySelectorAll('.sb-mosque').forEach(s =>
+    //                 s.classList.toggle('active', parseInt(s.dataset.id) === m.id));
+    //             loadMosqueDetail(parseInt(this.dataset.id));
+    //         });
+    //         el.appendChild(cell);
+    //     });
+    // }
     function buildHeatmap(mosques) {
         const el = $('heatmap-grid');
         if (!el) return;
+
+        // بيانات افتراضية إذا كانت القائمة فارغة
+        if (!mosques || !mosques.length) {
+            mosques = [
+                {id:1,  code:'DEMO-01', name:'[DEMO] جامع تجريبي — الملقا',                         city:'riyadh', overall_kpi:39, days_delay:4,  kpi_color:'red'},
+                {id:2,  code:'RUH-09',  name:'جامع الأميرة نورة بنت عبد الله – النخيل',              city:'riyadh', overall_kpi:42, days_delay:9,  kpi_color:'red'},
+                {id:3,  code:'RUH-16',  name:'مسجد الملك عبد الله – الملقا 1',                      city:'riyadh', overall_kpi:29, days_delay:4,  kpi_color:'red'},
+                {id:4,  code:'RUH-17',  name:'مسجد الملك عبد الله – الملقا 2',                      city:'riyadh', overall_kpi:89, days_delay:0,  kpi_color:'green'},
+                {id:5,  code:'RUH-18',  name:'مسجد الملك عبد الله – الطلال',                        city:'riyadh', overall_kpi:94, days_delay:0,  kpi_color:'green'},
+                {id:6,  code:'RUH-20',  name:'مسجد الأميرة فهدة – حي الملك عبدالله',                city:'riyadh', overall_kpi:60, days_delay:3,  kpi_color:'yellow'},
+                {id:7,  code:'JED-01',  name:'جامع الملك عبد الله (أبحر)',                           city:'jeddah', overall_kpi:60, days_delay:12, kpi_color:'yellow'},
+                {id:8,  code:'JED-02',  name:'جامع الملك عبد الله (العزيزية)',                       city:'jeddah', overall_kpi:36, days_delay:27, kpi_color:'red'},
+                {id:9,  code:'RUH-06',  name:'جامع الملك عبد الله (الدار البيضاء 1)',                city:'riyadh', overall_kpi:58, days_delay:5,  kpi_color:'yellow'},
+                {id:10, code:'RUH-07',  name:'مسجد الملك عبد الله – الدار البيضاء 2',               city:'riyadh', overall_kpi:73, days_delay:0,  kpi_color:'green'},
+                {id:11, code:'RUH-08',  name:'جامع الملك عبد الله (عتيقة - الشواعر)',               city:'riyadh', overall_kpi:71, days_delay:0,  kpi_color:'green'},
+                {id:12, code:'RUH-11',  name:'جامع الملك عبد الله (الملز)',                          city:'riyadh', overall_kpi:54, days_delay:21, kpi_color:'yellow'},
+                {id:13, code:'RUH-12',  name:'جامع الملك عبد الله (اليمامة)',                        city:'riyadh', overall_kpi:73, days_delay:0,  kpi_color:'green'},
+                {id:14, code:'RUH-13',  name:'جامع الملك عبد الله (الشميسي)',                        city:'riyadh', overall_kpi:45, days_delay:26, kpi_color:'red'},
+                {id:15, code:'TIF-01',  name:'جامع الأميرة فهدة (الفيصلية)',                         city:'taif',   overall_kpi:34, days_delay:13, kpi_color:'red'},
+                {id:16, code:'TIF-02',  name:'جامع الملك عبد الله (العقيق)',                         city:'taif',   overall_kpi:73, days_delay:0,  kpi_color:'green'},
+                {id:17, code:'RFH-01',  name:'جامع مسلط آل شريم (القادسية)',                         city:'rafha',  overall_kpi:66, days_delay:0,  kpi_color:'yellow'},
+                {id:18, code:'RFH-02',  name:'جامع الأميرة فهدة (قرية بن شريم)',                     city:'rafha',  overall_kpi:65, days_delay:0,  kpi_color:'yellow'},
+                {id:19, code:'RUH-01',  name:'جامع قاطع بن شريم (المؤنسية)',                         city:'riyadh', overall_kpi:52, days_delay:39, kpi_color:'yellow'},
+                {id:20, code:'RUH-02',  name:'مسجد الملك عبد الله (الصفوة)',                         city:'riyadh', overall_kpi:75, days_delay:0,  kpi_color:'green'},
+                {id:21, code:'RUH-03',  name:'جامع الملك عبد العزيز (الروضة)',                       city:'riyadh', overall_kpi:42, days_delay:18, kpi_color:'red'},
+                {id:22, code:'RUH-04',  name:'مسجد الملك عبد الله – التوحيد',                       city:'riyadh', overall_kpi:76, days_delay:0,  kpi_color:'green'},
+                {id:23, code:'RUH-05',  name:'جامع الأميرة فهدة (النسيم الغربي)',                    city:'riyadh', overall_kpi:90, days_delay:0,  kpi_color:'green'},
+                {id:24, code:'RUH-10',  name:'جامع الملك عبد الله (الخليج)',                         city:'riyadh', overall_kpi:39, days_delay:12, kpi_color:'red'},
+            ];
+            // دمجها في S.mosques أيضاً للخريطة والبحث
+            if (!S.mosques.length) S.mosques = mosques;
+        }
+
         el.innerHTML = '';
         mosques.forEach(m => {
             const cell = document.createElement('div');
             cell.className = `hm-cell ${m.kpi_color}`;
             cell.dataset.id = m.id;
-            cell.textContent = (m.code || '').replace(/^(RUH|JED|TIF|RFH|AFJ|YRA|GIZ)-0?/, '');
+            cell.textContent = (m.code || '').replace(/^(RUH|JED|TIF|RFH|AFJ|YRA|GIZ|DEMO)-0?/, '');
 
             const tip = document.createElement('div');
             tip.className = 'hm-tooltip';
             tip.innerHTML = `<strong>${m.code}</strong><br/>${truncate(m.name, 18)}<br/>
-        KPI: ${m.overall_kpi}%
-        ${m.days_delay > 0
-                ? `<br/><span style="color:#F87171">تأخير ${m.days_delay} يوم</span>` : ''}`;
+                KPI: ${m.overall_kpi}%
+                ${m.days_delay > 0
+                    ? `<br/><span style="color:#F87171">تأخير ${m.days_delay} يوم</span>`
+                    : ''}`;
             cell.appendChild(tip);
 
             cell.addEventListener('click', function () {
                 document.querySelectorAll('.hm-cell').forEach(c => c.classList.remove('active'));
                 this.classList.add('active');
-                document.querySelectorAll('.sb-mosque').forEach(s =>
-                    s.classList.toggle('active', parseInt(s.dataset.id) === m.id));
                 loadMosqueDetail(parseInt(this.dataset.id));
             });
             el.appendChild(cell);
         });
     }
-
     function initMap(mosques) {
         const mapEl = document.getElementById('mosque-map');
         if (!mapEl) return;
