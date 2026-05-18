@@ -1355,3 +1355,105 @@ body {
   max-width: 50%;
   margin-right: auto;  /* ← تدفعها لليسار */
 }
+/* ── Layout ──────────────────────────────────────────── */
+.cp-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 16px;
+  align-items: start;
+}
+
+/* العمود الرئيسي يأخذ اليمين */
+.cp-main-col { min-width: 0; }
+
+/* الشريط الجانبي على اليسار */
+.cp-sidebar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 16px;
+  position: sticky;
+  top: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* السجلات في الشريط أصغر */
+.cp-sidebar .cp-log-row {
+  padding: 10px 12px;
+  flex-wrap: wrap;
+}
+.cp-sidebar .cp-log-name {
+  font-size: 12px;
+}
+.cp-sidebar .cp-log-meta {
+  font-size: 10px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .cp-layout {
+    grid-template-columns: 1fr;
+  }
+  .cp-sidebar {
+    position: static;
+  }
+}
+/* ── Layout Two Columns ──────────────────────────────── */
+.cp-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 16px;
+  align-items: start;
+}
+.cp-main-col { min-width: 0; }
+
+/* ── Sidebar ─────────────────────────────────────────── */
+.cp-sidebar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 16px;
+  position: sticky;
+  top: 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cp-btn-block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  text-decoration: none;
+}
+
+/* Sidebar log rows — compact */
+.cp-log-row-sm {
+  padding: 9px 12px;
+  gap: 8px;
+}
+.cp-log-row-sm .cp-log-name {
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+.cp-log-row-sm .cp-log-meta { font-size: 10px; }
+.cp-log-row-sm .cp-status-pill {
+  font-size: 10px;
+  padding: 3px 7px;
+}
+
+/* Empty state compact */
+.cp-empty-sm {
+  padding: 20px 12px;
+}
+.cp-empty-sm .cp-empty-title { font-size: 12px; }
+.cp-empty-sm .cp-empty-sub   { font-size: 11px; }
+
+/* Mobile */
+@media (max-width: 768px) {
+  .cp-layout {
+    grid-template-columns: 1fr;
+  }
+  .cp-sidebar { position: static; }
+}
