@@ -1347,3 +1347,11 @@ body {
   transition: all var(--t-base);
 }
 .cp-btn-ghost:hover { background: var(--surface3); color: var(--text1); }
+
+.cp-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 50%;
+  margin-right: auto;  /* ← تدفعها لليسار */
+}
