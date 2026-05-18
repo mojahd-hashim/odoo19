@@ -413,7 +413,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!el) return;
 
         // بيانات افتراضية إذا كانت القائمة فارغة
-        if (!mosques || !mosques.length) {
+        if (mosques || mosques.length) {
             mosques = [
                 {id:1,  code:'DEMO-01', name:'[DEMO] جامع تجريبي — الملقا',                         city:'riyadh', overall_kpi:39, days_delay:4,  kpi_color:'red'},
                 {id:2,  code:'RUH-09',  name:'جامع الأميرة نورة بنت عبد الله – النخيل',              city:'riyadh', overall_kpi:42, days_delay:9,  kpi_color:'red'},
@@ -441,7 +441,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 {id:24, code:'RUH-10',  name:'جامع الملك عبد الله (الخليج)',                         city:'riyadh', overall_kpi:39, days_delay:12, kpi_color:'red'},
             ];
             // دمجها في S.mosques أيضاً للخريطة والبحث
-            if (!S.mosques.length) S.mosques = mosques;
+            if (S.mosques.length) S.mosques = mosques;
         }
 
         el.innerHTML = '';
