@@ -376,22 +376,6 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.gantt-popup').forEach(p => p.classList.remove('show'));
         loadMosqueDetail(id);
     };
-    window.toggleBOQCat = function (id) {
-        const el = document.getElementById(id);
-        if (!el) return;
-        const arrow = document.getElementById(`${id}-arrow`);
-        const open = el.style.display !== 'none';
-        // أغلق كل الباقي
-        document.querySelectorAll('[id^="boq-cat-"]').forEach(e => {
-            if (e.id !== id) {
-                e.style.display = 'none';
-                const a = document.getElementById(`${e.id}-arrow`);
-                if (a) a.style.transform = '';
-            }
-        });
-        el.style.display = open ? 'none' : 'block';
-        if (arrow) arrow.style.transform = open ? '' : 'rotate(180deg)';
-    };
 
     /* ══════════════════════════════════════════════════════════
        HEATMAP
@@ -1333,6 +1317,22 @@ document.addEventListener('DOMContentLoaded', function () {
         $('section-mosque')?.scrollIntoView({behavior: 'smooth', block: 'start'});
     }
 
+    window.toggleBOQCat = function (id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const arrow = document.getElementById(`${id}-arrow`);
+        const open = el.style.display !== 'none';
+        document.querySelectorAll('[id^="boq-cat-"]').forEach(e => {
+            if (e.id !== id) {
+                e.style.display = 'none';
+                const a = document.getElementById(`${e.id}-arrow`);
+                if (a) a.style.transform = '';
+            }
+        });
+        el.style.display = open ? 'none' : 'block';
+        if (arrow) arrow.style.transform = open ? '' : 'rotate(180deg)';
+    };
+
     function buildMosqueDetailHTML(data) {
         const m = data.mosque;
         const ai = data.ai || {};
@@ -1589,6 +1589,7 @@ function buildBOQHTML(data) {
                 style="font-size:14px;color:var(--text4);
                   transition:transform var(--t-base);flex-shrink:0">▾</div>
             </div>
+            
 
             <!-- BOQ Lines -->
             <div id="${catId}" style="display:none;border-top:1px solid var(--border)">
