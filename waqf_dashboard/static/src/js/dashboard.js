@@ -119,7 +119,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     apiGet('/dashboard/api/forecast'),
                     apiGet('/dashboard/api/quality'),
                     apiGet('/dashboard/api/contractors'),
-                    apiGet('/dashboard/api/summary'),
                 ]);
 
             S.mosques = mosques;
@@ -137,7 +136,6 @@ document.addEventListener('DOMContentLoaded', function () {
             initSearch();
             initQuickFilters();
             startRefresh();
-            renderSummary(summary);
         });
     }
 
