@@ -1125,8 +1125,8 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 .chatbot-panel {
-  position: fixed; bottom: 86px; left: 24px; width: 340px;
-  background: var(--surface); border: 1px solid var(--border);
+  position: fixed; bottom: 86px; left: 24px; width: 511px;
+  background: #ffffff; border: 1px solid #0a7290;
   border-radius: var(--r-xl); box-shadow: var(--shadow-lg); z-index: 900;
   display: flex; flex-direction: column;
   transform: translateY(20px) scale(0.95);

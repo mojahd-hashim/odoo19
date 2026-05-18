@@ -398,17 +398,15 @@
     <div class="chat-av">AI</div>
     <div><div class="chat-hdr-title">مساعد الوقف الذكي</div></div>
     <div class="chat-online"/>
-    <span style="font-size:10px;color:var(--text3)">Azure OpenAI</span>
     <button class="chat-close" id="chat-close">✕</button>
   </div>
   <div class="chat-msgs" id="chat-msgs">
     <div class="chat-msg bot">مرحباً، اختر مسجداً وسأحلل بياناته فوراً.</div>
   </div>
   <div class="chat-sugs">
-    <button class="chat-sug">المشاريع الحرجة؟</button>
-    <button class="chat-sug">المستخلصات المعلقة؟</button>
-<!--    <button class="chat-sug">أسوأ المقاولين؟</button>-->
-    <button class="chat-sug">توقعات التأخير؟</button>
+    <button class="chat-sug">كيف هو الاداء العام للمشروع؟</button>
+    <button class="chat-sug">ما هي الأولويات التي يجب التركيز عليها في المرحلة القادمة؟</button>
+    <button class="chat-sug"> ما هي الموارد الإضافية المطلوبة لتسريع الإنجاز؟</button>
   </div>
   <div class="chat-input-row">
     <input class="chat-input" id="chat-input" placeholder="اسأل عن أي مشروع..." autocomplete="off"/>
