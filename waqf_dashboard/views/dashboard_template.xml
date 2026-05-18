@@ -175,29 +175,6 @@
         </div>
       </div>
 
-      <!-- SMART ALERT CENTER -->
-      <div class="alert-center">
-        <div class="alert-center-hdr">
-          <div class="alert-center-title">
-            🚨 مركز التنبيهات الذكي
-            <span class="alert-count-badge" id="alert-count">—</span>
-          </div>
-          <div class="alert-filters">
-            <button class="alert-filter active" data-filter="all">الكل</button>
-            <button class="alert-filter" data-filter="critical">حرج</button>
-            <button class="alert-filter" data-filter="financial">مالي</button>
-            <button class="alert-filter" data-filter="delay">تأخير</button>
-            <button class="alert-filter" data-filter="quality">جودة</button>
-          </div>
-          <span id="alert-source-badge" style="font-size:9px;color:var(--text3);margin-right:auto"/>
-        </div>
-        <div class="alert-list" id="alert-list">
-          <div style="padding:20px;text-align:center;color:var(--text3)">
-            <div class="loading-spinner" style="width:18px;height:18px;margin:0 auto 8px"/>
-            جاري تحميل التنبيهات...
-          </div>
-        </div>
-      </div>
 
       <!-- GANTT + HEATMAP -->
       <div class="grid-2">
@@ -269,19 +246,45 @@
             </div>
           </div>
         </div>
-  <!-- MERGED: AI + Quality + Forecast -->
-      <div class="card" style="margin-bottom:14px">
-        <div class="card-hdr">
-          <div class="card-title"><span class="card-title-icon">🤖</span>مركز التحليل الذكي</div>
-          <span id="ai-last-updated" style="font-size:9px;color:var(--text3)"/>
+        <div class="card" style="">
+          <!-- SMART ALERT CENTER -->
+      <div class="alert-center" style="margin-bottom:14px">
+        <div class="alert-center-hdr">
+          <div class="alert-center-title">
+            🚨 مركز التنبيهات الذكي
+            <span class="alert-count-badge" id="alert-count">—</span>
+          </div>
+          <div class="alert-filters">
+            <button class="alert-filter active" data-filter="all">الكل</button>
+            <button class="alert-filter" data-filter="critical">حرج</button>
+            <button class="alert-filter" data-filter="financial">مالي</button>
+            <button class="alert-filter" data-filter="delay">تأخير</button>
+            <button class="alert-filter" data-filter="quality">جودة</button>
+          </div>
+          <span id="alert-source-badge" style="font-size:9px;color:var(--text3);margin-right:auto"/>
         </div>
-        <div class="card-body" id="merged-panel">
+        <div class="alert-list" id="alert-list">
           <div style="padding:20px;text-align:center;color:var(--text3)">
-            <div class="loading-spinner" style="width:20px;height:20px;margin:0 auto 8px"/>
-            جاري تحليل البيانات...
+            <div class="loading-spinner" style="width:18px;height:18px;margin:0 auto 8px"/>
+            جاري تحميل التنبيهات...
           </div>
         </div>
       </div>
+
+        </div>
+  <!-- MERGED: AI + Quality + Forecast -->
+<!--      <div class="card" style="margin-bottom:14px">-->
+<!--        <div class="card-hdr">-->
+<!--          <div class="card-title"><span class="card-title-icon">🤖</span>مركز التحليل الذكي</div>-->
+<!--          <span id="ai-last-updated" style="font-size:9px;color:var(&#45;&#45;text3)"/>-->
+<!--        </div>-->
+<!--        <div class="card-body" id="merged-panel">-->
+<!--          <div style="padding:20px;text-align:center;color:var(&#45;&#45;text3)">-->
+<!--            <div class="loading-spinner" style="width:20px;height:20px;margin:0 auto 8px"/>-->
+<!--            جاري تحليل البيانات...-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
       </div>
 
 

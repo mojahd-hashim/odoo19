@@ -1346,39 +1346,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 ai.risk_level === 'high' ? 'مرتفع' : 'متوسط'}</span>` : ''}
     </div>
   </div>
-  <div class="mosque-hero-stats">
-    <div class="mosque-hero-stat">
-      <div class="mosque-hero-stat-val" style="color:var(--gold)">${pct(m.overall_kpi)}</div>
-      <div class="mosque-hero-stat-lbl">KPI الكلي</div>
-    </div>
-    <div class="mosque-hero-stat">
-      <div class="mosque-hero-stat-val"
-           style="color:${pendingCerts > 0 ? '#FCA5A5' : '#6EE7B7'}">
-        ${pendingCerts}
-      </div>
-      <div class="mosque-hero-stat-lbl">مستخلصات معلقة</div>
-    </div>
-    <div class="mosque-hero-stat">
-      <div class="mosque-hero-stat-val"
-           style="color:${pendingCOs > 0 ? '#FCD34D' : '#6EE7B7'}">
-        ${pendingCOs}
-      </div>
-      <div class="mosque-hero-stat-lbl">CO معلق</div>
-    </div>
-    ${ai.health_score ? `
-    <div class="mosque-hero-stat">
-      <div class="mosque-hero-stat-val" style="color:var(--primary)">
-        ${Math.round(ai.health_score)}
-      </div>
-      <div class="mosque-hero-stat-lbl">Health Score</div>
-    </div>` : `
-    <div class="mosque-hero-stat">
-      <div class="mosque-hero-stat-val" style="color:rgba(255,255,255,.8)">
-        ${fmt(m.contract_value / 1000000)}م
-      </div>
-      <div class="mosque-hero-stat-lbl">قيمة العقد</div>
-    </div>`}
-  </div>
+ 
 </div>
 
 ${ai.forecast_finish ? `
