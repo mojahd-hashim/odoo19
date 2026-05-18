@@ -23,7 +23,7 @@ class WaqfDashboardAPI(http.Controller):
         CO = request.env['mosque.change.order'].sudo()
 
         mosques = Mosque.search([('is_demo', '=', False)])
-        total_value = sum(mosques.mapped('contract_value'))
+        total_value = sum(mosques.mapped('total_boq_value'))
         avg_kpi = sum(mosques.mapped('overall_kpi')) / len(mosques) if mosques else 0
         delayed = mosques.filtered(lambda m: m.days_delay > 0)
         critical = mosques.filtered(lambda m: m.overall_kpi < 50 and m.overall_kpi > 0)

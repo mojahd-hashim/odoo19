@@ -139,25 +139,20 @@
       <!-- KPI STRIP -->
       <div class="exec-strip">
         <div class="exec-kpi primary">
-          <div class="exec-kpi-label">إجمالي قيمة العقود</div>
+          <div class="exec-kpi-label">إجمالي قيمة المشاريع</div>
           <div class="exec-kpi-value"><span id="kpi-total-value">—</span><span class="unit">م ر</span></div>
           <div class="exec-kpi-trend flat" id="kpi-total-trend"><span class="arrow">→</span></div>
         </div>
         <div class="exec-kpi gold">
-          <div class="exec-kpi-label">متوسط KPI الكلي</div>
+          <div class="exec-kpi-label">نسبة التقدم</div>
           <div class="exec-kpi-value"><span id="kpi-avg-kpi">—</span><span class="unit">%</span></div>
           <div class="exec-kpi-trend flat" id="kpi-avg-trend"><span class="arrow">→</span></div>
         </div>
-        <div class="exec-kpi danger">
-          <div class="exec-kpi-label">مشاريع حرجة</div>
-          <div class="exec-kpi-value" id="kpi-critical">—</div>
-          <div class="exec-kpi-trend flat" id="kpi-critical-trend"><span class="arrow">→</span></div>
-        </div>
-        <div class="exec-kpi warning">
-          <div class="exec-kpi-label">إجمالي التأخير</div>
-          <div class="exec-kpi-value"><span id="kpi-total-delay">—</span><span class="unit">يوم</span></div>
-          <div class="exec-kpi-trend flat" id="kpi-delay-trend"><span class="arrow">→</span></div>
-        </div>
+<!--        <div class="exec-kpi warning">-->
+<!--          <div class="exec-kpi-label">إجمالي التأخير</div>-->
+<!--          <div class="exec-kpi-value"><span id="kpi-total-delay">—</span><span class="unit">يوم</span></div>-->
+<!--          <div class="exec-kpi-trend flat" id="kpi-delay-trend"><span class="arrow">→</span></div>-->
+<!--        </div>-->
         <div class="exec-kpi purple">
           <div class="exec-kpi-label">قيمة أوامر التغيير</div>
           <div class="exec-kpi-value"><span id="kpi-co-value">—</span><span class="unit">ألف</span></div>
@@ -172,6 +167,11 @@
           <div class="exec-kpi-label">مشاريع في الموعد</div>
           <div class="exec-kpi-value" id="kpi-ontime">—</div>
           <div class="exec-kpi-trend up"><span class="arrow">↑</span> جيد</div>
+        </div>
+          <div class="exec-kpi danger">
+          <div class="exec-kpi-label">مشاريع حرجة</div>
+          <div class="exec-kpi-value" id="kpi-critical">—</div>
+          <div class="exec-kpi-trend flat" id="kpi-critical-trend"><span class="arrow">→</span></div>
         </div>
       </div>
 
