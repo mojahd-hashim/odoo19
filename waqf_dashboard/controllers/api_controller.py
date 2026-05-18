@@ -684,9 +684,17 @@ class WaqfDashboardAPI(http.Controller):
         for boq in m.boq_ids:
             cat = boq.category_id.name if boq.category_id else 'أخرى'
             if cat not in boq_cats:
-                boq_cats[cat] = {'contracted': 0, 'executed': 0}
+                boq_cats[cat] = {'contracted': 0, 'executed': 0, 'boq_lines': []}
             boq_cats[cat]['contracted'] += boq.contracted_qty * boq.unit_price
             boq_cats[cat]['executed'] += boq.executed_qty * boq.unit_price
+            boq_cats[cat]['boq_lines'].append({
+                'code': boq.item_code or '',
+                'description': boq.description or '',
+                'unit': boq.uom_id.name if boq.uom_id else '',
+                'contracted_qty': boq.contracted_qty,
+                'executed_qty': boq.executed_qty,
+                'unit_price': boq.unit_price,
+            })
 
         # Tasks
         tasks = []

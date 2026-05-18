@@ -376,6 +376,22 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.gantt-popup').forEach(p => p.classList.remove('show'));
         loadMosqueDetail(id);
     };
+    window.toggleBOQCat = function (id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const arrow = document.getElementById(`${id}-arrow`);
+        const open = el.style.display !== 'none';
+        // أغلق كل الباقي
+        document.querySelectorAll('[id^="boq-cat-"]').forEach(e => {
+            if (e.id !== id) {
+                e.style.display = 'none';
+                const a = document.getElementById(`${e.id}-arrow`);
+                if (a) a.style.transform = '';
+            }
+        });
+        el.style.display = open ? 'none' : 'block';
+        if (arrow) arrow.style.transform = open ? '' : 'rotate(180deg)';
+    };
 
     /* ══════════════════════════════════════════════════════════
        HEATMAP
@@ -952,28 +968,28 @@ document.addEventListener('DOMContentLoaded', function () {
        AI INSIGHTS
        ══════════════════════════════════════════════════════════ */
     function renderAIInsights(data) {
-  const el  = $('merged-panel');
-  if (!el) return;
+        const el = $('merged-panel');
+        if (!el) return;
 
-  const insights = data?.insights || [];
-  const src = data?.source || 'computed';
-  const upd = data?.last_updated || '';
+        const insights = data?.insights || [];
+        const src = data?.source || 'computed';
+        const upd = data?.last_updated || '';
 
-  // إحضار بيانات الجودة
-  apiGet('/dashboard/api/quality').then(quality => {
-    const q = quality || {};
-    const score = q.quality_score || 0;
-    const scoreColor = score >= 85 ? 'var(--green)' : score >= 70 ? 'var(--primary)' :
-                       score >= 55 ? 'var(--orange)' : 'var(--red)';
-    const scoreLabel = score >= 85 ? 'ممتاز' : score >= 70 ? 'جيد' :
-                       score >= 55 ? 'يحتاج تحسين' : 'حرج';
+        // إحضار بيانات الجودة
+        apiGet('/dashboard/api/quality').then(quality => {
+            const q = quality || {};
+            const score = q.quality_score || 0;
+            const scoreColor = score >= 85 ? 'var(--green)' : score >= 70 ? 'var(--primary)' :
+                score >= 55 ? 'var(--orange)' : 'var(--red)';
+            const scoreLabel = score >= 85 ? 'ممتاز' : score >= 70 ? 'جيد' :
+                score >= 55 ? 'يحتاج تحسين' : 'حرج';
 
-    const typeColor = {
-      risk:'var(--red)', opportunity:'var(--green)',
-      action:'var(--gold)', info:'var(--primary)', phase:'var(--primary)',
-    };
+            const typeColor = {
+                risk: 'var(--red)', opportunity: 'var(--green)',
+                action: 'var(--gold)', info: 'var(--primary)', phase: 'var(--primary)',
+            };
 
-    el.innerHTML = `
+            el.innerHTML = `
       <!-- Tabs -->
       <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:14px">
         <button class="merged-tab active" data-panel="insights">
@@ -987,8 +1003,8 @@ document.addEventListener('DOMContentLoaded', function () {
       <!-- AI Insights -->
       <div class="merged-panel-content active" data-panel-content="insights">
         ${upd ? `<div style="font-size:10px;color:var(--text3);margin-bottom:10px;text-align:left">
-          آخر تحديث: ${upd.substring(0,16)}</div>` : ''}
-        ${insights.length ? insights.slice(0,5).map(ins => `
+          آخر تحديث: ${upd.substring(0, 16)}</div>` : ''}
+        ${insights.length ? insights.slice(0, 5).map(ins => `
           <div class="ai-insight-item"
                style="${ins.mosque_id ? 'cursor:pointer' : ''}"
                ${ins.mosque_id ? `onclick="loadMosqueDetailGlobal(${ins.mosque_id})"` : ''}>
@@ -1010,7 +1026,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 </button>` : ''}
             </div>
           </div>`).join('')
-        : `<div style="padding:16px;text-align:center;color:var(--text3)">
+                : `<div style="padding:16px;text-align:center;color:var(--text3)">
            لا توجد تحليلات متاحة حالياً</div>`}
       </div>
 
@@ -1030,11 +1046,11 @@ document.addEventListener('DOMContentLoaded', function () {
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             ${[
-              ['NCR مفتوح',     q.ncr_total||0,             'var(--red)'],
-              ['إعادة العمل',   q.itp_rate?(100-q.itp_rate).toFixed(0)+'%':'—','var(--orange)'],
-              ['فحوصات فاشلة', q.failed_inspections||0,    'var(--red)'],
-              ['مشاكل مفتوحة', q.open_issues||0,           'var(--orange)'],
-            ].map(([lbl,val,col]) => `
+                ['NCR مفتوح', q.ncr_total || 0, 'var(--red)'],
+                ['إعادة العمل', q.itp_rate ? (100 - q.itp_rate).toFixed(0) + '%' : '—', 'var(--orange)'],
+                ['فحوصات فاشلة', q.failed_inspections || 0, 'var(--red)'],
+                ['مشاكل مفتوحة', q.open_issues || 0, 'var(--orange)'],
+            ].map(([lbl, val, col]) => `
               <div style="background:var(--surface2);border-radius:var(--r-md);
                 padding:10px 12px;border:1px solid var(--border)">
                 <div style="font-size:17px;font-weight:800;color:${col}">${val}</div>
@@ -1053,18 +1069,18 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
       </div>`;
 
-    // Tab events
-    el.querySelectorAll('.merged-tab').forEach(btn => {
-      btn.addEventListener('click', function() {
-        el.querySelectorAll('.merged-tab').forEach(b => b.classList.remove('active'));
-        el.querySelectorAll('.merged-panel-content').forEach(p => p.classList.remove('active'));
-        this.classList.add('active');
-        el.querySelector(`[data-panel-content="${this.dataset.panel}"]`)?.classList.add('active');
-        if (this.dataset.panel === 'forecast') loadForecast();
-      });
-    });
-  });
-}
+            // Tab events
+            el.querySelectorAll('.merged-tab').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    el.querySelectorAll('.merged-tab').forEach(b => b.classList.remove('active'));
+                    el.querySelectorAll('.merged-panel-content').forEach(p => p.classList.remove('active'));
+                    this.classList.add('active');
+                    el.querySelector(`[data-panel-content="${this.dataset.panel}"]`)?.classList.add('active');
+                    if (this.dataset.panel === 'forecast') loadForecast();
+                });
+            });
+        });
+    }
 
     /* ══════════════════════════════════════════════════════════
        CONTRACTORS
@@ -1407,18 +1423,19 @@ ${ai.forecast_finish ? `
 
 <!-- Tabs -->
 <div class="tab-row">
-  <button class="tab-btn active" data-tab="tasks">المهام</button>
+  <button class="tab-btn active" data-tab="boq">جداول الكميات</button>
+  <button class="tab-btn" data-tab="tasks">المهام</button>
   <button class="tab-btn" data-tab="financial">
     المالي
     ${pendingCerts > 0 ? `<span class="tab-badge red">${pendingCerts}</span>` : ''}
     ${pendingCOs > 0 ? `<span class="tab-badge orange">${pendingCOs}</span>` : ''}
   </button>
-  <button class="tab-btn" data-tab="boq">جداول الكميات</button>
+
   <button class="tab-btn" data-tab="visits">الزيارات والحضور</button>
 </div>
 
 <!-- Tasks -->
-<div class="tab-panel active" data-tab-panel="tasks">
+<div class="tab-panel" data-tab-panel="tasks">
   <div class="task-list">${buildTasksHTML(data.tasks)}</div>
 </div>
 
@@ -1458,31 +1475,229 @@ ${ai.forecast_finish ? `
 </div>
 
 <!-- BOQ -->
-<div class="tab-panel" data-tab-panel="boq">
-  <div style="position:relative;width:100%;height:220px;margin-bottom:16px">
-    <canvas id="boq-chart"></canvas>
-  </div>
-  <table class="boq-table">
-    <tr><th>الفئة</th><th>تعاقدي (ر)</th><th>منفذ (ر)</th><th>نسبة</th></tr>
-    ${(data.boq_categories || []).map(cat => {
+<div class="tab-panel active" data-tab-panel="boq">
+  ${buildBOQHTML(data)}
+</div>
+function buildBOQHTML(data) {
+  const cats = data.boq_categories || [];
+  if (!cats.length) return \`
+    <div style="padding:40px;text-align:center;color:var(--text3)">
+      <div style="font-size:32px;margin-bottom:8px">📋</div>
+      لا توجد بنود كميات
+    </div>\`;
+
+  const total_contracted = cats.reduce((s,c) => s + c.contracted, 0);
+  const total_executed   = cats.reduce((s,c) => s + c.executed, 0);
+  const total_pct = total_contracted > 0
+    ? Math.round(total_executed / total_contracted * 100) : 0;
+
+  return \`
+    <!-- Summary bar -->
+    <div style="background:linear-gradient(135deg,var(--navy),var(--navy-deep));
+      border-radius:var(--r-lg);padding:16px 20px;margin-bottom:16px;color:#fff">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:700">إجمالي جداول الكميات</div>
+        <div style="font-size:20px;font-weight:800;color:var(--gold)">${total_pct}%</div>
+      </div>
+      <div style="height:8px;background:rgba(255,255,255,0.15);border-radius:4px;overflow:hidden">
+        <div style="width:${total_pct}%;height:100%;border-radius:4px;
+          background:linear-gradient(90deg,var(--primary),var(--gold));
+          transition:width 1.2s ease"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px;
+        font-size:10px;color:rgba(255,255,255,0.5)">
+        <span>تعاقدي: ${fmt(total_contracted)} ر</span>
+        <span>منفذ: <span style="color:var(--green);font-weight:700">${fmt(total_executed)} ر</span></span>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div style="position:relative;width:100%;height:180px;margin-bottom:16px">
+      <canvas id="boq-chart"></canvas>
+    </div>
+
+    <!-- Categories -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${cats.map((cat, idx) => {
             const pv = cat.contracted > 0
                 ? Math.round(cat.executed / cat.contracted * 100) : 0;
-            return `<tr>
-        <td style="font-weight:600">${cat.name}</td>
-        <td>${fmt(cat.contracted)}</td>
-        <td style="color:var(--primary);font-weight:600">${fmt(cat.executed)}</td>
-        <td>
-          <div class="boq-bar-wrap">
-            <div class="boq-bar-fill"
-                 style="width:${pv}%;background:${pv > 90 ? 'var(--orange)' : 'var(--primary)'}">
+            const barColor = pv >= 90 ? 'var(--orange)' :
+                pv >= 60 ? 'var(--primary)' : 'var(--green)';
+            const catId = `boq-cat-${idx}`;
+            const lines = cat.boq_lines || [];
+
+            return `
+          <div style="border:1px solid var(--border);border-radius:var(--r-lg);
+            overflow:hidden;background:var(--surface);
+            transition:box-shadow var(--t-base)">
+
+            <!-- Category Header -->
+            <div onclick="toggleBOQCat('${catId}')"
+              style="display:flex;align-items:center;gap:14px;
+                padding:14px 18px;cursor:pointer;background:var(--surface2);
+                transition:background var(--t-fast)"
+              onmouseover="this.style.background='var(--surface3)'"
+              onmouseout="this.style.background='var(--surface2)'">
+
+              <!-- Icon -->
+              <div style="width:38px;height:38px;border-radius:10px;flex-shrink:0;
+                background:${barColor}18;border:1px solid ${barColor}30;
+                display:flex;align-items:center;justify-content:center;
+                font-size:16px">
+                🏗
+              </div>
+
+              <!-- Info -->
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:700;color:var(--text1);
+                  margin-bottom:6px">${cat.name}</div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="flex:1;height:6px;background:var(--surface3);
+                    border-radius:3px;overflow:hidden">
+                    <div style="width:${pv}%;height:100%;background:${barColor};
+                      border-radius:3px;transition:width 1.2s ease"></div>
+                  </div>
+                  <span style="font-size:11px;font-weight:800;
+                    color:${barColor};min-width:35px">${pv}%</span>
+                </div>
+              </div>
+
+              <!-- Values -->
+              <div style="text-align:left;min-width:110px">
+                <div style="font-size:10px;color:var(--text3)">منفذ</div>
+                <div style="font-size:13px;font-weight:700;color:var(--primary)">
+                  ${fmt(cat.executed)} ر
+                </div>
+              </div>
+              <div style="text-align:left;min-width:110px">
+                <div style="font-size:10px;color:var(--text3)">تعاقدي</div>
+                <div style="font-size:13px;font-weight:600;color:var(--text2)">
+                  ${fmt(cat.contracted)} ر
+                </div>
+              </div>
+
+              <!-- Count badge -->
+              ${lines.length ? `
+                <div style="background:rgba(35,114,146,0.1);color:var(--primary);
+                  font-size:10px;font-weight:700;padding:3px 9px;
+                  border-radius:999px;flex-shrink:0">
+                  ${lines.length} بند
+                </div>` : ''}
+
+              <!-- Arrow -->
+              <div id="${catId}-arrow"
+                style="font-size:14px;color:var(--text4);
+                  transition:transform var(--t-base);flex-shrink:0">▾</div>
             </div>
-          </div>
-          <span style="font-size:10px;color:var(--text3)">${pv}%</span>
-        </td>
-      </tr>`;
+
+            <!-- BOQ Lines -->
+            <div id="${catId}" style="display:none;border-top:1px solid var(--border)">
+              ${lines.length ? `
+                <div style="overflow-x:auto">
+                  <table style="width:100%;border-collapse:collapse">
+                    <thead>
+                      <tr style="background:var(--surface2)">
+                        <th style="padding:9px 14px;text-align:right;font-size:10px;
+                          font-weight:700;color:var(--text3);white-space:nowrap">الكود</th>
+                        <th style="padding:9px 14px;text-align:right;font-size:10px;
+                          font-weight:700;color:var(--text3)">الوصف</th>
+                        <th style="padding:9px 14px;text-align:center;font-size:10px;
+                          font-weight:700;color:var(--text3)">الوحدة</th>
+                        <th style="padding:9px 14px;text-align:center;font-size:10px;
+                          font-weight:700;color:var(--text3)">تعاقدي</th>
+                        <th style="padding:9px 14px;text-align:center;font-size:10px;
+                          font-weight:700;color:var(--text3)">منفذ</th>
+                        <th style="padding:9px 14px;text-align:left;font-size:10px;
+                          font-weight:700;color:var(--text3)">السعر</th>
+                        <th style="padding:9px 14px;text-align:right;font-size:10px;
+                          font-weight:700;color:var(--text3)">نسبة</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${lines.map((line, li) => {
+                const lpv = line.contracted_qty > 0
+                    ? Math.round(line.executed_qty / line.contracted_qty * 100) : 0;
+                const lColor = lpv >= 90 ? 'var(--orange)' :
+                    lpv >= 60 ? 'var(--primary)' : 'var(--green)';
+                return `
+                          <tr style="border-bottom:1px solid var(--border);
+                            transition:background var(--t-fast)"
+                            onmouseover="this.style.background='var(--surface2)'"
+                            onmouseout="this.style.background=''">
+                            <td style="padding:9px 14px">
+                              <span style="font-family:'IBM Plex Mono',monospace;
+                                font-size:10px;color:var(--primary);font-weight:600">
+                                ${line.code || '—'}
+                              </span>
+                            </td>
+                            <td style="padding:9px 14px;font-size:12px;color:var(--text2);
+                              max-width:200px">
+                              ${line.description || '—'}
+                            </td>
+                            <td style="padding:9px 14px;text-align:center;
+                              font-size:11px;color:var(--text3)">
+                              ${line.unit || '—'}
+                            </td>
+                            <td style="padding:9px 14px;text-align:center;
+                              font-size:12px;color:var(--text2)">
+                              ${line.contracted_qty || 0}
+                            </td>
+                            <td style="padding:9px 14px;text-align:center;
+                              font-size:12px;font-weight:700;color:var(--primary)">
+                              ${line.executed_qty || 0}
+                            </td>
+                            <td style="padding:9px 14px;text-align:left;
+                              font-size:11px;color:var(--text2);
+                              font-family:'IBM Plex Mono',monospace">
+                              ${fmt(line.unit_price || 0)}
+                            </td>
+                            <td style="padding:9px 14px">
+                              <div style="display:flex;align-items:center;gap:6px">
+                                <div style="width:50px;height:5px;background:var(--surface3);
+                                  border-radius:3px;overflow:hidden">
+                                  <div style="width:${lpv}%;height:100%;
+                                    background:${lColor};border-radius:3px;
+                                    transition:width 1s ease"></div>
+                                </div>
+                                <span style="font-size:10px;font-weight:700;
+                                  color:${lColor};min-width:28px">${lpv}%</span>
+                              </div>
+                            </td>
+                          </tr>`;
+            }).join('')}
+                    </tbody>
+                    <!-- Footer totals -->
+                    <tfoot>
+                      <tr style="background:var(--surface2);font-weight:700">
+                        <td colspan="3" style="padding:9px 14px;font-size:11px;
+                          color:var(--text1)">الإجمالي</td>
+                        <td style="padding:9px 14px;text-align:center;
+                          font-size:11px;color:var(--text2)">—</td>
+                        <td style="padding:9px 14px;text-align:center;
+                          font-size:11px;color:var(--primary)">—</td>
+                        <td style="padding:9px 14px;text-align:left;
+                          font-size:12px;color:var(--primary)">
+                          ${fmt(cat.contracted)} ر
+                        </td>
+                        <td style="padding:9px 14px">
+                          <span style="font-size:11px;font-weight:800;
+                            color:${barColor}">${pv}%</span>
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>` : `
+                <div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">
+                  <div style="font-size:24px;margin-bottom:6px">📋</div>
+                  لا توجد بنود تفصيلية في هذه الفئة
+                </div>`}
+            </div>
+          </div>`;
         }).join('')}
-  </table>
-</div>
+    </div>\`;
+}
+
+
 
 <!-- Visits -->
 <div class="tab-panel" data-tab-panel="visits">
