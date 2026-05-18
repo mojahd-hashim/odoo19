@@ -22,7 +22,7 @@ class WaqfDashboardAPI(http.Controller):
         Cert = request.env['mosque.certificate'].sudo()
         CO = request.env['mosque.change.order'].sudo()
 
-        mosques = Mosque.search([('is_demo', '=', False)])
+        mosques = Mosque.search([('package_id', '=', 1)])
         total_value = sum(mosques.mapped('total_boq_value'))
         avg_kpi = sum(mosques.mapped('overall_kpi')) / len(mosques) if mosques else 0
         delayed = mosques.filtered(lambda m: m.days_delay > 0)

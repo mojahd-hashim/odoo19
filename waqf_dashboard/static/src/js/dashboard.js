@@ -271,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Months header
         if (monthsEl) {
             monthsEl.innerHTML = '';
-            ['أبر٢٦', 'مايو', 'يون', 'يول', 'أغس', 'سبت',
+            ['مايو', 'يون', 'يول', 'أغس', 'سبت',
                 'أكت', 'نوف', 'ديس', 'يناير٢٧', 'فبر', 'مارس'].forEach(m => {
                 const d = document.createElement('div');
                 d.className = 'gantt-month';
