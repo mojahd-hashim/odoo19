@@ -158,13 +158,13 @@ document.addEventListener('DOMContentLoaded', function () {
         ${Math.abs(delta)} ${labels[up ? 0 : dn ? 1 : 2]}`;
         };
 
-        set('kpi-total-value', fmt(d.total_contract_value / 1000000));
-        set('kpi-avg-kpi', Math.round(d.avg_kpi || 0));
-        set('kpi-critical', d.critical_count || 0);
-        set('kpi-total-delay', d.total_delay_days || 0);
-        set('kpi-co-value', fmt((d.co_value || 0) / 1000));
-        set('kpi-pending', (d.pending_certs || 0) + (d.pending_cos || 0));
-        set('kpi-ontime', d.on_time_count || 0);
+        // set('kpi-total-value', fmt(d.total_contract_value / 1000000));
+        // set('kpi-avg-kpi', Math.round(d.avg_kpi || 0));
+        // set('kpi-critical', d.critical_count || 0);
+        // set('kpi-total-delay', d.total_delay_days || 0);
+        // set('kpi-co-value', fmt((d.co_value || 0) / 1000));
+        // set('kpi-pending', (d.pending_certs || 0) + (d.pending_cos || 0));
+        // set('kpi-ontime', d.on_time_count || 0);
 
         setTrend('kpi-avg-trend', d.avg_kpi_delta || 0, ['%', '%', 'بدون تغيير']);
         setTrend('kpi-critical-trend', -(d.critical_delta || 0), ['مشروع', 'مشروع', '']);
