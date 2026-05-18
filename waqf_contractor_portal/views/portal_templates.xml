@@ -52,201 +52,340 @@
 </template>
 
 <!-- ══ HOME ═════════════════════════════════════════════════ -->
+
 <template id="tmpl_home" name="Contractor Home">
   <t t-call="waqf_contractor_portal.tmpl_base">
 
-    <!-- Success messages -->
-    <div t-if="request.params.get('access_requested')" class="cp-success">
-      تم إرسال طلب الوصول لجدول الكميات — بانتظار موافقة الاستشاري.
-    </div>
-    <div t-if="request.params.get('submitted')" class="cp-success">
-      تم إرسال العمل بنجاح وإرفاق الصور.
-    </div>
-    <div t-if="request.params.get('co_submitted')" class="cp-success">
-      تم إرسال طلب التعديل للمراجعة.
-    </div>
-    <div t-if="request.params.get('cert_submitted')" class="cp-success">
-      تم إرسال المستخلص للاستشاري بنجاح.
-    </div>
-
-    <!-- ── Rejected Alert Banner ── -->
-    <t t-if="rejected_logs">
-      <div class="cp-rejected-banner">
-        <div class="cp-rejected-banner-title">
-          يوجد <t t-esc="len(rejected_logs)"/> عمل مرفوض يحتاج تعديل
+    <!-- ══ SUCCESS MESSAGES ══════════════════════════════════ -->
+    <t t-if="request.params.get('access_requested') or request.params.get('submitted') or request.params.get('co_submitted') or request.params.get('cert_submitted')">
+      <div class="cp-toast-success">
+        <div class="cp-toast-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M6.5 10l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
-        <t t-foreach="rejected_logs" t-as="rl">
-          <div class="cp-rejected-item">
-            <div class="cp-rejected-item-info">
-              <span class="cp-rejected-item-name" t-esc="rl.name"/>
-              <span class="cp-rejected-reason">
-                "<t t-esc="rl.reject_reason or 'بدون سبب محدد'"/>"
-              </span>
-            </div>
-            <a t-attf-href="/contractor/work/#{rl.id}/rejected"
-               class="cp-btn cp-btn-sm" style="background:#fff;color:#C0392B;border:1px solid #C0392B">
-              عدّل وأعد الإرسال
-            </a>
-          </div>
-        </t>
+        <span>
+          <t t-if="request.params.get('access_requested')">تم إرسال طلب الوصول — بانتظار موافقة الاستشاري</t>
+          <t t-elif="request.params.get('submitted')">تم إرسال العمل وإرفاق الصور بنجاح</t>
+          <t t-elif="request.params.get('co_submitted')">تم إرسال طلب التعديل للمراجعة</t>
+          <t t-elif="request.params.get('cert_submitted')">تم إرسال المستخلص للاستشاري بنجاح</t>
+        </span>
       </div>
     </t>
 
-    <!-- ── Mosque Card ── -->
-    <div class="cp-mosque-card">
-      <div class="cp-mosque-name" t-esc="mosque.name"/>
-      <div class="cp-mosque-meta">
-        <t t-esc="mosque.district or ''"/>
-        <t t-if="mosque.district"> — </t>
-        <t t-esc="mosque.city or ''"/>
+    <!-- ══ REJECTED BANNER ══════════════════════════════════ -->
+    <t t-if="rejected_logs">
+      <div class="cp-alert-banner">
+        <div class="cp-alert-banner-hdr">
+          <div class="cp-alert-icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M9 2L16.5 15H1.5L9 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+              <path d="M9 7v4M9 12.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span><t t-esc="len(rejected_logs)"/> عمل مرفوض يحتاج إعادة إرسال</span>
+        </div>
+        <div class="cp-alert-items">
+          <t t-foreach="rejected_logs" t-as="rl">
+            <div class="cp-alert-item">
+              <div class="cp-alert-item-text">
+                <span class="cp-alert-name" t-esc="rl.name"/>
+                <span class="cp-alert-reason">"<t t-esc="rl.reject_reason or 'بدون سبب محدد'"/>"</span>
+              </div>
+              <a t-attf-href="/contractor/work/#{rl.id}/rejected" class="cp-btn-sm cp-btn-danger">
+                تعديل وإعادة الإرسال
+              </a>
+            </div>
+          </t>
+        </div>
       </div>
+    </t>
 
-<!--      &lt;!&ndash; Progress bars &ndash;&gt;-->
-<!--      <div class="cp-progress-wrap">-->
-<!--        <div class="cp-progress-label">-->
-<!--          <span>نسبة الإنجاز المالي</span>-->
-<!--          <t t-esc="'%.1f%%' % (mosque.financial_progress or 0.0)"/>-->
-<!--        </div>-->
-<!--        <div class="cp-progress-bar">-->
-<!--          <div class="cp-progress-fill"-->
-<!--               t-attf-style="width:#{mosque.financial_progress}%"/>-->
-<!--        </div>-->
-<!--      </div>-->
-
-<!--      <div class="cp-progress-wrap" style="margin-top:8px">-->
-<!--        <div class="cp-progress-label">-->
-<!--          <span>الإنجاز الزمني</span>-->
-<!--          <span>-->
-<!--    <t t-esc="'%.1f%%' % (mosque.time_progress or 0.0)"/>-->
-<!--</span>-->
-<!--        </div>-->
-<!--        <div class="cp-progress-bar">-->
-<!--          <div class="cp-progress-fill"-->
-<!--               t-attf-style="width:#{mosque.time_progress}%;background:linear-gradient(90deg,#C8A454,#e2c07a)"/>-->
-<!--        </div>-->
-<!--      </div>-->
-
-      <!-- Status badge -->
-      <div style="margin-top:12px">
-        <span t-attf-class="cp-badge cp-badge-#{mosque.state == 'active' and 'granted' or 'pending'}">
+    <!-- ══ MOSQUE HERO ═══════════════════════════════════════ -->
+    <div class="cp-hero">
+      <div class="cp-hero-identity">
+        <div class="cp-hero-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <path d="M14 4C11.8 4 10 5.8 10 8v1H7l-3 3v12h20V12l-3-3h-3V8c0-2.2-1.8-4-4-4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M14 4v2M10 12h8M11 17h2M15 17h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="14" cy="8" r="1" fill="currentColor"/>
+          </svg>
+        </div>
+        <div>
+          <div class="cp-hero-name" t-esc="mosque.name"/>
+          <div class="cp-hero-location">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-left:3px">
+              <path d="M6 1a3.5 3.5 0 013.5 3.5C9.5 7.5 6 11 6 11S2.5 7.5 2.5 4.5A3.5 3.5 0 016 1z" stroke="currentColor" stroke-width="1.2"/>
+              <circle cx="6" cy="4.5" r="1" fill="currentColor"/>
+            </svg>
+            <t t-esc="mosque.district or ''"/>
+            <t t-if="mosque.district and mosque.city"> — </t>
+            <t t-esc="mosque.city or ''"/>
+          </div>
+        </div>
+      </div>
+      <div class="cp-hero-badges">
+        <span t-attf-class="cp-status-badge #{mosque.state == 'active' and 'active' or mosque.state == 'mobilizing' and 'mobilizing' or 'draft'}">
+          <span class="cp-status-dot"/>
           <t t-if="mosque.state == 'active'">قيد التنفيذ</t>
           <t t-elif="mosque.state == 'mobilizing'">مرحلة التجهيز</t>
           <t t-elif="mosque.state == 'draft'">لم يبدأ</t>
           <t t-else=""><t t-esc="mosque.state"/></t>
         </span>
         <t t-if="mosque.days_delay > 0">
-          <span class="cp-badge cp-badge-rejected" style="margin-right:8px">
+          <span class="cp-delay-badge">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M6 3.5V6l1.5 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
             تأخير <t t-esc="mosque.days_delay"/> يوم
           </span>
         </t>
       </div>
     </div>
 
-    <!-- ── BOQ Access ── -->
+    <!-- ══ KPI CARDS ══════════════════════════════════════════ -->
+    <div class="cp-kpi-grid">
+
+      <!-- المالي -->
+      <div class="cp-kpi-card">
+        <div class="cp-kpi-header">
+          <span class="cp-kpi-label">الإنجاز المالي</span>
+          <span class="cp-kpi-pct financial">
+            <t t-esc="'%.0f' % (mosque.financial_progress or 0.0)"/>%
+          </span>
+        </div>
+        <div class="cp-kpi-bar-track">
+          <div class="cp-kpi-bar-fill financial"
+               t-attf-style="width:#{min(mosque.financial_progress or 0, 100)}%"/>
+        </div>
+        <div class="cp-kpi-sub">
+          <span>الإنجاز المتعاقد عليه</span>
+          <span class="cp-kpi-value">
+            <t t-esc="'{:,.0f}'.format(mosque.certified_amount or 0)"/> ر
+          </span>
+        </div>
+      </div>
+
+      <!-- الزمني -->
+      <div class="cp-kpi-card">
+        <div class="cp-kpi-header">
+          <span class="cp-kpi-label">الإنجاز الزمني</span>
+          <span class="cp-kpi-pct time">
+            <t t-esc="'%.0f' % (mosque.time_progress or 0.0)"/>%
+          </span>
+        </div>
+        <div class="cp-kpi-bar-track">
+          <div class="cp-kpi-bar-fill time"
+               t-attf-style="width:#{min(mosque.time_progress or 0, 100)}%"/>
+        </div>
+        <div class="cp-kpi-sub">
+          <span>منذ بداية المشروع</span>
+          <t t-if="mosque.planned_end">
+            <span class="cp-kpi-value">حتى <t t-esc="mosque.planned_end"/></span>
+          </t>
+        </div>
+      </div>
+
+      <!-- KPI الكلي -->
+      <div class="cp-kpi-card cp-kpi-card-overall">
+        <div class="cp-kpi-header">
+          <span class="cp-kpi-label">KPI الكلي</span>
+          <span t-attf-class="cp-kpi-pct overall #{(mosque.overall_kpi or 0) >= 70 and 'good' or (mosque.overall_kpi or 0) >= 50 and 'warn' or 'bad'}">
+            <t t-esc="'%.0f' % (mosque.overall_kpi or 0.0)"/>%
+          </span>
+        </div>
+        <div class="cp-kpi-bar-track">
+          <div t-attf-class="cp-kpi-bar-fill overall #{(mosque.overall_kpi or 0) >= 70 and 'good' or (mosque.overall_kpi or 0) >= 50 and 'warn' or 'bad'}"
+               t-attf-style="width:#{min(mosque.overall_kpi or 0, 100)}%"/>
+        </div>
+        <div class="cp-kpi-sub">
+          <span>قيمة العقد</span>
+          <span class="cp-kpi-value">
+            <t t-esc="'{:,.0f}'.format(mosque.contract_value or 0)"/> ر
+          </span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ QUICK STATS ROW ════════════════════════════════════ -->
+    <div class="cp-stats-row">
+      <div class="cp-stat">
+        <div class="cp-stat-val">
+          <t t-esc="mosque.certificate_count or 0"/>
+        </div>
+        <div class="cp-stat-lbl">مستخلص</div>
+      </div>
+      <div class="cp-stat-divider"/>
+      <div class="cp-stat">
+        <div class="cp-stat-val">
+          <t t-esc="mosque.change_order_count or 0"/>
+        </div>
+        <div class="cp-stat-lbl">أمر تغيير</div>
+      </div>
+      <div class="cp-stat-divider"/>
+      <div class="cp-stat">
+        <div class="cp-stat-val">
+          <t t-esc="mosque.boq_count or 0"/>
+        </div>
+        <div class="cp-stat-lbl">بند كميات</div>
+      </div>
+      <div class="cp-stat-divider"/>
+      <div class="cp-stat">
+        <div class="cp-stat-val">
+          <t t-esc="mosque.supervision_count or 0"/>
+        </div>
+        <div class="cp-stat-lbl">تقرير زيارة</div>
+      </div>
+    </div>
+
+    <!-- ══ BOQ ACCESS ════════════════════════════════════════ -->
     <t t-if="not has_access">
-      <div class="cp-access-box">
-        <h3>طلب الوصول لجدول الكميات</h3>
+      <div class="cp-access-card">
+        <div class="cp-access-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect x="8" y="14" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M11 14v-3a5 5 0 0110 0v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="16" cy="20" r="1.5" fill="currentColor"/>
+          </svg>
+        </div>
         <t t-if="not access">
-          <p>
+          <div class="cp-access-title">طلب الوصول لجدول الكميات</div>
+          <div class="cp-access-desc">
             لبدء تسجيل الأعمال تحتاج الوصول لجدول كميات هذا المسجد.
             سيُراجع طلبك من قبل الاستشاري ويُفعّل خلال 24 ساعة.
-          </p>
+          </div>
           <form action="/contractor/request-access" method="post">
             <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-            <button type="submit" class="cp-btn cp-btn-gold">
+            <button type="submit" class="cp-btn-primary">
               طلب الوصول لجدول الكميات
             </button>
           </form>
         </t>
         <t t-elif="access.state == 'requested'">
-          <p>طلبك قيد المراجعة من قبل الاستشاري.</p>
-          <span class="cp-badge cp-badge-pending">بانتظار الموافقة</span>
+          <div class="cp-access-title">طلبك قيد المراجعة</div>
+          <div class="cp-access-desc">سيُفعَّل الوصول بعد موافقة الاستشاري.</div>
+          <span class="cp-status-badge mobilizing">
+            <span class="cp-status-dot"/>
+            بانتظار الموافقة
+          </span>
         </t>
         <t t-elif="access.state == 'revoked'">
-          <p>تم إلغاء صلاحية الوصول. تواصل مع مسؤول المشروع.</p>
-          <span class="cp-badge cp-badge-rejected">ملغي</span>
+          <div class="cp-access-title">تم إلغاء الصلاحية</div>
+          <div class="cp-access-desc">تواصل مع مسؤول المشروع لاستعادة الوصول.</div>
+          <span class="cp-status-badge rejected">
+            <span class="cp-status-dot"/>
+            ملغي
+          </span>
         </t>
       </div>
     </t>
 
-    <!-- ── Tasks (only if has access) ── -->
+    <!-- ══ MAIN CONTENT (has access) ════════════════════════ -->
     <t t-if="has_access">
 
-      <div class="cp-section-title">
-        المهام المجدولة
-        <span style="font-size:12px;color:var(--text-gray);font-weight:400">
-          <t t-esc="len(tasks)"/> مهمة
-        </span>
-      </div>
-
-      <t t-if="not tasks">
-        <div class="cp-empty">
-          <div class="cp-empty-title">لا توجد مهام نشطة حالياً</div>
-          <div class="cp-empty-sub">ستظهر المهام عند حلول موعدها حسب الجدول الزمني.</div>
+      <!-- Tasks Section -->
+      <div class="cp-section">
+        <div class="cp-section-hdr">
+          <div class="cp-section-title">المهام المجدولة</div>
+          <span class="cp-section-count"><t t-esc="len(tasks)"/> مهمة</span>
         </div>
-      </t>
 
-      <ul class="cp-task-list" t-if="tasks">
-        <t t-foreach="tasks" t-as="task">
-          <li t-attf-class="cp-task-item #{not task.date_deadline and 'disabled' or ''}">
-            <div>
-              <div class="cp-task-name" t-esc="task.name"/>
-              <div class="cp-task-date">
-                <t t-if="task.date_deadline">
-                  الموعد: <t t-esc="task.date_deadline"/>
-                </t>
-                <t t-else="">بدون موعد محدد</t>
-              </div>
-            </div>
-            <a t-attf-href="/contractor/task/#{task.id}"
-               class="cp-btn cp-btn-outline cp-btn-sm">
-              فتح
-            </a>
-          </li>
-        </t>
-      </ul>
-
-      <!-- ── Recent Logs ── -->
-      <div class="cp-section-title" style="margin-top:24px">
-        آخر الأعمال المسجلة
-        <div style="display:flex;gap:8px">
-          <a href="/contractor/logs" class="cp-btn cp-btn-ghost cp-btn-sm">
-            سجل الأعمال الكامل
-          </a>
-          <a href="/contractor/certificate/new" class="cp-btn cp-btn-primary cp-btn-sm">
-            إنشاء مستخلص
-          </a>
-        </div>
-      </div>
-
-      <t t-if="not recent_logs">
-        <div class="cp-empty">
-          <div class="cp-empty-title">لا توجد أعمال مسجلة بعد</div>
-          <div class="cp-empty-sub">ابدأ بفتح مهمة وتسجيل الأعمال المنجزة.</div>
-        </div>
-      </t>
-
-      <t t-foreach="recent_logs" t-as="log">
-        <div class="cp-log-item">
-          <div t-attf-class="cp-log-status #{log.state}"/>
-          <div style="flex:1">
-            <div class="cp-log-name" t-esc="log.name"/>
-            <div class="cp-log-meta">
-              <t t-esc="log.boq_id.item_code"/> —
-              <t t-esc="'%.2f' % log.qty_executed"/> <t t-esc="log.uom or ''"/> —
-              <t t-esc="log.log_date"/>
-            </div>
+        <t t-if="not tasks">
+          <div class="cp-empty-state">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" class="cp-empty-icon">
+              <rect x="8" y="6" width="24" height="28" rx="3" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M14 14h12M14 19h8M14 24h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <div class="cp-empty-title">لا توجد مهام نشطة حالياً</div>
+            <div class="cp-empty-sub">ستظهر المهام عند حلول موعدها حسب الجدول الزمني</div>
           </div>
-          <span t-attf-class="cp-badge cp-badge-#{log.state == 'approved' and 'granted' or log.state == 'submitted' and 'pending' or log.state == 'rejected' and 'rejected' or 'draft'}">
-            <t t-if="log.state == 'draft'">مسودة</t>
-            <t t-elif="log.state == 'submitted'">بانتظار الاعتماد</t>
-            <t t-elif="log.state == 'approved'">معتمد</t>
-            <t t-elif="log.state == 'rejected'">مرفوض</t>
-          </span>
+        </t>
+
+        <div class="cp-task-list" t-if="tasks">
+          <t t-foreach="tasks" t-as="task">
+            <div class="cp-task-row">
+              <div class="cp-task-indicator"/>
+              <div class="cp-task-info">
+                <div class="cp-task-name" t-esc="task.name"/>
+                <div class="cp-task-meta">
+                  <t t-if="task.date_deadline">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <rect x="1.5" y="2" width="9" height="8.5" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+                      <path d="M4 1v2M8 1v2M1.5 5h9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                    </svg>
+                    الموعد: <t t-esc="task.date_deadline"/>
+                  </t>
+                  <t t-else="">بدون موعد محدد</t>
+                </div>
+              </div>
+              <a t-attf-href="/contractor/task/#{task.id}" class="cp-btn-outline">
+                فتح المهمة
+              </a>
+            </div>
+          </t>
         </div>
-      </t>
+      </div>
+
+      <!-- Recent Logs Section -->
+      <div class="cp-section">
+        <div class="cp-section-hdr">
+          <div class="cp-section-title">آخر الأعمال المسجلة</div>
+          <div style="display:flex;gap:8px">
+            <a href="/contractor/logs" class="cp-btn-ghost">سجل الأعمال</a>
+            <a href="/contractor/certificate/new" class="cp-btn-primary cp-btn-sm">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-left:4px">
+                <path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              إنشاء مستخلص
+            </a>
+          </div>
+        </div>
+
+        <t t-if="not recent_logs">
+          <div class="cp-empty-state">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" class="cp-empty-icon">
+              <path d="M8 32V12l12-6 12 6v20" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+              <rect x="15" y="20" width="10" height="12" rx="1" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M12 18h3M25 18h3M12 24h3M25 24h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <div class="cp-empty-title">لا توجد أعمال مسجلة بعد</div>
+            <div class="cp-empty-sub">ابدأ بفتح مهمة وتسجيل الأعمال المنجزة</div>
+          </div>
+        </t>
+
+        <div class="cp-log-list" t-if="recent_logs">
+          <t t-foreach="recent_logs" t-as="log">
+            <div class="cp-log-row">
+              <div t-attf-class="cp-log-dot #{log.state}"/>
+              <div class="cp-log-info">
+                <div class="cp-log-name" t-esc="log.name"/>
+                <div class="cp-log-meta">
+                  <span class="cp-log-code" t-esc="log.boq_id.item_code"/>
+                  <span class="cp-log-sep">·</span>
+                  <span>
+                    <t t-esc="'%.2f' % log.qty_executed"/>
+                    <t t-esc="log.uom or ''"/>
+                  </span>
+                  <span class="cp-log-sep">·</span>
+                  <span t-esc="log.log_date"/>
+                </div>
+              </div>
+              <span t-attf-class="cp-status-pill #{log.state == 'approved' and 'approved' or log.state == 'submitted' and 'pending' or log.state == 'rejected' and 'rejected' or 'draft'}">
+                <t t-if="log.state == 'draft'">مسودة</t>
+                <t t-elif="log.state == 'submitted'">بانتظار الاعتماد</t>
+                <t t-elif="log.state == 'approved'">معتمد</t>
+                <t t-elif="log.state == 'rejected'">مرفوض</t>
+              </span>
+            </div>
+          </t>
+        </div>
+      </div>
 
     </t>
+
   </t>
 </template>
 
