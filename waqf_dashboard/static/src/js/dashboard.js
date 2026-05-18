@@ -1332,6 +1332,224 @@ document.addEventListener('DOMContentLoaded', function () {
         el.style.display = open ? 'none' : 'block';
         if (arrow) arrow.style.transform = open ? '' : 'rotate(180deg)';
     };
+    function buildBOQHTML(data) {
+ const cats = data.boq_categories || [];
+  if (!cats.length) return `
+    <div style="padding:40px;text-align:center;color:var(--text3)">
+      <div style="font-size:32px;margin-bottom:8px">📋</div>
+      لا توجد بنود كميات
+    </div>`;
+
+  const total_contracted = cats.reduce((s,c) => s + c.contracted, 0);
+  const total_executed   = cats.reduce((s,c) => s + c.executed, 0);
+  const total_pct = total_contracted > 0
+    ? Math.round(total_executed / total_contracted * 100) : 0;
+
+  return `
+    <!-- Summary bar -->
+    <div style="background:linear-gradient(135deg,var(--navy),var(--navy-deep));
+      border-radius:var(--r-lg);padding:16px 20px;margin-bottom:16px;color:#fff">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:700">إجمالي جداول الكميات</div>
+        <div style="font-size:20px;font-weight:800;color:var(--gold)">${total_pct}%</div>
+      </div>
+      <div style="height:8px;background:rgba(255,255,255,0.15);border-radius:4px;overflow:hidden">
+        <div style="width:${total_pct}%;height:100%;border-radius:4px;
+          background:linear-gradient(90deg,var(--primary),var(--gold));
+          transition:width 1.2s ease"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px;
+        font-size:10px;color:rgba(255,255,255,0.5)">
+        <span>تعاقدي: ${fmt(total_contracted)} ر</span>
+        <span>منفذ: <span style="color:var(--green);font-weight:700">${fmt(total_executed)} ر</span></span>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div style="position:relative;width:100%;height:180px;margin-bottom:16px">
+      <canvas id="boq-chart"></canvas>
+    </div>
+
+    <!-- Categories -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${cats.map((cat, idx) => {
+        const pv = cat.contracted > 0
+          ? Math.round(cat.executed / cat.contracted * 100) : 0;
+        const barColor = pv >= 90 ? 'var(--orange)' :
+                         pv >= 60 ? 'var(--primary)' : 'var(--green)';
+        const catId = `boq-cat-${idx}`;
+        const lines = cat.boq_lines || [];
+
+        return `
+          <div style="border:1px solid var(--border);border-radius:var(--r-lg);
+            overflow:hidden;background:var(--surface);
+            transition:box-shadow var(--t-base)">
+
+            <!-- Category Header -->
+            <div onclick="toggleBOQCat('${catId}')"
+              style="display:flex;align-items:center;gap:14px;
+                padding:14px 18px;cursor:pointer;background:var(--surface2);
+                transition:background var(--t-fast)"
+              onmouseover="this.style.background='var(--surface3)'"
+              onmouseout="this.style.background='var(--surface2)'">
+
+              <!-- Icon -->
+              <div style="width:38px;height:38px;border-radius:10px;flex-shrink:0;
+                background:${barColor}18;border:1px solid ${barColor}30;
+                display:flex;align-items:center;justify-content:center;
+                font-size:16px">
+                🏗
+              </div>
+
+              <!-- Info -->
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:700;color:var(--text1);
+                  margin-bottom:6px">${cat.name}</div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="flex:1;height:6px;background:var(--surface3);
+                    border-radius:3px;overflow:hidden">
+                    <div style="width:${pv}%;height:100%;background:${barColor};
+                      border-radius:3px;transition:width 1.2s ease"></div>
+                  </div>
+                  <span style="font-size:11px;font-weight:800;
+                    color:${barColor};min-width:35px">${pv}%</span>
+                </div>
+              </div>
+
+              <!-- Values -->
+              <div style="text-align:left;min-width:110px">
+                <div style="font-size:10px;color:var(--text3)">منفذ</div>
+                <div style="font-size:13px;font-weight:700;color:var(--primary)">
+                  ${fmt(cat.executed)} ر
+                </div>
+              </div>
+              <div style="text-align:left;min-width:110px">
+                <div style="font-size:10px;color:var(--text3)">تعاقدي</div>
+                <div style="font-size:13px;font-weight:600;color:var(--text2)">
+                  ${fmt(cat.contracted)} ر
+                </div>
+              </div>
+
+              <!-- Count badge -->
+              ${lines.length ? `
+                <div style="background:rgba(35,114,146,0.1);color:var(--primary);
+                  font-size:10px;font-weight:700;padding:3px 9px;
+                  border-radius:999px;flex-shrink:0">
+                  ${lines.length} بند
+                </div>` : ''}
+
+              <!-- Arrow -->
+              <div id="${catId}-arrow"
+                style="font-size:14px;color:var(--text4);
+                  transition:transform var(--t-base);flex-shrink:0">▾</div>
+            </div>
+
+            <!-- BOQ Lines -->
+            <div id="${catId}" style="display:none;border-top:1px solid var(--border)">
+              ${lines.length ? `
+                <div style="overflow-x:auto">
+                  <table style="width:100%;border-collapse:collapse">
+                    <thead>
+                      <tr style="background:var(--surface2)">
+                        <th style="padding:9px 14px;text-align:right;font-size:10px;
+                          font-weight:700;color:var(--text3);white-space:nowrap">الكود</th>
+                        <th style="padding:9px 14px;text-align:right;font-size:10px;
+                          font-weight:700;color:var(--text3)">الوصف</th>
+                        <th style="padding:9px 14px;text-align:center;font-size:10px;
+                          font-weight:700;color:var(--text3)">الوحدة</th>
+                        <th style="padding:9px 14px;text-align:center;font-size:10px;
+                          font-weight:700;color:var(--text3)">تعاقدي</th>
+                        <th style="padding:9px 14px;text-align:center;font-size:10px;
+                          font-weight:700;color:var(--text3)">منفذ</th>
+                        <th style="padding:9px 14px;text-align:left;font-size:10px;
+                          font-weight:700;color:var(--text3)">السعر</th>
+                        <th style="padding:9px 14px;text-align:right;font-size:10px;
+                          font-weight:700;color:var(--text3)">نسبة</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${lines.map((line, li) => {
+                        const lpv = line.contracted_qty > 0
+                          ? Math.round(line.executed_qty / line.contracted_qty * 100) : 0;
+                        const lColor = lpv >= 90 ? 'var(--orange)' :
+                                       lpv >= 60 ? 'var(--primary)' : 'var(--green)';
+                        return `
+                          <tr style="border-bottom:1px solid var(--border);
+                            transition:background var(--t-fast)"
+                            onmouseover="this.style.background='var(--surface2)'"
+                            onmouseout="this.style.background=''">
+                            <td style="padding:9px 14px">
+                              <span style="font-family:'IBM Plex Mono',monospace;
+                                font-size:10px;color:var(--primary);font-weight:600">
+                                ${line.code || '—'}
+                              </span>
+                            </td>
+                            <td style="padding:9px 14px;font-size:12px;color:var(--text2);
+                              max-width:200px">
+                              ${line.description || '—'}
+                            </td>
+                            <td style="padding:9px 14px;text-align:center;
+                              font-size:11px;color:var(--text3)">
+                              ${line.unit || '—'}
+                            </td>
+                            <td style="padding:9px 14px;text-align:center;
+                              font-size:12px;color:var(--text2)">
+                              ${line.contracted_qty || 0}
+                            </td>
+                            <td style="padding:9px 14px;text-align:center;
+                              font-size:12px;font-weight:700;color:var(--primary)">
+                              ${line.executed_qty || 0}
+                            </td>
+                            <td style="padding:9px 14px;text-align:left;
+                              font-size:11px;color:var(--text2);
+                              font-family:'IBM Plex Mono',monospace">
+                              ${fmt(line.unit_price || 0)}
+                            </td>
+                            <td style="padding:9px 14px">
+                              <div style="display:flex;align-items:center;gap:6px">
+                                <div style="width:50px;height:5px;background:var(--surface3);
+                                  border-radius:3px;overflow:hidden">
+                                  <div style="width:${lpv}%;height:100%;
+                                    background:${lColor};border-radius:3px;
+                                    transition:width 1s ease"></div>
+                                </div>
+                                <span style="font-size:10px;font-weight:700;
+                                  color:${lColor};min-width:28px">${lpv}%</span>
+                              </div>
+                            </td>
+                          </tr>`;
+                      }).join('')}
+                    </tbody>
+                    <!-- Footer totals -->
+                    <tfoot>
+                      <tr style="background:var(--surface2);font-weight:700">
+                        <td colspan="3" style="padding:9px 14px;font-size:11px;
+                          color:var(--text1)">الإجمالي</td>
+                        <td style="padding:9px 14px;text-align:center;
+                          font-size:11px;color:var(--text2)">—</td>
+                        <td style="padding:9px 14px;text-align:center;
+                          font-size:11px;color:var(--primary)">—</td>
+                        <td style="padding:9px 14px;text-align:left;
+                          font-size:12px;color:var(--primary)">
+                          ${fmt(cat.contracted)} ر
+                        </td>
+                        <td style="padding:9px 14px">
+                          <span style="font-size:11px;font-weight:800;
+                            color:${barColor}">${pv}%</span>
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>` : `
+                <div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">
+                  <div style="font-size:24px;margin-bottom:6px">📋</div>
+                  لا توجد بنود تفصيلية في هذه الفئة
+                </div>`}
+            </div>
+          </div>`;
+      }).join('')}
+    </div>`;
+}
 
     function buildMosqueDetailHTML(data) {
         const m = data.mosque;
@@ -1478,225 +1696,7 @@ ${ai.forecast_finish ? `
 <div class="tab-panel active" data-tab-panel="boq">
   ${buildBOQHTML(data)}
 </div>
-function buildBOQHTML(data) {
-  const cats = data.boq_categories || [];
-  if (!cats.length) return \`
-    <div style="padding:40px;text-align:center;color:var(--text3)">
-      <div style="font-size:32px;margin-bottom:8px">📋</div>
-      لا توجد بنود كميات
-    </div>\`;
 
-  const total_contracted = cats.reduce((s,c) => s + c.contracted, 0);
-  const total_executed   = cats.reduce((s,c) => s + c.executed, 0);
-  const total_pct = total_contracted > 0
-    ? Math.round(total_executed / total_contracted * 100) : 0;
-
-  return \`
-    <!-- Summary bar -->
-    <div style="background:linear-gradient(135deg,var(--navy),var(--navy-deep));
-      border-radius:var(--r-lg);padding:16px 20px;margin-bottom:16px;color:#fff">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div style="font-size:13px;font-weight:700">إجمالي جداول الكميات</div>
-        <div style="font-size:20px;font-weight:800;color:var(--gold)">${total_pct}%</div>
-      </div>
-      <div style="height:8px;background:rgba(255,255,255,0.15);border-radius:4px;overflow:hidden">
-        <div style="width:${total_pct}%;height:100%;border-radius:4px;
-          background:linear-gradient(90deg,var(--primary),var(--gold));
-          transition:width 1.2s ease"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;margin-top:8px;
-        font-size:10px;color:rgba(255,255,255,0.5)">
-        <span>تعاقدي: ${fmt(total_contracted)} ر</span>
-        <span>منفذ: <span style="color:var(--green);font-weight:700">${fmt(total_executed)} ر</span></span>
-      </div>
-    </div>
-
-    <!-- Chart -->
-    <div style="position:relative;width:100%;height:180px;margin-bottom:16px">
-      <canvas id="boq-chart"></canvas>
-    </div>
-
-    <!-- Categories -->
-    <div style="display:flex;flex-direction:column;gap:8px">
-      ${cats.map((cat, idx) => {
-            const pv = cat.contracted > 0
-                ? Math.round(cat.executed / cat.contracted * 100) : 0;
-            const barColor = pv >= 90 ? 'var(--orange)' :
-                pv >= 60 ? 'var(--primary)' : 'var(--green)';
-            const catId = `boq-cat-${idx}`;
-            const lines = cat.boq_lines || [];
-
-            return `
-          <div style="border:1px solid var(--border);border-radius:var(--r-lg);
-            overflow:hidden;background:var(--surface);
-            transition:box-shadow var(--t-base)">
-
-            <!-- Category Header -->
-            <div onclick="toggleBOQCat('${catId}')"
-              style="display:flex;align-items:center;gap:14px;
-                padding:14px 18px;cursor:pointer;background:var(--surface2);
-                transition:background var(--t-fast)"
-              onmouseover="this.style.background='var(--surface3)'"
-              onmouseout="this.style.background='var(--surface2)'">
-
-              <!-- Icon -->
-              <div style="width:38px;height:38px;border-radius:10px;flex-shrink:0;
-                background:${barColor}18;border:1px solid ${barColor}30;
-                display:flex;align-items:center;justify-content:center;
-                font-size:16px">
-                🏗
-              </div>
-
-              <!-- Info -->
-              <div style="flex:1;min-width:0">
-                <div style="font-size:13px;font-weight:700;color:var(--text1);
-                  margin-bottom:6px">${cat.name}</div>
-                <div style="display:flex;align-items:center;gap:8px">
-                  <div style="flex:1;height:6px;background:var(--surface3);
-                    border-radius:3px;overflow:hidden">
-                    <div style="width:${pv}%;height:100%;background:${barColor};
-                      border-radius:3px;transition:width 1.2s ease"></div>
-                  </div>
-                  <span style="font-size:11px;font-weight:800;
-                    color:${barColor};min-width:35px">${pv}%</span>
-                </div>
-              </div>
-
-              <!-- Values -->
-              <div style="text-align:left;min-width:110px">
-                <div style="font-size:10px;color:var(--text3)">منفذ</div>
-                <div style="font-size:13px;font-weight:700;color:var(--primary)">
-                  ${fmt(cat.executed)} ر
-                </div>
-              </div>
-              <div style="text-align:left;min-width:110px">
-                <div style="font-size:10px;color:var(--text3)">تعاقدي</div>
-                <div style="font-size:13px;font-weight:600;color:var(--text2)">
-                  ${fmt(cat.contracted)} ر
-                </div>
-              </div>
-
-              <!-- Count badge -->
-              ${lines.length ? `
-                <div style="background:rgba(35,114,146,0.1);color:var(--primary);
-                  font-size:10px;font-weight:700;padding:3px 9px;
-                  border-radius:999px;flex-shrink:0">
-                  ${lines.length} بند
-                </div>` : ''}
-
-              <!-- Arrow -->
-              <div id="${catId}-arrow"
-                style="font-size:14px;color:var(--text4);
-                  transition:transform var(--t-base);flex-shrink:0">▾</div>
-            </div>
-            
-
-            <!-- BOQ Lines -->
-            <div id="${catId}" style="display:none;border-top:1px solid var(--border)">
-              ${lines.length ? `
-                <div style="overflow-x:auto">
-                  <table style="width:100%;border-collapse:collapse">
-                    <thead>
-                      <tr style="background:var(--surface2)">
-                        <th style="padding:9px 14px;text-align:right;font-size:10px;
-                          font-weight:700;color:var(--text3);white-space:nowrap">الكود</th>
-                        <th style="padding:9px 14px;text-align:right;font-size:10px;
-                          font-weight:700;color:var(--text3)">الوصف</th>
-                        <th style="padding:9px 14px;text-align:center;font-size:10px;
-                          font-weight:700;color:var(--text3)">الوحدة</th>
-                        <th style="padding:9px 14px;text-align:center;font-size:10px;
-                          font-weight:700;color:var(--text3)">تعاقدي</th>
-                        <th style="padding:9px 14px;text-align:center;font-size:10px;
-                          font-weight:700;color:var(--text3)">منفذ</th>
-                        <th style="padding:9px 14px;text-align:left;font-size:10px;
-                          font-weight:700;color:var(--text3)">السعر</th>
-                        <th style="padding:9px 14px;text-align:right;font-size:10px;
-                          font-weight:700;color:var(--text3)">نسبة</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      ${lines.map((line, li) => {
-                const lpv = line.contracted_qty > 0
-                    ? Math.round(line.executed_qty / line.contracted_qty * 100) : 0;
-                const lColor = lpv >= 90 ? 'var(--orange)' :
-                    lpv >= 60 ? 'var(--primary)' : 'var(--green)';
-                return `
-                          <tr style="border-bottom:1px solid var(--border);
-                            transition:background var(--t-fast)"
-                            onmouseover="this.style.background='var(--surface2)'"
-                            onmouseout="this.style.background=''">
-                            <td style="padding:9px 14px">
-                              <span style="font-family:'IBM Plex Mono',monospace;
-                                font-size:10px;color:var(--primary);font-weight:600">
-                                ${line.code || '—'}
-                              </span>
-                            </td>
-                            <td style="padding:9px 14px;font-size:12px;color:var(--text2);
-                              max-width:200px">
-                              ${line.description || '—'}
-                            </td>
-                            <td style="padding:9px 14px;text-align:center;
-                              font-size:11px;color:var(--text3)">
-                              ${line.unit || '—'}
-                            </td>
-                            <td style="padding:9px 14px;text-align:center;
-                              font-size:12px;color:var(--text2)">
-                              ${line.contracted_qty || 0}
-                            </td>
-                            <td style="padding:9px 14px;text-align:center;
-                              font-size:12px;font-weight:700;color:var(--primary)">
-                              ${line.executed_qty || 0}
-                            </td>
-                            <td style="padding:9px 14px;text-align:left;
-                              font-size:11px;color:var(--text2);
-                              font-family:'IBM Plex Mono',monospace">
-                              ${fmt(line.unit_price || 0)}
-                            </td>
-                            <td style="padding:9px 14px">
-                              <div style="display:flex;align-items:center;gap:6px">
-                                <div style="width:50px;height:5px;background:var(--surface3);
-                                  border-radius:3px;overflow:hidden">
-                                  <div style="width:${lpv}%;height:100%;
-                                    background:${lColor};border-radius:3px;
-                                    transition:width 1s ease"></div>
-                                </div>
-                                <span style="font-size:10px;font-weight:700;
-                                  color:${lColor};min-width:28px">${lpv}%</span>
-                              </div>
-                            </td>
-                          </tr>`;
-            }).join('')}
-                    </tbody>
-                    <!-- Footer totals -->
-                    <tfoot>
-                      <tr style="background:var(--surface2);font-weight:700">
-                        <td colspan="3" style="padding:9px 14px;font-size:11px;
-                          color:var(--text1)">الإجمالي</td>
-                        <td style="padding:9px 14px;text-align:center;
-                          font-size:11px;color:var(--text2)">—</td>
-                        <td style="padding:9px 14px;text-align:center;
-                          font-size:11px;color:var(--primary)">—</td>
-                        <td style="padding:9px 14px;text-align:left;
-                          font-size:12px;color:var(--primary)">
-                          ${fmt(cat.contracted)} ر
-                        </td>
-                        <td style="padding:9px 14px">
-                          <span style="font-size:11px;font-weight:800;
-                            color:${barColor}">${pv}%</span>
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>` : `
-                <div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">
-                  <div style="font-size:24px;margin-bottom:6px">📋</div>
-                  لا توجد بنود تفصيلية في هذه الفئة
-                </div>`}
-            </div>
-          </div>`;
-        }).join('')}
-    </div>\`;
-}
 
 
 
