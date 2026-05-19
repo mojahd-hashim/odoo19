@@ -396,7 +396,7 @@
 <div class="chatbot-panel" id="chatbot-panel">
   <div class="chat-hdr">
     <div class="chat-av">AI</div>
-    <div><div class="chat-hdr-title">مساعد الوقف الذكي</div></div>
+    <div><div class="chat-hdr-title">مساند</div></div>
     <div class="chat-online"/>
     <button class="chat-close" id="chat-close">✕</button>
   </div>
