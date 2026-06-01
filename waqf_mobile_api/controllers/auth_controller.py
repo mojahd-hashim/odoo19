@@ -41,12 +41,9 @@ class WaqfAuthController(http.Controller):
         if not login or not password:
             return api_response(error='login and password are required', status=400)
 
-        # أودو 19 — الطريقة الصحيحة
         try:
             uid = request.env['res.users'].sudo()._login(
-                request.env.cr.dbname,
-                login,
-                password,
+                {'type': 'password', 'login': login, 'password': password},
                 {'interactive': False}
             )
         except Exception as e:
