@@ -13,7 +13,7 @@ class WaqfAuthController(http.Controller):
         return api_response(data='ok')
 
     # ── POST /api/waqf/auth/login ─────────────────────────────────
-    @http.route('/api/waqf/auth/login',
+    @http.route('/api/waqf/auth/login','/api/v1/waqf/auth/login',
                 type='http', auth='none', methods=['POST'], csrf=False)
     def login(self, **kwargs):
         """
