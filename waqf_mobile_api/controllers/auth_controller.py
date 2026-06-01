@@ -41,14 +41,15 @@ class WaqfAuthController(http.Controller):
         if not login or not password:
             return api_response(error='login and password are required', status=400)
 
-        # Authenticate against Odoo
         # أودو 19 — الطريقة الصحيحة
         try:
-            request.session.logout(keep_db=True)
-            uid = request.session.authenticate(
-                request.env.cr.dbname, login, password
+            uid = request.env['res.users'].sudo()._login(
+                request.env.cr.dbname,
+                login,
+                password,
+                {'interactive': False}
             )
-        except Exception:
+        except Exception as e:
             uid = False
 
         if not uid:
