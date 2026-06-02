@@ -78,7 +78,12 @@ class WaqfApiToken(models.Model):
         if not token:
             return False
 
-        token.sudo().write({'last_used': datetime.now()})
+        if not token.last_used or (
+                fields.Datetime.now() - token.last_used
+        ).total_seconds() > 300:
+            token.sudo().write({
+                'last_used': fields.Datetime.now()
+            })
         return token.employee_id
 
     def action_revoke(self):
