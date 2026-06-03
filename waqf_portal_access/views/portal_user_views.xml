@@ -58,73 +58,77 @@
   <field name="name">waqf.portal.user.kanban</field>
   <field name="model">waqf.portal.user</field>
   <field name="arch" type="xml">
-    <kanban default_group_by="role" class="o_kanban_small_column">
+    <kanban>
       <field name="name"/>
       <field name="email"/>
       <field name="role"/>
-      <field name="company_id"/>
       <field name="is_active"/>
       <field name="invite_sent"/>
       <field name="mosque_count"/>
-      <field name="last_login"/>
+      <field name="company_id"/>
       <templates>
         <t t-name="card">
-          <div t-attf-class="oe_kanban_card oe_kanban_global_click
-            #{record.is_active.raw_value ? '' : 'o_kanban_record_muted'}">
+          <!-- Status badge -->
+          <div class="d-flex justify-content-between mb-2">
+            <span t-attf-class="badge #{record.is_active.raw_value ?
+              'text-bg-success' : 'text-bg-secondary'}">
+              <t t-if="record.is_active.raw_value">نشط</t>
+              <t t-else="">معطّل</t>
+            </span>
+            <span t-if="record.invite_sent.raw_value"
+                  class="badge text-bg-info">
+              ✉ دُعي
+            </span>
+          </div>
 
-            <!-- Status dot -->
-            <div style="position:absolute;top:12px;left:12px">
-              <span t-attf-class="badge #{record.is_active.raw_value ?
-                'text-bg-success' : 'text-bg-secondary'}">
-                <t t-if="record.is_active.raw_value">نشط</t>
-                <t t-else="">معطّل</t>
-              </span>
-            </div>
+          <!-- Name -->
+          <strong style="font-size:14px">
+            <field name="name"/>
+          </strong>
 
-            <!-- Avatar + Name -->
-            <div class="o_kanban_image" style="margin-bottom:8px">
-              <img t-att-src="kanban_image('waqf.portal.user','image_128',record.id.raw_value)"
-                   alt="avatar" class="o_image_64_cover rounded-circle"
-                   style="width:48px;height:48px;object-fit:cover"/>
-            </div>
-            <div class="o_kanban_details">
-              <strong><field name="name"/></strong>
-              <div class="text-muted" style="font-size:12px">
-                <field name="email"/>
-              </div>
-              <div style="margin-top:6px">
-                <span class="badge text-bg-primary" style="font-size:10px">
-                  <field name="role"/>
-                </span>
-              </div>
-              <div t-if="record.company_id.raw_value" style="font-size:11px;margin-top:4px;color:#666">
-                <i class="fa fa-building"/> <field name="company_id"/>
-              </div>
-              <div style="font-size:11px;margin-top:4px">
-                <i class="fa fa-mosque"/> <field name="mosque_count"/> مسجد
-              </div>
-            </div>
+          <!-- Email -->
+          <div class="text-muted" style="font-size:11px;margin-top:2px">
+            <field name="email"/>
+          </div>
 
-            <!-- Actions -->
-            <div class="o_kanban_footer" style="margin-top:10px;
-              display:flex;gap:6px;border-top:1px solid #eee;padding-top:10px">
-              <button name="action_send_invite" type="object"
-                      class="btn btn-sm btn-primary flex-fill"
-                      t-if="!record.invite_sent.raw_value">
-                <i class="fa fa-envelope"/> دعوة
-              </button>
-              <button name="action_send_invite" type="object"
-                      class="btn btn-sm btn-secondary flex-fill"
-                      t-else="">
-                <i class="fa fa-repeat"/> إعادة
-              </button>
-              <button name="action_toggle_active" type="object"
-                      t-attf-class="btn btn-sm #{record.is_active.raw_value ?
-                        'btn-danger' : 'btn-success'} flex-fill">
-                <t t-if="record.is_active.raw_value">تعطيل</t>
-                <t t-else="">تفعيل</t>
-              </button>
-            </div>
+          <!-- Role -->
+          <div style="margin-top:8px">
+            <span class="badge text-bg-primary" style="font-size:10px">
+              <field name="role"/>
+            </span>
+          </div>
+
+          <!-- Company -->
+          <div t-if="record.company_id.raw_value"
+               style="font-size:11px;margin-top:4px;color:#666">
+            <i class="fa fa-building me-1"/>
+            <field name="company_id"/>
+          </div>
+
+          <!-- Mosques -->
+          <div style="font-size:11px;margin-top:4px;color:#237292">
+            <i class="fa fa-mosque me-1"/>
+            <field name="mosque_count"/> مسجد
+          </div>
+
+          <!-- Actions -->
+          <div class="d-flex gap-2 mt-3">
+            <button name="action_send_invite" type="object"
+                    class="btn btn-sm btn-primary flex-fill"
+                    t-if="!record.invite_sent.raw_value">
+              <i class="fa fa-envelope"/> دعوة
+            </button>
+            <button name="action_send_invite" type="object"
+                    class="btn btn-sm btn-secondary flex-fill"
+                    t-else="">
+              <i class="fa fa-repeat"/> إعادة
+            </button>
+            <button name="action_toggle_active" type="object"
+                    t-attf-class="btn btn-sm #{record.is_active.raw_value ?
+                      'btn-danger' : 'btn-success'} flex-fill">
+              <t t-if="record.is_active.raw_value">تعطيل</t>
+              <t t-else="">تفعيل</t>
+            </button>
           </div>
         </t>
       </templates>
