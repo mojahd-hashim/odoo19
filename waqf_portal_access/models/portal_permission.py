@@ -5,7 +5,7 @@ from odoo import models, fields, api
 class WaqfPortalPermission(models.Model):
     _name        = 'waqf.portal.permission'
     _description = 'صلاحيات مستخدم البوابة'
-    -rec_name = 'role'
+    _rec_name = 'role'
 
     portal_user_id = fields.Many2one(
         'waqf.portal.user', required=True, ondelete='cascade')
