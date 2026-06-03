@@ -249,14 +249,11 @@ class WaqfAttendanceController(http.Controller):
 # ── Helpers ────────────────────────────────────────────────────────
 
 def _resolve_user(employee, portal_user):
-    """
-    يرجع (user_type, user_id, allowed_mosques)
-    user_type: 'employee' أو 'portal'
-    """
     if employee:
         return ('employee', employee.id, employee.all_mosque_ids)
     if portal_user:
-        return ('portal', portal_user.id, portal_user.effective_mosque_ids)
+        # استخدم res.users.id وليس waqf.portal.user.id
+        return ('portal', portal_user.user_id.id, portal_user.effective_mosque_ids)
     return (None, None, [])
 
 
