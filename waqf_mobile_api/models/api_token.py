@@ -116,3 +116,13 @@ class WaqfTokenShowWizard(models.TransientModel):
 
     def action_copy_done(self):
         return {'type': 'ir.actions.act_window_close'}
+
+class WaqfPortalToken(models.Model):
+    _name = 'waqf.portal.token'
+
+    portal_user_id = fields.Many2one('waqf.portal.user', required=True)
+    token_hash     = fields.Char(required=True, index=True)
+    device_info    = fields.Char()
+    fcm_token      = fields.Char()
+    is_active      = fields.Boolean(default=True)
+    last_used      = fields.Datetime()
