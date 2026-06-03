@@ -55,7 +55,7 @@ class WaqfAttendanceController(http.Controller):
         if user_type == 'employee':
             domain_active.append(('engineer_id', '=', user_id))
         else:
-            domain_active.append(('portal_user_id', '=', user_id))
+            domain_active.append(('portal_user_id', '=', portal_user.user_id.id))
 
         active = request.env['mosque.attendance'].sudo().search(domain_active, limit=1)
         if active:
@@ -86,7 +86,7 @@ class WaqfAttendanceController(http.Controller):
         if user_type == 'employee':
             vals['engineer_id'] = user_id
         else:
-            vals['portal_user_id'] = user_id
+            vals['portal_user_id'] = portal_user.user_id.id
 
         attendance = request.env['mosque.attendance'].sudo().create(vals)
 
