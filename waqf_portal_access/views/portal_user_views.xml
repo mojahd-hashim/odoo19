@@ -132,39 +132,6 @@
   </field>
 </record>
 
-<!-- ══════════════════════════════════════════════════════
-     SEARCH VIEW
-══════════════════════════════════════════════════════ -->
-<record id="view_portal_user_search" model="ir.ui.view">
-  <field name="name">waqf.portal.user.search</field>
-  <field name="model">waqf.portal.user</field>
-  <field name="arch" type="xml">
-    <search string="البحث في المستخدمين">
-      <field name="name" string="الاسم"/>
-      <field name="email"/>
-      <field name="company_id"/>
-      <filter string="نشط" name="active" domain="[('is_active','=',True)]"/>
-      <filter string="معطّل" name="inactive" domain="[('is_active','=',False)]"/>
-      <separator/>
-      <filter string="لم تُرسَل الدعوة" name="no_invite"
-              domain="[('invite_sent','=',False),('is_active','=',True)]"/>
-      <separator/>
-      <filter string="مستشار مقيم" name="resident"
-              domain="[('role','=','resident_engineer')]"/>
-      <filter string="مشرف موقع" name="supervisor"
-              domain="[('role','=','site_supervisor')]"/>
-      <filter string="مشرف عام" name="admin"
-              domain="[('role','=','contractor_admin')]"/>
-      <filter string="مهندس مقاول" name="engineer"
-              domain="[('role','=','contractor_engineer')]"/>
-      <group expand="0" string="تجميع حسب">
-        <filter string="الدور" name="group_role" context="{'group_by':'role'}"/>
-        <filter string="الشركة" name="group_company" context="{'group_by':'company_id'}"/>
-        <filter string="نطاق الوصول" name="group_access" context="{'group_by':'access_mode'}"/>
-      </group>
-    </search>
-  </field>
-</record>
 
 <!-- ══════════════════════════════════════════════════════
      ACTION
@@ -173,8 +140,6 @@
   <field name="name">مستخدمو البوابة</field>
   <field name="res_model">waqf.portal.user</field>
   <field name="view_mode">kanban,list,form</field>
-  <field name="search_view_id" ref="view_portal_user_search"/>
-  <field name="context">{'search_default_active': 1}</field>
   <field name="help" type="html">
     <p class="o_view_nocontent_smiling_face">
       أضف أول مستخدم للبوابة
