@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <!-- Main Menu -->
+  <menuitem id="menu_portal_access_root"
+            name="إدارة البوابة"
+            sequence="90"
+            web_icon="waqf_portal_access,static/description/icon.png"/>
+
+  <!-- Sub Menus -->
+  <menuitem id="menu_portal_users"
+            name="مستخدمو البوابة"
+            parent="menu_portal_access_root"
+            action="action_portal_users"
+            sequence="10"/>
+
+  <menuitem id="menu_portal_users_consultants"
+            name="المستشارون"
+            parent="menu_portal_access_root"
+            action="action_portal_consultants"
+            sequence="20"/>
+
+  <menuitem id="menu_portal_users_contractors"
+            name="المقاولون"
+            parent="menu_portal_access_root"
+            action="action_portal_contractors"
+            sequence="30"/>
+
+</odoo>

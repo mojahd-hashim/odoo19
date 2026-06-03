@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<!-- ══════════════════════════════════════════════════════
+     LIST VIEW
+══════════════════════════════════════════════════════ -->
+<record id="view_portal_user_list" model="ir.ui.view">
+  <field name="name">waqf.portal.user.list</field>
+  <field name="model">waqf.portal.user</field>
+  <field name="arch" type="xml">
+    <list string="مستخدمو البوابة" decoration-muted="not is_active"
+          decoration-success="is_active"
+          default_order="role,name">
+      <field name="name"/>
+      <field name="email"/>
+      <field name="role"/>
+      <field name="company_id" optional="show"/>
+      <field name="access_mode" optional="show"/>
+      <field name="mosque_count" string="المساجد"/>
+      <field name="invite_sent" widget="boolean_toggle" optional="show"/>
+      <field name="last_login" optional="show"/>
+      <field name="is_active" widget="boolean_toggle"/>
+      <button name="action_send_invite" type="object"
+              string="إرسال دعوة" icon="fa-envelope"
+              attrs="{'invisible': [('invite_sent','=',True)]}"
+              class="btn-primary"/>
+      <button name="action_send_invite" type="object"
+              string="إعادة الإرسال" icon="fa-repeat"
+              attrs="{'invisible': [('invite_sent','=',False)]}"
+              class="btn-secondary"/>
+    </list>
+  </field>
+</record>
+
+<!-- ══════════════════════════════════════════════════════
+     KANBAN VIEW
+══════════════════════════════════════════════════════ -->
+<record id="view_portal_user_kanban" model="ir.ui.view">
+  <field name="name">waqf.portal.user.kanban</field>
+  <field name="model">waqf.portal.user</field>
+  <field name="arch" type="xml">
+    <kanban default_group_by="role" class="o_kanban_small_column">
+      <field name="name"/>
+      <field name="email"/>
+      <field name="role"/>
+      <field name="company_id"/>
+      <field name="is_active"/>
+      <field name="invite_sent"/>
+      <field name="mosque_count"/>
+      <field name="last_login"/>
+      <templates>
+        <t t-name="kanban-box">
+          <div t-attf-class="oe_kanban_card oe_kanban_global_click
+            #{record.is_active.raw_value ? '' : 'o_kanban_record_muted'}">
+
+            <!-- Status dot -->
+            <div style="position:absolute;top:12px;left:12px">
+              <span t-attf-class="badge #{record.is_active.raw_value ?
+                'text-bg-success' : 'text-bg-secondary'}">
+                <t t-if="record.is_active.raw_value">نشط</t>
+                <t t-else="">معطّل</t>
+              </span>
+            </div>
+
+            <!-- Avatar + Name -->
+            <div class="o_kanban_image" style="margin-bottom:8px">
+              <img t-att-src="kanban_image('waqf.portal.user','image_128',record.id.raw_value)"
+                   alt="avatar" class="o_image_64_cover rounded-circle"
+                   style="width:48px;height:48px;object-fit:cover"/>
+            </div>
+            <div class="o_kanban_details">
+              <strong><field name="name"/></strong>
+              <div class="text-muted" style="font-size:12px">
+                <field name="email"/>
+              </div>
+              <div style="margin-top:6px">
+                <span class="badge text-bg-primary" style="font-size:10px">
+                  <field name="role"/>
+                </span>
+              </div>
+              <div t-if="record.company_id.raw_value" style="font-size:11px;margin-top:4px;color:#666">
+                <i class="fa fa-building"/> <field name="company_id"/>
+              </div>
+              <div style="font-size:11px;margin-top:4px">
+                <i class="fa fa-mosque"/> <field name="mosque_count"/> مسجد
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="o_kanban_footer" style="margin-top:10px;
+              display:flex;gap:6px;border-top:1px solid #eee;padding-top:10px">
+              <button name="action_send_invite" type="object"
+                      class="btn btn-sm btn-primary flex-fill"
+                      t-if="!record.invite_sent.raw_value">
+                <i class="fa fa-envelope"/> دعوة
+              </button>
+              <button name="action_send_invite" type="object"
+                      class="btn btn-sm btn-secondary flex-fill"
+                      t-else="">
+                <i class="fa fa-repeat"/> إعادة
+              </button>
+              <button name="action_toggle_active" type="object"
+                      t-attf-class="btn btn-sm #{record.is_active.raw_value ?
+                        'btn-danger' : 'btn-success'} flex-fill">
+                <t t-if="record.is_active.raw_value">تعطيل</t>
+                <t t-else="">تفعيل</t>
+              </button>
+            </div>
+          </div>
+        </t>
+      </templates>
+    </kanban>
+  </field>
+</record>
+
+<!-- ══════════════════════════════════════════════════════
+     SEARCH VIEW
+══════════════════════════════════════════════════════ -->
+<record id="view_portal_user_search" model="ir.ui.view">
+  <field name="name">waqf.portal.user.search</field>
+  <field name="model">waqf.portal.user</field>
+  <field name="arch" type="xml">
+    <search string="البحث في المستخدمين">
+      <field name="name" string="الاسم"/>
+      <field name="email"/>
+      <field name="company_id"/>
+      <filter string="نشط" name="active" domain="[('is_active','=',True)]"/>
+      <filter string="معطّل" name="inactive" domain="[('is_active','=',False)]"/>
+      <separator/>
+      <filter string="لم تُرسَل الدعوة" name="no_invite"
+              domain="[('invite_sent','=',False),('is_active','=',True)]"/>
+      <separator/>
+      <filter string="مستشار مقيم" name="resident"
+              domain="[('role','=','resident_engineer')]"/>
+      <filter string="مشرف موقع" name="supervisor"
+              domain="[('role','=','site_supervisor')]"/>
+      <filter string="مشرف عام" name="admin"
+              domain="[('role','=','contractor_admin')]"/>
+      <filter string="مهندس مقاول" name="engineer"
+              domain="[('role','=','contractor_engineer')]"/>
+      <group expand="0" string="تجميع حسب">
+        <filter string="الدور" name="group_role" context="{'group_by':'role'}"/>
+        <filter string="الشركة" name="group_company" context="{'group_by':'company_id'}"/>
+        <filter string="نطاق الوصول" name="group_access" context="{'group_by':'access_mode'}"/>
+      </group>
+    </search>
+  </field>
+</record>
+
+<!-- ══════════════════════════════════════════════════════
+     ACTION
+══════════════════════════════════════════════════════ -->
+<record id="action_portal_users" model="ir.actions.act_window">
+  <field name="name">مستخدمو البوابة</field>
+  <field name="res_model">waqf.portal.user</field>
+  <field name="view_mode">kanban,list,form</field>
+  <field name="search_view_id" ref="view_portal_user_search"/>
+  <field name="context">{'search_default_active': 1}</field>
+  <field name="help" type="html">
+    <p class="o_view_nocontent_smiling_face">
+      أضف أول مستخدم للبوابة
+    </p>
+    <p>
+      أضف المستشارين والمقاولين وحدد صلاحياتهم من شاشة واحدة
+    </p>
+  </field>
+</record>
+
+</odoo>
+
+<!-- Filtered: Consultants only -->
+<record id="action_portal_consultants" model="ir.actions.act_window">
+  <field name="name">المستشارون المقيمون</field>
+  <field name="res_model">waqf.portal.user</field>
+  <field name="view_mode">kanban,list,form</field>
+  <field name="domain">[('role','in',['resident_engineer','project_manager'])]</field>
+  <field name="context">{'default_role': 'resident_engineer'}</field>
+</record>
+
+<!-- Filtered: Contractors only -->
+<record id="action_portal_contractors" model="ir.actions.act_window">
+  <field name="name">المقاولون</field>
+  <field name="res_model">waqf.portal.user</field>
+  <field name="view_mode">kanban,list,form</field>
+  <field name="domain">[('role','in',
+    ['site_supervisor','contractor_admin','contractor_engineer'])]</field>
+  <field name="context">{'default_role': 'contractor_engineer'}</field>
+</record>

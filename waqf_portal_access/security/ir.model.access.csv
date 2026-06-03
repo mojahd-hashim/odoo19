@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_portal_user_manager,waqf.portal.user manager,model_waqf_portal_user,group_portal_manager,1,1,1,1
+access_portal_user_admin,waqf.portal.user admin,model_waqf_portal_user,base.group_system,1,1,1,1
+access_portal_perm_manager,waqf.portal.permission manager,model_waqf_portal_permission,group_portal_manager,1,1,1,1
+access_portal_perm_admin,waqf.portal.permission admin,model_waqf_portal_permission,base.group_system,1,1,1,1
+access_report_type_all,waqf.report.type all,model_waqf_report_type,base.group_user,1,0,0,0
+access_report_type_admin,waqf.report.type admin,model_waqf_report_type,base.group_system,1,1,1,1

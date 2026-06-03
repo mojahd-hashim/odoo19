@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<record id="view_portal_user_form" model="ir.ui.view">
+  <field name="name">waqf.portal.user.form</field>
+  <field name="model">waqf.portal.user</field>
+  <field name="arch" type="xml">
+    <form string="مستخدم البوابة">
+
+      <!-- Status Bar -->
+      <header>
+        <button name="action_send_invite" type="object" string="إرسال دعوة"
+                class="btn-primary"
+                attrs="{'invisible': [('invite_sent','=',True)]}"/>
+        <button name="action_send_invite" type="object" string="إعادة إرسال الدعوة"
+                class="btn-secondary"
+                attrs="{'invisible': [('invite_sent','=',False)]}"/>
+        <button name="action_reset_password" type="object"
+                string="إعادة تعيين كلمة المرور" class="btn-secondary"
+                attrs="{'invisible': [('user_id','=',False)]}"/>
+        <button name="action_toggle_active" type="object"
+                string="تعطيل المستخدم" class="btn-danger"
+                attrs="{'invisible': [('is_active','=',False)]}"/>
+        <button name="action_toggle_active" type="object"
+                string="تفعيل المستخدم" class="btn-success"
+                attrs="{'invisible': [('is_active','=',True)]}"/>
+        <field name="is_active" widget="statusbar"
+               statusbar_visible="1"
+               invisible="1"/>
+      </header>
+
+      <sheet>
+        <!-- Active banner -->
+        <div class="alert alert-warning" role="alert"
+             attrs="{'invisible': [('is_active','=',True)]}">
+          <strong>⚠ هذا المستخدم معطّل</strong> — لا يمكنه الدخول للبوابة.
+        </div>
+
+        <!-- Invite banner -->
+        <div class="alert alert-success" role="alert"
+             attrs="{'invisible': [('invite_sent','=',False)]}">
+          ✅ تم إرسال دعوة الدخول في <field name="invite_date" readonly="1"/>
+        </div>
+
+        <!-- Header info -->
+        <div class="oe_title">
+          <h1>
+            <field name="name" placeholder="الاسم الكامل"
+                   style="font-size:22px"/>
+          </h1>
+          <h3>
+            <field name="role" placeholder="الدور"/>
+          </h3>
+        </div>
+
+        <group>
+          <!-- ① معلومات أساسية -->
+          <group string="① المعلومات الأساسية">
+            <field name="name"/>
+            <field name="email"/>
+            <field name="phone"/>
+            <field name="role"/>
+            <field name="company_id"
+                   attrs="{'invisible': [('role','not in',
+                     ['site_supervisor','contractor_admin','contractor_engineer'])],
+                     'required': [('role','in',
+                     ['site_supervisor','contractor_admin','contractor_engineer'])]}"/>
+            <field name="user_id" readonly="1" optional="show"/>
+          </group>
+
+          <!-- ② نطاق الوصول -->
+          <group string="② نطاق الوصول">
+            <field name="access_mode" widget="radio"/>
+            <field name="phase_ids" widget="many2many_tags"
+                   attrs="{'invisible': [('access_mode','!=','phase')],
+                           'required': [('access_mode','=','phase')]}"/>
+            <field name="mosque_ids" widget="many2many_tags"
+                   attrs="{'invisible': [('access_mode','!=','specific')],
+                           'required': [('access_mode','=','specific')]}"/>
+            <field name="mosque_count" string="إجمالي المساجد" readonly="1"/>
+            <button name="action_view_mosques" type="object"
+                    string="عرض المساجد الفعلية" icon="fa-mosque"
+                    class="btn-secondary btn-sm"
+                    attrs="{'invisible': [('mosque_count','=',0)]}"/>
+          </group>
+        </group>
+
+        <!-- ③ الصلاحيات -->
+        <notebook>
+          <page string="③ الصلاحيات" name="permissions">
+            <field name="permission_id" nolabel="1">
+              <form>
+                <group>
+
+                  <!-- CONSULTANT PERMISSIONS -->
+                  <group string="صلاحيات المستشار"
+                         attrs="{'invisible': [('role','in',
+                           ['contractor_admin','site_supervisor',
+                            'contractor_engineer'])]}">
+                    <group string="التقارير">
+                      <field name="can_submit_report"/>
+                      <field name="allowed_report_types" widget="many2many_tags"
+                             attrs="{'invisible': [('can_submit_report','=',False)]}"/>
+                      <field name="can_view_all_reports"/>
+                    </group>
+                    <group string="الأعمال">
+                      <field name="can_approve_works"/>
+                      <field name="can_reject_works"/>
+                      <field name="can_view_boq_prices"/>
+                    </group>
+                    <group string="المستخلصات">
+                      <field name="can_review_certificates"/>
+                      <field name="can_approve_certificates"/>
+                      <field name="can_reject_certificates"/>
+                    </group>
+                  </group>
+
+                  <!-- CONTRACTOR PERMISSIONS -->
+                  <group string="صلاحيات المقاول"
+                         attrs="{'invisible': [('role','in',
+                           ['resident_engineer','project_manager'])]}">
+                    <group string="الأعمال">
+                      <field name="can_submit_works"/>
+                      <field name="can_view_team_works"
+                             attrs="{'invisible': [('role','=',
+                               'contractor_engineer')]}"/>
+                      <field name="can_view_boq"/>
+                      <field name="can_view_boq_prices_contractor"/>
+                    </group>
+                    <group string="المستخلصات وأوامر التغيير">
+                      <field name="can_submit_certificate"/>
+                      <field name="can_view_all_certificates"
+                             attrs="{'invisible': [('role','=',
+                               'contractor_engineer')]}"/>
+                      <field name="can_request_change_order"/>
+                    </group>
+                  </group>
+
+                  <!-- PROJECT MANAGER -->
+                  <group string="صلاحيات مدير المشروع"
+                         attrs="{'invisible': [('role','!=','project_manager')]}">
+                    <field name="can_submit_report"/>
+                    <field name="can_view_all_reports"/>
+                    <field name="can_approve_works"/>
+                    <field name="can_view_boq_prices"/>
+                    <field name="can_approve_certificates"/>
+                    <field name="can_view_all_certificates"/>
+                  </group>
+
+                </group>
+              </form>
+            </field>
+          </page>
+
+          <!-- ④ آخر النشاطات -->
+          <page string="④ النشاط" name="activity">
+            <group>
+              <field name="invite_sent" readonly="1"/>
+              <field name="invite_date" readonly="1"/>
+              <field name="last_login" readonly="1"/>
+            </group>
+            <div class="o_field_widget o_field_html" style="margin-top:16px">
+              <field name="message_ids" widget="mail_thread"/>
+            </div>
+          </page>
+        </notebook>
+
+        <!-- Portal URL -->
+        <div style="background:#F7F9FC;border:1px solid #E0E6ED;border-radius:8px;
+                    padding:12px 16px;margin-top:12px">
+          <span style="font-size:11px;color:#8FA3B3;margin-left:8px">رابط البوابة:</span>
+          <field name="portal_url" readonly="1"
+                 style="font-family:monospace;font-size:12px;color:#237292"/>
+        </div>
+      </sheet>
+
+      <chatter/>
+    </form>
+  </field>
+</record>
+
+</odoo>
