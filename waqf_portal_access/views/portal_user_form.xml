@@ -11,42 +11,38 @@
       <header>
         <button name="action_send_invite" type="object" string="إرسال دعوة"
                 class="btn-primary"
-                attrs="{'invisible': [('invite_sent','=',True)]}"/>
+                invisible="invite_sent == True"/>
         <button name="action_send_invite" type="object" string="إعادة إرسال الدعوة"
                 class="btn-secondary"
-                attrs="{'invisible': [('invite_sent','=',False)]}"/>
+                invisible="invite_sent == False"/>
         <button name="action_reset_password" type="object"
                 string="إعادة تعيين كلمة المرور" class="btn-secondary"
-                attrs="{'invisible': [('user_id','=',False)]}"/>
+                invisible="not user_id"/>
         <button name="action_toggle_active" type="object"
                 string="تعطيل المستخدم" class="btn-danger"
-                attrs="{'invisible': [('is_active','=',False)]}"/>
+                invisible="is_active == False"/>
         <button name="action_toggle_active" type="object"
                 string="تفعيل المستخدم" class="btn-success"
-                attrs="{'invisible': [('is_active','=',True)]}"/>
-        <field name="is_active" widget="statusbar"
-               statusbar_visible="1"
-               invisible="1"/>
+                invisible="is_active == True"/>
       </header>
 
       <sheet>
         <!-- Active banner -->
         <div class="alert alert-warning" role="alert"
-             attrs="{'invisible': [('is_active','=',True)]}">
+             invisible="is_active == True">
           <strong>⚠ هذا المستخدم معطّل</strong> — لا يمكنه الدخول للبوابة.
         </div>
 
         <!-- Invite banner -->
         <div class="alert alert-success" role="alert"
-             attrs="{'invisible': [('invite_sent','=',False)]}">
+             invisible="invite_sent == False">
           ✅ تم إرسال دعوة الدخول في <field name="invite_date" readonly="1"/>
         </div>
 
         <!-- Header info -->
         <div class="oe_title">
           <h1>
-            <field name="name" placeholder="الاسم الكامل"
-                   style="font-size:22px"/>
+            <field name="name" placeholder="الاسم الكامل"/>
           </h1>
           <h3>
             <field name="role" placeholder="الدور"/>
@@ -61,10 +57,8 @@
             <field name="phone"/>
             <field name="role"/>
             <field name="company_id"
-                   attrs="{'invisible': [('role','not in',
-                     ['site_supervisor','contractor_admin','contractor_engineer'])],
-                     'required': [('role','in',
-                     ['site_supervisor','contractor_admin','contractor_engineer'])]}"/>
+                   invisible="role not in ['site_supervisor','contractor_admin','contractor_engineer']"
+                   required="role in ['site_supervisor','contractor_admin','contractor_engineer']"/>
             <field name="user_id" readonly="1" optional="show"/>
           </group>
 
@@ -72,16 +66,16 @@
           <group string="② نطاق الوصول">
             <field name="access_mode" widget="radio"/>
             <field name="phase_ids" widget="many2many_tags"
-                   attrs="{'invisible': [('access_mode','!=','phase')],
-                           'required': [('access_mode','=','phase')]}"/>
+                   invisible="access_mode != 'phase'"
+                   required="access_mode == 'phase'"/>
             <field name="mosque_ids" widget="many2many_tags"
-                   attrs="{'invisible': [('access_mode','!=','specific')],
-                           'required': [('access_mode','=','specific')]}"/>
+                   invisible="access_mode != 'specific'"
+                   required="access_mode == 'specific'"/>
             <field name="mosque_count" string="إجمالي المساجد" readonly="1"/>
             <button name="action_view_mosques" type="object"
                     string="عرض المساجد الفعلية" icon="fa-mosque"
                     class="btn-secondary btn-sm"
-                    attrs="{'invisible': [('mosque_count','=',0)]}"/>
+                    invisible="mosque_count == 0"/>
           </group>
         </group>
 
@@ -94,13 +88,11 @@
 
                   <!-- CONSULTANT PERMISSIONS -->
                   <group string="صلاحيات المستشار"
-                         attrs="{'invisible': [('role','in',
-                           ['contractor_admin','site_supervisor',
-                            'contractor_engineer'])]}">
+                         invisible="role in ['contractor_admin','site_supervisor','contractor_engineer']">
                     <group string="التقارير">
                       <field name="can_submit_report"/>
                       <field name="allowed_report_types" widget="many2many_tags"
-                             attrs="{'invisible': [('can_submit_report','=',False)]}"/>
+                             invisible="not can_submit_report"/>
                       <field name="can_view_all_reports"/>
                     </group>
                     <group string="الأعمال">
@@ -117,28 +109,25 @@
 
                   <!-- CONTRACTOR PERMISSIONS -->
                   <group string="صلاحيات المقاول"
-                         attrs="{'invisible': [('role','in',
-                           ['resident_engineer','project_manager'])]}">
+                         invisible="role in ['resident_engineer','project_manager']">
                     <group string="الأعمال">
                       <field name="can_submit_works"/>
                       <field name="can_view_team_works"
-                             attrs="{'invisible': [('role','=',
-                               'contractor_engineer')]}"/>
+                             invisible="role == 'contractor_engineer'"/>
                       <field name="can_view_boq"/>
                       <field name="can_view_boq_prices_contractor"/>
                     </group>
                     <group string="المستخلصات وأوامر التغيير">
                       <field name="can_submit_certificate"/>
                       <field name="can_view_all_certificates"
-                             attrs="{'invisible': [('role','=',
-                               'contractor_engineer')]}"/>
+                             invisible="role == 'contractor_engineer'"/>
                       <field name="can_request_change_order"/>
                     </group>
                   </group>
 
                   <!-- PROJECT MANAGER -->
                   <group string="صلاحيات مدير المشروع"
-                         attrs="{'invisible': [('role','!=','project_manager')]}">
+                         invisible="role != 'project_manager'">
                     <field name="can_submit_report"/>
                     <field name="can_view_all_reports"/>
                     <field name="can_approve_works"/>
@@ -152,16 +141,13 @@
             </field>
           </page>
 
-          <!-- ④ آخر النشاطات -->
+          <!-- ④ النشاط -->
           <page string="④ النشاط" name="activity">
             <group>
               <field name="invite_sent" readonly="1"/>
               <field name="invite_date" readonly="1"/>
               <field name="last_login" readonly="1"/>
             </group>
-            <div class="o_field_widget o_field_html" style="margin-top:16px">
-              <field name="message_ids" widget="mail_thread"/>
-            </div>
           </page>
         </notebook>
 

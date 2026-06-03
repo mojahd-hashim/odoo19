@@ -41,11 +41,11 @@
       <field name="is_active" widget="boolean_toggle"/>
       <button name="action_send_invite" type="object"
               string="إرسال دعوة" icon="fa-envelope"
-              attrs="{'invisible': [('invite_sent','=',True)]}"
+              invisible="[('invite_sent','=',True)]"
               class="btn-primary"/>
       <button name="action_send_invite" type="object"
               string="إعادة الإرسال" icon="fa-repeat"
-              attrs="{'invisible': [('invite_sent','=',False)]}"
+              invisible="[('invite_sent','=',False)]"
               class="btn-secondary"/>
     </list>
   </field>
