@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>عرض 360 درجة</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d1117; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; }
+
+  /* ===== SECTION 360 ===== */
+  .section.dark { background: #111827; padding: 4rem 2rem; width: 100%; }
+  .split.rev { display: flex; flex-direction: row-reverse; align-items: center; gap: 3rem; max-width: 1200px; margin: 0 auto; }
+  .visual { flex: 1; }
+  .fadeUp { flex: 1; }
+  .kicker { color: #237292; font-size: 13px; font-weight: 600; letter-spacing: 2px; margin-bottom: 8px; }
+  .title { color: #f0f4f8; font-size: 28px; font-weight: 600; margin-bottom: 12px; line-height: 1.4; }
+  .subtitle { color: #9ca3af; font-size: 15px; line-height: 1.8; margin-bottom: 24px; }
+  .icons { display: flex; gap: 12px; flex-wrap: wrap; }
+  .mini { display: flex; align-items: center; gap: 6px; background: rgba(35,114,146,0.12); border: 0.5px solid rgba(35,114,146,0.3); color: #7ec8e3; font-size: 13px; padding: 6px 12px; border-radius: 20px; }
+
+  /* ===== VIEWER 360 ===== */
+  #wrap360 {
+    position: relative;
+    width: 100%;
+    height: 420px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 0.5px solid rgba(255,255,255,0.1);
+    cursor: grab;
+    background: #0a0a0a;
+    user-select: none;
+    touch-action: none;
+  }
+  #wrap360.grabbing { cursor: grabbing; }
+
+  #strip360 {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: auto;
+    will-change: transform;
+    pointer-events: none;
+    transform-origin: left center;
+  }
+
+  #badge360 {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    z-index: 10;
+  }
+
+  #zoom-label {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(0,0,0,0.5);
+    color: rgba(255,255,255,0.8);
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    z-index: 10;
+  }
+
+  #progress-wrap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    z-index: 10;
+  }
+  #progress-bar {
+    height: 100%;
+    background: #237292;
+    width: 0%;
+    transition: width 0.1s linear;
+  }
+
+  .bar360 {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.65));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 14px;
+    direction: rtl;
+    z-index: 10;
+  }
+
+  .hint360 {
+    color: rgba(255,255,255,0.85);
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .hint360 i { font-size: 16px; }
+
+  .controls-right { display: flex; gap: 6px; align-items: center; }
+
+  .zbtn, #fs-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.18);
+    border: 0.5px solid rgba(255,255,255,0.35);
+    color: #fff;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s;
+    line-height: 1;
+  }
+  .zbtn { font-weight: 400; }
+  #fs-btn { font-size: 15px; }
+  .zbtn:hover, #fs-btn:hover { background: rgba(255,255,255,0.32); }
+  .zbtn:active, #fs-btn:active { transform: scale(0.92); }
+
+  /* Fullscreen mode */
+  #wrap360.fullscreen-active {
+    position: fixed !important;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw !important;
+    height: 100vh !important;
+    border-radius: 0 !important;
+    z-index: 9999;
+  }
+
+  @media (max-width: 768px) {
+    .split.rev { flex-direction: column; }
+    #wrap360 { height: 280px; }
+  }
+</style>
+</head>
+<body>
+
+<section class="section dark" id="view360">
+  <div class="split rev">
+
+    <!-- Viewer -->
+    <div class="visual slideRight">
+      <div id="wrap360">
+        <div id="progress-wrap"><div id="progress-bar"></div></div>
+        <img id="strip360"
+             src="https://cdn.polyhaven.com/asset_img/thumbs/large_corridor.png?format=png"
+             alt="360 corridor"
+             draggable="false">
+        <div id="badge360">360°</div>
+        <div id="zoom-label">100%</div>
+        <div class="bar360">
+          <div class="hint360">
+            <i class="ti ti-hand-move"></i>
+            <span>اسحب للتحريك</span>
+          </div>
+          <div class="controls-right">
+            <div class="zbtn" id="zm">−</div>
+            <div class="zbtn" id="zp">+</div>
+            <div id="fs-btn" title="ملء الشاشة">
+              <i class="ti ti-arrows-maximize" id="fs-icon"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Text content -->
+    <div class="fadeUp">
+      <div class="kicker">05</div>
+      <h2 class="title">عرض 360 درجة — زيارة افتراضية</h2>
+      <p class="subtitle">
+        استعراض بصري للموقع من الداخل، يساعد الإدارة على رؤية حالة المسجد عن بعد
+        وتكوين صورة واضحة قبل اتخاذ القرار.
+      </p>
+      <div class="icons">
+        <div class="mini"><i>🖼️</i> جولة شاملة</div>
+        <div class="mini"><i>↔</i> تحكم بالحركة</div>
+        <div class="mini"><i>👁️</i> رؤية أوضح</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+(function () {
+  const wrap   = document.getElementById('wrap360');
+  const img    = document.getElementById('strip360');
+  const bar    = document.getElementById('progress-bar');
+  const zLabel = document.getElementById('zoom-label');
+  const zpBtn  = document.getElementById('zp');
+  const zmBtn  = document.getElementById('zm');
+  const fsBtn  = document.getElementById('fs-btn');
+  const fsIcon = document.getElementById('fs-icon');
+
+  let zoom     = 1.0;
+  const Z_MIN  = 0.7, Z_MAX = 3.0, Z_STEP = 0.15;
+  let offsetX  = 0;
+  let dragging = false;
+  let lastX    = 0;
+  let velocity = 0;
+  let rafId    = null;
+  let autoPlay = true;
+
+  /* ---- helpers ---- */
+  function naturalW() { return img.naturalWidth  || 2400; }
+  function naturalH() { return img.naturalHeight || 600;  }
+  function stripW()   { return wrap.offsetHeight * (naturalW() / naturalH()); }
+
+  function clampOffset(ox) {
+    const sw = stripW() * zoom;
+    const ww = wrap.offsetWidth;
+    if (sw <= ww) return (ww - sw) / 2;
+    return Math.min(0, Math.max(ww - sw, ox));
+  }
+
+  function updateProgress() {
+    const sw = stripW() * zoom;
+    const ww = wrap.offsetWidth;
+    if (sw <= ww) { bar.style.width = '100%'; return; }
+    bar.style.width = (Math.abs(offsetX) / (sw - ww) * 100).toFixed(1) + '%';
+  }
+
+  function applyTransform() {
+    img.style.transform = 'translateX(' + offsetX + 'px) scaleX(' + zoom + ')';
+    zLabel.textContent  = Math.round(zoom * 100) + '%';
+    updateProgress();
+  }
+
+  function setZoom(newZ, pivotX) {
+    const sw0 = stripW() * zoom;
+    if (pivotX === undefined) pivotX = wrap.offsetWidth / 2;
+    const ratio = (pivotX - offsetX) / sw0;
+    zoom    = Math.max(Z_MIN, Math.min(Z_MAX, newZ));
+    offsetX = clampOffset(pivotX - ratio * stripW() * zoom);
+    applyTransform();
+  }
+
+  /* ---- zoom buttons ---- */
+  zpBtn.addEventListener('click', () => { autoPlay = false; setZoom(zoom + Z_STEP); });
+  zmBtn.addEventListener('click', () => { autoPlay = false; setZoom(zoom - Z_STEP); });
+
+  /* ---- mouse wheel zoom ---- */
+  wrap.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    autoPlay = false;
+    const rect   = wrap.getBoundingClientRect();
+    const pivotX = e.clientX - rect.left;
+    setZoom(zoom + (e.deltaY > 0 ? -Z_STEP : Z_STEP), pivotX);
+  }, { passive: false });
+
+  /* ---- mouse drag ---- */
+  wrap.addEventListener('mousedown', function (e) {
+    e.preventDefault();
+    dragging = true;
+    lastX    = e.clientX;
+    velocity = 0;
+    autoPlay = false;
+    wrap.classList.add('grabbing');
+    cancelAnimationFrame(rafId);
+  });
+  window.addEventListener('mousemove', function (e) {
+    if (!dragging) return;
+    const dx = e.clientX - lastX;
+    velocity = dx;
+    lastX    = e.clientX;
+    offsetX  = clampOffset(offsetX + dx);
+    applyTransform();
+  });
+  window.addEventListener('mouseup', endDrag);
+
+  /* ---- touch drag ---- */
+  wrap.addEventListener('touchstart', function (e) {
+    if (e.touches.length === 1) {
+      dragging = true;
+      lastX    = e.touches[0].clientX;
+      velocity = 0;
+      autoPlay = false;
+      wrap.classList.add('grabbing');
+      cancelAnimationFrame(rafId);
+    }
+  }, { passive: true });
+  wrap.addEventListener('touchmove', function (e) {
+    if (!dragging || e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - lastX;
+    velocity = dx;
+    lastX    = e.touches[0].clientX;
+    offsetX  = clampOffset(offsetX + dx);
+    applyTransform();
+  }, { passive: true });
+  wrap.addEventListener('touchend', endDrag);
+
+  /* ---- pinch zoom ---- */
+  let pinchDist0 = null, pinchZoom0 = null;
+  wrap.addEventListener('touchstart', function (e) {
+    if (e.touches.length === 2) {
+      pinchDist0 = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      pinchZoom0 = zoom;
+      dragging   = false;
+    }
+  }, { passive: true });
+  wrap.addEventListener('touchmove', function (e) {
+    if (e.touches.length === 2 && pinchDist0) {
+      const d = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      setZoom(pinchZoom0 * (d / pinchDist0));
+    }
+  }, { passive: true });
+  wrap.addEventListener('touchend', function () { pinchDist0 = null; });
+
+  function endDrag() {
+    if (!dragging) return;
+    dragging = false;
+    wrap.classList.remove('grabbing');
+    inertia();
+  }
+
+  function inertia() {
+    velocity *= 0.88;
+    if (Math.abs(velocity) < 0.4) return;
+    offsetX = clampOffset(offsetX + velocity);
+    applyTransform();
+    rafId = requestAnimationFrame(inertia);
+  }
+
+  /* ---- fullscreen ---- */
+  fsBtn.addEventListener('click', function () {
+    wrap.classList.toggle('fullscreen-active');
+    if (wrap.classList.contains('fullscreen-active')) {
+      fsIcon.className      = 'ti ti-arrows-minimize';
+      document.body.style.overflow = 'hidden';
+    } else {
+      fsIcon.className      = 'ti ti-arrows-maximize';
+      document.body.style.overflow = '';
+    }
+    setTimeout(function () { offsetX = clampOffset(offsetX); applyTransform(); }, 50);
+  });
+
+  /* ---- auto scroll ---- */
+  function autoScroll() {
+    if (!dragging && autoPlay) {
+      offsetX = clampOffset(offsetX - 0.4);
+      const sw = stripW() * zoom;
+      const ww = wrap.offsetWidth;
+      if (sw > ww && offsetX <= ww - sw + 1) offsetX = 0;
+      applyTransform();
+    }
+    requestAnimationFrame(autoScroll);
+  }
+
+  /* ---- init ---- */
+  img.onload = function () { offsetX = 0; applyTransform(); };
+  if (img.complete)          { offsetX = 0; applyTransform(); }
+  requestAnimationFrame(autoScroll);
+})();
+</script>
+
+</body>
+</html>

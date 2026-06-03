@@ -23,9 +23,8 @@ class WaqfAttendanceController(http.Controller):
         if not all([mosque_id, lat, lng]):
             return api_response(error='mosque_id, lat, lng are required', status=400)
 
-        # تحديد engineer_id و allowed_mosques
-        engineer_id, allowed_mosques = _resolve_user(employee, portal_user)
-        if not engineer_id:
+        user_type, user_id, allowed_mosques = _resolve_user(employee, portal_user)
+        if not user_id:
             return api_response(error='Unauthorized', status=401)
 
         # Idempotency check
@@ -52,11 +51,13 @@ class WaqfAttendanceController(http.Controller):
             return api_response(error='Not assigned to this mosque', status=403)
 
         # Already checked in?
-        active = request.env['mosque.attendance'].sudo().search([
-            ('engineer_id', '=', engineer_id),
-            ('mosque_id',   '=', mosque.id),
-            ('check_out',   '=', False),
-        ], limit=1)
+        domain_active = [('mosque_id', '=', mosque.id), ('check_out', '=', False)]
+        if user_type == 'employee':
+            domain_active.append(('engineer_id', '=', user_id))
+        else:
+            domain_active.append(('portal_user_id', '=', user_id))
+
+        active = request.env['mosque.attendance'].sudo().search(domain_active, limit=1)
         if active:
             return api_response(
                 error='Already checked in. Please checkout first.', status=409)
@@ -70,10 +71,9 @@ class WaqfAttendanceController(http.Controller):
         within_fence = distance <= radius
         qr_ok        = bool(qr_token and mosque.qr_code == qr_token)
 
-        now        = datetime.now()
-        attendance = request.env['mosque.attendance'].sudo().create({
+        now  = datetime.now()
+        vals = {
             'mosque_id':     mosque.id,
-            'engineer_id':   engineer_id,
             'visit_type':    'field',
             'check_in':      now,
             'gps_latitude':  lat,
@@ -82,7 +82,13 @@ class WaqfAttendanceController(http.Controller):
             'qr_validated':  qr_ok,
             'distance_m':    round(distance, 1),
             'mobile_token':  idem_key or False,
-        })
+        }
+        if user_type == 'employee':
+            vals['engineer_id'] = user_id
+        else:
+            vals['portal_user_id'] = user_id
+
+        attendance = request.env['mosque.attendance'].sudo().create(vals)
 
         return api_response(data={
             'attendance_id':   attendance.id,
@@ -104,23 +110,26 @@ class WaqfAttendanceController(http.Controller):
         portal_user    = kwargs.get('portal_user')
         body           = get_json_body()
         attendance_id  = body.get('attendance_id')
-        lat            = body.get('lat')
-        lng            = body.get('lng')
         auto_triggered = body.get('auto_triggered', False)
 
         if not attendance_id:
             return api_response(error='attendance_id is required', status=400)
 
-        engineer_id, _ = _resolve_user(employee, portal_user)
-        if not engineer_id:
+        user_type, user_id, _ = _resolve_user(employee, portal_user)
+        if not user_id:
             return api_response(error='Unauthorized', status=401)
 
         attendance = request.env['mosque.attendance'].sudo().browse(int(attendance_id))
         if not attendance.exists():
             return api_response(error='Attendance record not found', status=404)
 
-        if attendance.engineer_id.id != engineer_id:
-            return api_response(error='Not your attendance record', status=403)
+        # تحقق من الملكية
+        if user_type == 'employee':
+            if attendance.engineer_id.id != user_id:
+                return api_response(error='Not your attendance record', status=403)
+        else:
+            if attendance.portal_user_id.id != user_id:
+                return api_response(error='Not your attendance record', status=403)
 
         if attendance.check_out:
             return api_response(error='Already checked out', status=409)
@@ -152,15 +161,18 @@ class WaqfAttendanceController(http.Controller):
     @require_token
     def active_checkin(self, employee=None, **kwargs):
         portal_user = kwargs.get('portal_user')
-        engineer_id, _ = _resolve_user(employee, portal_user)
+        user_type, user_id, _ = _resolve_user(employee, portal_user)
 
-        if not engineer_id:
+        if not user_id:
             return api_response(data={'active': False})
 
-        active = request.env['mosque.attendance'].sudo().search([
-            ('engineer_id', '=', engineer_id),
-            ('check_out',   '=', False),
-        ], order='check_in desc', limit=1)
+        if user_type == 'employee':
+            domain = [('engineer_id', '=', user_id), ('check_out', '=', False)]
+        else:
+            domain = [('portal_user_id', '=', user_id), ('check_out', '=', False)]
+
+        active = request.env['mosque.attendance'].sudo().search(
+            domain, order='check_in desc', limit=1)
 
         if not active:
             return api_response(data={'active': False})
@@ -190,15 +202,20 @@ class WaqfAttendanceController(http.Controller):
     @require_token
     def history(self, employee=None, **kwargs):
         portal_user = kwargs.get('portal_user')
-        engineer_id, _ = _resolve_user(employee, portal_user)
-        if not engineer_id:
+        user_type, user_id, _ = _resolve_user(employee, portal_user)
+
+        if not user_id:
             return api_response(error='Unauthorized', status=401)
 
         mosque_id = request.httprequest.args.get('mosque_id')
         days      = int(request.httprequest.args.get('days', 30))
         since     = datetime.now() - timedelta(days=days)
 
-        domain = [('engineer_id', '=', engineer_id), ('check_in', '>=', since)]
+        if user_type == 'employee':
+            domain = [('engineer_id', '=', user_id), ('check_in', '>=', since)]
+        else:
+            domain = [('portal_user_id', '=', user_id), ('check_in', '>=', since)]
+
         if mosque_id:
             domain.append(('mosque_id', '=', int(mosque_id)))
 
@@ -207,16 +224,16 @@ class WaqfAttendanceController(http.Controller):
 
         return api_response(data={
             'visits': [{
-                'id':           v.id,
-                'mosque_id':    v.mosque_id.id,
-                'mosque_name':  v.mosque_id.name,
-                'mosque_code':  v.mosque_id.code,
-                'check_in':     str(v.check_in),
-                'check_out':    str(v.check_out) if v.check_out else None,
-                'duration':     v.duration,
+                'id':             v.id,
+                'mosque_id':      v.mosque_id.id,
+                'mosque_name':    v.mosque_id.name,
+                'mosque_code':    v.mosque_id.code,
+                'check_in':       str(v.check_in),
+                'check_out':      str(v.check_out) if v.check_out else None,
+                'duration':       v.duration,
                 'duration_label': _format_duration(v.duration),
-                'is_validated': v.is_validated,
-                'distance_m':   v.distance_m,
+                'is_validated':   v.is_validated,
+                'distance_m':     v.distance_m,
             } for v in visits],
             'total': len(visits),
             'days':  days,
@@ -227,21 +244,14 @@ class WaqfAttendanceController(http.Controller):
 
 def _resolve_user(employee, portal_user):
     """
-    يرجع (engineer_id, allowed_mosques) بغض النظر عن نوع المستخدم.
+    يرجع (user_type, user_id, allowed_mosques)
+    user_type: 'employee' أو 'portal'
     """
     if employee:
-        return employee.id, employee.all_mosque_ids
+        return ('employee', employee.id, employee.all_mosque_ids)
     if portal_user:
-        # portal user يحتاج hr.employee مرتبط
-        emp = portal_user.user_id.employee_ids[:1] if portal_user.user_id else None
-        if emp:
-            return emp.id, portal_user.effective_mosque_ids
-        # إذا لم يكن هناك employee — ابحث بالـ user_id
-        emp = request.env['hr.employee'].sudo().search(
-            [('user_id', '=', portal_user.user_id.id)], limit=1)
-        if emp:
-            return emp.id, portal_user.effective_mosque_ids
-    return None, []
+        return ('portal', portal_user.id, portal_user.effective_mosque_ids)
+    return (None, None, [])
 
 
 def _format_duration(hours):

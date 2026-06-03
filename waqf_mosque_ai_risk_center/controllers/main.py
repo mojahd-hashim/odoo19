@@ -31,7 +31,7 @@ class WaqfAiRiskController(http.Controller):
     @http.route('/waqf_ai/alerts/current', type='json', auth='user', methods=['POST'], csrf=False)
     def current_alerts(self, **kwargs):
         phase = self._current_phase()
-        domain = [('active', '=', True)]
+        domain = []
         if phase:
             domain.append(('phase_id', '=', phase.id))
         alerts = request.env['waqf.ai.alert'].search(domain, order='priority_score desc, create_date desc', limit=int(kwargs.get('limit', 50)))

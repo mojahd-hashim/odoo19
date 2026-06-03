@@ -75,8 +75,18 @@ class MosqueAttendance(models.Model):
 
     mosque_id   = fields.Many2one('mosque.mosque', string='Mosque',
                                   required=True, index=True)
-    engineer_id = fields.Many2one('hr.employee', string='Engineer',
-                                  required=True)
+    # في MosqueAttendance model
+    portal_user_id = fields.Many2one(
+        'waqf.portal.user',
+        string='مستخدم البوابة',
+    )
+
+    # عدّل engineer_id ليكون غير مطلوب
+    engineer_id = fields.Many2one(
+        'hr.employee',
+        string='Engineer',
+        required=False,  # ← غيّر من True إلى False
+    )
     visit_type  = fields.Selection([
         ('field',        'Field Visit'),
         ('pre_closure',  'Pre-Closure Inspection'),
@@ -110,22 +120,12 @@ class MosqueAttendance(models.Model):
     # API token for mobile app
     mobile_token = fields.Char(string='Mobile Session Token', copy=False)
 
-    @api.depends('mosque_id', 'engineer_id', 'visit_type', 'check_in')
+    @api.depends('mosque_id', 'engineer_id', 'portal_user_id', 'visit_type', 'check_in')
     def _compute_name(self):
         for rec in self:
-            visit_label = dict(
-                rec._fields['visit_type']._description_selection(rec.env)
-            ).get(rec.visit_type, '')
-
-            mosque = rec.mosque_id.name or ''
-            engineer = rec.engineer_id.name or ''
-
-            date_str = (
-                rec.check_in.strftime('%Y-%m-%d %H:%M')
-                if rec.check_in else ''
-            )
-
-            rec.name = f'{mosque} - {engineer} - {visit_label} - {date_str}'
+            person = rec.engineer_id.name or rec.portal_user_id.name or ''
+            date_str = rec.check_in.strftime('%Y-%m-%d %H:%M') if rec.check_in else ''
+            rec.name = f'{rec.mosque_id.name or ""} - {person} - {date_str}'
 
     @api.depends('check_in', 'check_out')
     def _compute_duration(self):
