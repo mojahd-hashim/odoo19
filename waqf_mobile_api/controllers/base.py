@@ -26,22 +26,20 @@ def api_response(data=None, error=None, status=200):
 
 
 def require_token(fn):
-    """Decorator: validate Bearer token — يدعم waqf.api.token و waqf.portal.token"""
     @functools.wraps(fn)
     def wrapper(*args, **kwargs):
         auth_header = request.httprequest.headers.get('Authorization', '')
         if not auth_header.startswith('Bearer '):
-            return api_response(
-                error='Missing or invalid Authorization header', status=401)
+            return api_response(error='Missing or invalid Authorization header', status=401)
         raw_token = auth_header[7:]
 
-        # ① ابحث في توكنات الموظفين الداخليين
+        # ① توكن موظف داخلي
         employee = request.env['waqf.api.token'].sudo().authenticate(raw_token)
         if employee:
             kwargs['employee'] = employee
             return fn(*args, **kwargs)
 
-        # ② ابحث في توكنات مستخدمي البوابة
+        # ② توكن مستخدم بوابة
         import hashlib
         token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
         portal_token = request.env['waqf.portal.token'].sudo().search(
@@ -49,12 +47,6 @@ def require_token(fn):
              ('is_active',  '=', True)], limit=1)
 
         if portal_token and portal_token.portal_user_id.is_active:
-            # تحديث last_used
-            portal_token.sudo().write({
-                'last_used': http.request.env['ir.fields'].datetime.now()
-                if hasattr(http.request.env, 'ir.fields')
-                else __import__('datetime').datetime.now()
-            })
             kwargs['employee']    = None
             kwargs['portal_user'] = portal_token.portal_user_id
             return fn(*args, **kwargs)

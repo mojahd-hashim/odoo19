@@ -10,61 +10,69 @@ class WaqfMosqueController(http.Controller):
                 type='http', auth='none', methods=['GET'], csrf=False)
     @require_token
     def list_mosques(self, employee=None, **kwargs):
-        """
-        List all mosques assigned to this consultant.
-        Response includes geofence config + today's visit status.
-        """
         from datetime import date
         today = date.today()
 
-        mosques = employee.all_mosque_ids.sorted('code')
+        # ── تحديد المساجد حسب نوع المستخدم ──────────────────
+        if employee:
+            # موظف داخلي
+            mosques = employee.all_mosque_ids.sorted('code')
+            engineer_id = employee.id
+        else:
+            # مستخدم بوابة خارجي
+            portal_user = kwargs.get('portal_user')
+            if not portal_user:
+                return api_response(error='Unauthorized', status=401)
+            mosques = portal_user.effective_mosque_ids.sorted('code')
+            engineer_id = None
+
         Attendance = request.env['mosque.attendance'].sudo()
-
         result = []
-        for m in mosques:
-            # Today's visit
-            today_visits = Attendance.search([
-                ('mosque_id',   '=', m.id),
-                ('engineer_id', '=', employee.id),
-                ('check_in',    '>=', str(today) + ' 00:00:00'),
-            ], order='check_in desc', limit=1)
 
+        for m in mosques:
             visit_status = 'not_visited'
             active_checkin_id = None
-            if today_visits:
-                v = today_visits[0]
-                if v.check_out:
-                    visit_status = 'completed'
-                else:
-                    visit_status = 'checked_in'
-                    active_checkin_id = v.id
 
-            # Pending work logs count
+            if engineer_id:
+                today_visits = Attendance.search([
+                    ('mosque_id', '=', m.id),
+                    ('engineer_id', '=', engineer_id),
+                    ('check_in', '>=', str(today) + ' 00:00:00'),
+                ], order='check_in desc', limit=1)
+
+                if today_visits:
+                    v = today_visits[0]
+                    if v.check_out:
+                        visit_status = 'completed'
+                    else:
+                        visit_status = 'checked_in'
+                        active_checkin_id = v.id
+
             pending_logs = request.env['contractor.work.log'].sudo().search_count([
                 ('mosque_id', '=', m.id),
-                ('state',     '=', 'submitted'),
+                ('state', '=', 'submitted'),
             ])
 
             result.append({
-                'id':               m.id,
-                'code':             m.code,
-                'name':             m.name,
-                'city':             m.city,
-                'district':         m.district or '',
-                'state':            m.state,
-                'state_label':      _state_label(m.state),
-                'lat':              m.latitude,
-                'lng':              m.longitude,
-                'geofence_radius':  m.geofence_radius or 100,
-                'qr_code':          m.qr_code or '',
-                'planned_end':      str(m.planned_end) if m.planned_end else '',
-                'days_delay':       m.days_delay,
-                'financial_pct':    round(m.financial_progress, 1),
-                'overall_kpi':      round(m.overall_kpi, 1),
-                'visit_today':      visit_status,
+                'id': m.id,
+                'code': m.code,
+                'name': m.name,
+                'city': m.city,
+                'district': m.district or '',
+                'state': m.state,
+                'state_label': _state_label(m.state),
+                'lat': m.latitude,
+                'lng': m.longitude,
+                'geofence_radius': m.geofence_radius or 100,
+                'qr_code': m.qr_code or '',
+                'planned_end': str(m.planned_end) if m.planned_end else '',
+                'days_delay': m.days_delay,
+                'financial_pct': round(m.financial_progress, 1),
+                'overall_kpi': round(m.overall_kpi, 1),
+                'visit_today': visit_status,
                 'active_checkin_id': active_checkin_id,
                 'pending_worklogs': pending_logs,
-                'package':          m.package_id.name if m.package_id else '',
+                'package': m.package_id.name if m.package_id else '',
             })
 
         return api_response(data={'mosques': result, 'total': len(result)})
