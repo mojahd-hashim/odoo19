@@ -1,5 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+  <!-- Filtered: Consultants only -->
+<record id="action_portal_consultants" model="ir.actions.act_window">
+  <field name="name">المستشارون المقيمون</field>
+  <field name="res_model">waqf.portal.user</field>
+  <field name="view_mode">kanban,list,form</field>
+  <field name="domain">[('role','in',['resident_engineer','project_manager'])]</field>
+  <field name="context">{'default_role': 'resident_engineer'}</field>
+</record>
+
+<!-- Filtered: Contractors only -->
+<record id="action_portal_contractors" model="ir.actions.act_window">
+  <field name="name">المقاولون</field>
+  <field name="res_model">waqf.portal.user</field>
+  <field name="view_mode">kanban,list,form</field>
+  <field name="domain">[('role','in',
+    ['site_supervisor','contractor_admin','contractor_engineer'])]</field>
+  <field name="context">{'default_role': 'contractor_engineer'}</field>
+</record>
+
 
 <!-- ══════════════════════════════════════════════════════
      LIST VIEW
@@ -168,21 +187,3 @@
 
 </odoo>
 
-<!-- Filtered: Consultants only -->
-<record id="action_portal_consultants" model="ir.actions.act_window">
-  <field name="name">المستشارون المقيمون</field>
-  <field name="res_model">waqf.portal.user</field>
-  <field name="view_mode">kanban,list,form</field>
-  <field name="domain">[('role','in',['resident_engineer','project_manager'])]</field>
-  <field name="context">{'default_role': 'resident_engineer'}</field>
-</record>
-
-<!-- Filtered: Contractors only -->
-<record id="action_portal_contractors" model="ir.actions.act_window">
-  <field name="name">المقاولون</field>
-  <field name="res_model">waqf.portal.user</field>
-  <field name="view_mode">kanban,list,form</field>
-  <field name="domain">[('role','in',
-    ['site_supervisor','contractor_admin','contractor_engineer'])]</field>
-  <field name="context">{'default_role': 'contractor_engineer'}</field>
-</record>
