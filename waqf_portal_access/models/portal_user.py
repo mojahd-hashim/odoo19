@@ -153,7 +153,7 @@ class WaqfPortalUser(models.Model):
             'login':    self.email,
             'email':    self.email,
             'password': password,
-            'groups_id': [(6, 0, [group_portal.id])],
+            'groups_ids': [(6, 0, [group_portal.id])],
             'active':   self.is_active,
         })
         self.sudo().write({
