@@ -161,6 +161,12 @@ class WaqfAttendanceController(http.Controller):
     @require_token
     def active_checkin(self, employee=None, **kwargs):
         portal_user = kwargs.get('portal_user')
+        import logging
+        _logger = logging.getLogger(__name__)
+        _logger.info('ACTIVE_DEBUG employee=%s portal_user=%s', employee, portal_user)
+        user_type, user_id, _ = _resolve_user(employee, portal_user)
+        _logger.info('ACTIVE_DEBUG user_type=%s user_id=%s', user_type, user_id)
+        portal_user = kwargs.get('portal_user')
         user_type, user_id, _ = _resolve_user(employee, portal_user)
 
         if not user_id:
