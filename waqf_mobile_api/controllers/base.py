@@ -29,6 +29,10 @@ def require_token(fn):
     @functools.wraps(fn)
     def wrapper(*args, **kwargs):
         auth_header = request.httprequest.headers.get('Authorization', '')
+        import logging
+        _logger = logging.getLogger(__name__)
+        _logger.info('TOKEN PREFIX: %s', auth_header[:30] if auth_header else 'NONE')
+
         if not auth_header.startswith('Bearer '):
             return api_response(
                 error='Missing or invalid Authorization header', status=401)
