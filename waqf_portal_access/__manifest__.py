@@ -12,8 +12,9 @@
     'author':      'Kawaqf IT',
     'depends':     ['waqf_mosque_rehab', 'waqf_contractor_portal', 'mail', 'portal'],
     'data': [
-        'security/ir.model.access.csv',
+
         'security/groups.xml',
+        'security/ir.model.access.csv',
         'data/mail_templates.xml',
         'views/portal_user_views.xml',
         'views/portal_user_form.xml',
