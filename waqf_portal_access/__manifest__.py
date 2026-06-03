@@ -10,7 +10,7 @@
         - تفعيل وتعطيل فوري
     ''',
     'author':      'Kawaqf IT',
-    'depends':     ['mosque_management', 'waqf_contractor_portal', 'mail', 'portal'],
+    'depends':     ['waqf_mosque_rehab', 'waqf_contractor_portal', 'mail', 'portal'],
     'data': [
         'security/ir.model.access.csv',
         'security/groups.xml',
