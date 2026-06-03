@@ -68,7 +68,7 @@
       <field name="mosque_count"/>
       <field name="last_login"/>
       <templates>
-        <t t-name="kanban-box">
+        <t t-name="card">
           <div t-attf-class="oe_kanban_card oe_kanban_global_click
             #{record.is_active.raw_value ? '' : 'o_kanban_record_muted'}">
 
