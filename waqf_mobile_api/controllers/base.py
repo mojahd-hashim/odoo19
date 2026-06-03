@@ -30,7 +30,8 @@ def require_token(fn):
     def wrapper(*args, **kwargs):
         auth_header = request.httprequest.headers.get('Authorization', '')
         if not auth_header.startswith('Bearer '):
-            return api_response(error='Missing or invalid Authorization header', status=401)
+            return api_response(
+                error='Missing or invalid Authorization header', status=401)
         raw_token = auth_header[7:]
 
         # ① توكن موظف داخلي
