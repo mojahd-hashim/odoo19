@@ -37,60 +37,44 @@
   <!-- Body -->
   <div style="padding:32px 40px">
     <p style="font-size:15px;color:#1B3A52;margin:0 0 8px">
-      السلام عليكم ورحمة الله، <strong>{{ object.name }}</strong>
+      السلام عليكم ورحمة الله، <strong t-out="object.name">الاسم</strong>
     </p>
     <p style="font-size:13px;color:#4A6070;line-height:1.8">
-      تم إضافتك كـ <strong>{{ dict(object._fields['role'].selection).get(object.role) }}</strong>
-      في منظومة إدارة مشاريع تأهيل المساجد.
+      تم إضافتك في منظومة إدارة مشاريع تأهيل المساجد.
       يمكنك الآن الدخول إلى البوابة الإلكترونية باستخدام بياناتك أدناه.
     </p>
 
     <!-- Credentials Box -->
     <div style="background:#F7F9FC;border:1px solid #E0E6ED;border-radius:10px;
                 padding:20px 24px;margin:24px 0">
-      <p style="font-size:12px;font-weight:700;color:#8FA3B3;margin:0 0 12px;
-                letter-spacing:.5px">بيانات الدخول</p>
+      <p style="font-size:12px;font-weight:700;color:#8FA3B3;margin:0 0 12px">
+        بيانات الدخول
+      </p>
       <table style="width:100%;border-collapse:collapse">
         <tr>
-          <td style="padding:8px 0;font-size:13px;color:#4A6070;width:40%">البريد الإلكتروني:</td>
-          <td style="padding:8px 0;font-size:13px;font-weight:600;color:#1B3A52;
-                     font-family:monospace">{{ object.email }}</td>
+          <td style="padding:8px 0;font-size:13px;color:#4A6070;width:40%">
+            البريد الإلكتروني:
+          </td>
+          <td style="padding:8px 0;font-size:13px;font-weight:600;
+                     color:#1B3A52;font-family:monospace"
+              t-out="object.email">email</td>
         </tr>
         <tr>
-          <td style="padding:8px 0;font-size:13px;color:#4A6070">رابط البوابة:</td>
+          <td style="padding:8px 0;font-size:13px;color:#4A6070">
+            رابط البوابة:
+          </td>
           <td style="padding:8px 0">
-            <a href="{{ object.portal_url }}"
-               style="color:#237292;font-size:13px;font-weight:600">
-              {{ object.portal_url }}
-            </a>
+            <a t-att-href="object.portal_url"
+               style="color:#237292;font-size:13px;font-weight:600"
+               t-out="object.portal_url">portal_url</a>
           </td>
         </tr>
       </table>
     </div>
 
-    <!-- Mosques -->
-    % if object.mosque_count > 0:
-    <div style="background:#EEF8F3;border:1px solid #A8DFC0;border-radius:10px;
-                padding:16px 20px;margin-bottom:24px">
-      <p style="font-size:12px;font-weight:700;color:#2ECC8A;margin:0 0 8px">
-        🕌 المساجد المخصصة لك ({{ object.mosque_count }})
-      </p>
-      % for m in object.effective_mosque_ids[:5]:
-      <p style="font-size:12px;color:#1B3A52;margin:4px 0">
-        • {{ m.code }} — {{ m.name }}
-      </p>
-      % endfor
-      % if object.mosque_count > 5:
-      <p style="font-size:11px;color:#4A6070;margin:4px 0">
-        ... و {{ object.mosque_count - 5 }} مسجد آخر
-      </p>
-      % endif
-    </div>
-    % endif
-
     <!-- CTA Button -->
     <div style="text-align:center;margin:28px 0">
-      <a href="{{ object.portal_url }}"
+      <a t-att-href="object.portal_url"
          style="background:#237292;color:#fff;padding:14px 36px;
                 border-radius:10px;font-size:14px;font-weight:700;
                 text-decoration:none;display:inline-block">
@@ -112,6 +96,6 @@
     </p>
   </div>
 </div>
-    ]]></field>
+]]></field>
   </record>
 </odoo>

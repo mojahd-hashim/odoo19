@@ -100,7 +100,7 @@ class WaqfPortalUser(models.Model):
         for rec in self:
             path = '/contractor' if rec.role in (
                 'site_supervisor', 'contractor_admin',
-                'contractor_engineer') else '/portal'
+                'contractor_engineer') else '/web/login'
             rec.portal_url = base + path
 
     # ── Constraints ────────────────────────────────────────────
