@@ -57,8 +57,13 @@ class WaqfAuthController(http.Controller):
             portal_user, device,
             request.env['waqf.portal.token'].sudo()
         )
+        # commit التوكن قبل أي عملية أخرى قد تفشل
+        request.env.cr.commit()
 
-        config = request.env['res.config.settings'].sudo().get_mobile_config()
+        try:
+            config = request.env['res.config.settings'].sudo().get_mobile_config()
+        except Exception:
+            config = {}
 
         return api_response(data={
             'token':       token_raw,
