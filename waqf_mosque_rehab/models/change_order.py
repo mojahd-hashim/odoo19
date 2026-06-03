@@ -77,7 +77,7 @@ class MosqueAttendance(models.Model):
                                   required=True, index=True)
     # في MosqueAttendance model
     portal_user_id = fields.Many2one(
-        'waqf.portal.user',
+        'res.users',
         string='مستخدم البوابة',
     )
 
