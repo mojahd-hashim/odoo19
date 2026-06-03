@@ -157,7 +157,7 @@ class WaqfPortalUser(models.Model):
         # ② إضافته لمجموعة البوابة
         portal_group = self.env.ref('base.group_portal')
         portal_group.sudo().write({
-            'users': [(4, user.id)]
+            'user_ids': [(4, user.id)]
         })
         self.sudo().write({
             'user_id':    user.id,
