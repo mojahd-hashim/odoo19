@@ -10,22 +10,14 @@ class WaqfSettingsController(http.Controller):
                 type='http', auth='none', methods=['GET'], csrf=False)
     @require_token
     def get_settings(self, employee=None, **kwargs):
-        """
-        App configuration from Odoo backend.
-        Called on app startup and periodically to sync settings.
-        """
-        config = request.env['res.config.settings'].sudo().get_mobile_config()
-
-        # Add server info
+        config   = request.env['res.config.settings'].sudo().get_mobile_config()
         base_url = request.env['ir.config_parameter'].sudo().get_param(
             'web.base.url', '')
-
         config['server'] = {
             'base_url':    base_url,
             'api_version': '1.0',
             'db':          request.env.cr.dbname,
         }
-
         return api_response(data=config)
 
     # ── GET /api/waqf/settings/mosques-geofence ───────────────────
@@ -33,23 +25,23 @@ class WaqfSettingsController(http.Controller):
                 type='http', auth='none', methods=['GET'], csrf=False)
     @require_token
     def mosques_geofence(self, employee=None, **kwargs):
-        """
-        All assigned mosque geofence configs.
-        Flutter uses this to register OS-level geofence triggers.
-        """
-        mosques = employee.all_mosque_ids
+        portal_user = kwargs.get('portal_user')
+
+        if employee:
+            mosques = employee.all_mosque_ids
+        elif portal_user:
+            mosques = portal_user.effective_mosque_ids
+        else:
+            return api_response(error='Unauthorized', status=401)
 
         result = [{
-            'id':       m.id,
-            'code':     m.code,
-            'name':     m.name,
-            'lat':      m.latitude,
-            'lng':      m.longitude,
-            'radius':   m.geofence_radius or 100,
-            'qr_code':  m.qr_code or '',
+            'id':      m.id,
+            'code':    m.code,
+            'name':    m.name,
+            'lat':     m.latitude,
+            'lng':     m.longitude,
+            'radius':  m.geofence_radius or 100,
+            'qr_code': m.qr_code or '',
         } for m in mosques if m.latitude and m.longitude]
 
-        return api_response(data={
-            'geofences': result,
-            'total':     len(result),
-        })
+        return api_response(data={'geofences': result, 'total': len(result)})
