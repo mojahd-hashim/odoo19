@@ -146,15 +146,18 @@ class WaqfPortalUser(models.Model):
             self.user_id = existing
             return
         # Create portal user
-        group_portal = self.env.ref('base.group_portal')
         password = self._generate_password()
         user = self.env['res.users'].sudo().create({
             'name':     self.name,
             'login':    self.email,
             'email':    self.email,
             'password': password,
-            'groups_ids': [(6, 0, [group_portal.id])],
             'active':   self.is_active,
+        })
+        # ② إضافته لمجموعة البوابة
+        portal_group = self.env.ref('base.group_portal')
+        portal_group.sudo().write({
+            'users': [(4, user.id)]
         })
         self.sudo().write({
             'user_id':    user.id,
