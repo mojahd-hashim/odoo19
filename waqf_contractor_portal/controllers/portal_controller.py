@@ -114,7 +114,6 @@ class ContractorPortal(http.Controller):
             'supervisor': supervisor,
             'portal_user': portal_user,
             'mosque': mosque,
-            'access': access,
             'has_access': has_access,
             'tasks': tasks,
             'recent_logs': recent_logs,
