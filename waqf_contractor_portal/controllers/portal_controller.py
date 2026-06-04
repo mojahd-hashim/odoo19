@@ -126,8 +126,10 @@ class ContractorPortal(http.Controller):
         portal_user = self._get_portal_user()
         supervisor = self._get_supervisor()
 
-        if not portal_user:
+        if not portal_user and not supervisor:
             return request.redirect('/contractor')
+
+        task = request.env['project.task'].sudo().browse(task_id)
 
         # تحديد المسجد من المهمة
         mosque = task.project_id.mosque_id if task.project_id else None
