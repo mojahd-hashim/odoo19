@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+  <!-- ══ ACTION ════════════════════════════════════════════════════ -->
+<record id="action_contractor_work_order" model="ir.actions.act_window">
+  <field name="name">أوامر العمل</field>
+  <field name="res_model">contractor.work.order</field>
+  <field name="view_mode">list,form</field>
+  <field name="search_view_id" ref="view_work_order_search"/>
+</record>
+
+<record id="action_contractor_submittal" model="ir.actions.act_window">
+  <field name="name">عينات المواد</field>
+  <field name="res_model">contractor.material.submittal</field>
+  <field name="view_mode">list,form</field>
+</record>
+
 <!-- ══ FORM VIEW ═════════════════════════════════════════════════ -->
 <record id="view_work_order_form" model="ir.ui.view">
   <field name="name">contractor.work.order.form</field>
@@ -231,18 +245,6 @@
   </field>
 </record>
 
-<!-- ══ ACTION ════════════════════════════════════════════════════ -->
-<record id="action_contractor_work_order" model="ir.actions.act_window">
-  <field name="name">أوامر العمل</field>
-  <field name="res_model">contractor.work.order</field>
-  <field name="view_mode">list,form</field>
-  <field name="search_view_id" ref="view_work_order_search"/>
-</record>
 
-<record id="action_contractor_submittal" model="ir.actions.act_window">
-  <field name="name">عينات المواد</field>
-  <field name="res_model">contractor.material.submittal</field>
-  <field name="view_mode">list,form</field>
-</record>
 
 </odoo>
