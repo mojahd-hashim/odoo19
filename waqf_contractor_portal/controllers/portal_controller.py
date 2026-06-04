@@ -75,6 +75,17 @@ class ContractorPortal(http.Controller):
             'is_admin': is_admin,
         })
 
+    def _resolve_mosque(self, mosque_id):
+        """تحقق أن المستخدم يملك صلاحية على المسجد."""
+        portal_user = self._get_portal_user()
+        mosque = request.env['mosque.mosque'].sudo().browse(mosque_id)
+        if not mosque.exists():
+            return None, None
+        if portal_user:
+            if mosque not in portal_user.effective_mosque_ids:
+                return None, None
+        return mosque, portal_user
+
     @http.route('/contractor/mosque/<int:mosque_id>', type='http', auth='user', website=True)
     def mosque_home(self, mosque_id, **kwargs):
         portal_user = self._get_portal_user()
