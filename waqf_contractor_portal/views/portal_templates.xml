@@ -58,6 +58,65 @@
 
     <!-- ══ HOME ═════════════════════════════════════════════════ -->
 
+    <template id="tmpl_mosque_select" name="Contractor Mosque Select">
+        <t t-call="waqf_contractor_portal.tmpl_base">
+            <div class="cp-hero">
+                <div class="cp-hero-identity">
+                    <div class="cp-hero-icon">
+                        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                            <path d="M14 4C11.8 4 10 5.8 10 8v1H7l-3 3v12h20V12l-3-3h-3V8c0-2.2-1.8-4-4-4z"
+                                  stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="cp-hero-name">
+                            مرحباً،
+                            <t t-esc="portal_user.name"/>
+                        </div>
+                        <div class="cp-hero-location">
+                            <t t-esc="portal_user.company_id.name or ''"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cp-section" style="margin-top:16px">
+                <div class="cp-section-hdr">
+                    <div class="cp-section-title">اختر المسجد</div>
+                    <span class="cp-section-count">
+                        <t t-esc="len(mosques)"/>
+                        مسجد
+                    </span>
+                </div>
+
+                <div class="cp-task-list">
+                    <t t-foreach="mosques" t-as="mosque">
+                        <a t-attf-href="/contractor/mosque/#{mosque.id}" class="cp-task-row"
+                           style="text-decoration:none;display:flex;align-items:center">
+                            <div class="cp-task-indicator"/>
+                            <div class="cp-task-info" style="flex:1">
+                                <div class="cp-task-name" t-esc="mosque.name"/>
+                                <div class="cp-task-meta">
+                                    <t t-esc="mosque.code"/>
+                                    <t t-if="mosque.city">—
+                                        <t t-esc="mosque.city"/>
+                                    </t>
+                                </div>
+                            </div>
+                            <span t-attf-class="cp-status-badge #{mosque.state == 'active' and 'active' or 'draft'}">
+                                <span class="cp-status-dot"/>
+                                <t t-if="mosque.state == 'active'">قيد التنفيذ</t>
+                                <t t-else="">
+                                    <t t-esc="mosque.state"/>
+                                </t>
+                            </span>
+                        </a>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+
     <template id="tmpl_home" name="Contractor Home">
         <t t-call="waqf_contractor_portal.tmpl_base">
 

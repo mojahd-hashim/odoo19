@@ -8,8 +8,24 @@ import json
 
 class ContractorPortal(http.Controller):
 
+    def _get_portal_user(self):
+        """يرجع waqf.portal.user للمستخدم الحالي إذا كان مقاولاً."""
+        contractor_roles = ['site_supervisor', 'contractor_admin', 'contractor_engineer']
+        portal_user = request.env['waqf.portal.user'].sudo().search([
+            ('user_id', '=', request.env.user.id),
+            ('role', 'in', contractor_roles),
+            ('is_active', '=', True),
+        ], limit=1)
+        return portal_user or None
+
     def _get_supervisor(self):
-        """Get current logged-in supervisor partner."""
+        """Get current logged-in supervisor — يدعم النظام القديم والجديد."""
+        # ① النظام الجديد — waqf.portal.user
+        portal_user = self._get_portal_user()
+        if portal_user:
+            return portal_user.user_id.partner_id
+
+        # ② النظام القديم — contractor_supervisor
         partner = request.env.user.partner_id
         if not partner.contractor_supervisor:
             return None
@@ -23,26 +39,66 @@ class ContractorPortal(http.Controller):
         Access = request.env['contractor.boq.access'].sudo()
         return Access.check_contractor_access(mosque_id, supervisor.id)
 
-    # ── Home ──────────────────────────────────────────────────────
     @http.route('/contractor', type='http', auth='user', website=True)
     def portal_home(self, **kwargs):
+        # ── تحقق من الصلاحية ─────────────────────────────────
+        portal_user = self._get_portal_user()
         supervisor = self._get_supervisor()
-        if not supervisor:
+
+        if not portal_user and not supervisor:
             return request.redirect('/web')
 
-        mosque = supervisor.assigned_mosque_id
-        if not mosque:
+        # ── قائمة المساجد المتاحة ─────────────────────────────
+        if portal_user:
+            mosques = portal_user.effective_mosque_ids.sorted('name')
+            is_admin = portal_user.role == 'contractor_admin'
+        else:
+            # النظام القديم — مسجد واحد
+            mosque = supervisor.assigned_mosque_id
+            if mosque:
+                return request.redirect(f'/contractor/mosque/{mosque.id}')
             return request.render('waqf_contractor_portal.tmpl_no_mosque', {})
 
+        # إذا كان لديه مسجد واحد فقط — انتقل مباشرة
+        if len(mosques) == 1:
+            return request.redirect(f'/contractor/mosque/{mosques[0].id}')
+
+        return request.render('waqf_contractor_portal.tmpl_mosque_select', {
+            'portal_user': portal_user,
+            'mosques': mosques,
+            'is_admin': is_admin,
+        })
+
+    @http.route('/contractor/mosque/<int:mosque_id>', type='http', auth='user', website=True)
+    def mosque_home(self, mosque_id, **kwargs):
+        portal_user = self._get_portal_user()
+        supervisor = self._get_supervisor()
+
+        if not portal_user and not supervisor:
+            return request.redirect('/web')
+
+        mosque = request.env['mosque.mosque'].sudo().browse(mosque_id)
+        if not mosque.exists():
+            return request.redirect('/contractor')
+
+        # تحقق من الصلاحية
+        if portal_user:
+            if mosque not in portal_user.effective_mosque_ids:
+                return request.redirect('/contractor')
+            has_access = portal_user.permission_id[:1].can_submit_works
+        else:
+            has_access = self._check_mosque_access(mosque_id)
+
+        # باقي المحتوى — نفس الكود الموجود
         Access = request.env['contractor.boq.access'].sudo()
-        access = Access.search([
-            ('mosque_id', '=', mosque.id),
-            ('supervisor_id', '=', supervisor.id),
-        ], limit=1)
+        if supervisor:
+            access = Access.search([
+                ('mosque_id', '=', mosque.id),
+                ('supervisor_id', '=', supervisor.id),
+            ], limit=1)
+        else:
+            access = None
 
-        has_access = access and access.state == 'granted'
-
-        # Pending tasks (from project)
         tasks = []
         if has_access and mosque.project_id:
             tasks = request.env['project.task'].sudo().search([
@@ -50,27 +106,28 @@ class ContractorPortal(http.Controller):
                 ('parent_id', '=', False),
             ], order='date_deadline asc')
 
-        # Recent work logs
         recent_logs = request.env['contractor.work.log'].sudo().search([
-            ('mosque_id', '=', mosque.id),
-            ('supervisor_id', '=', supervisor.id),
-        ], limit=5, order='log_date desc')
+                                                                           ('mosque_id', '=', mosque.id),
+                                                                       ] + ([('supervisor_id', '=',
+                                                                              supervisor.id)] if supervisor else []),
+                                                                       limit=5, order='log_date desc')
 
-        # Rejected logs needing action — for alert banner
         rejected_logs = request.env['contractor.work.log'].sudo().search([
-            ('mosque_id',     '=', mosque.id),
-            ('supervisor_id', '=', supervisor.id),
-            ('state',         '=', 'rejected'),
-        ]) if has_access else []
+                                                                             ('mosque_id', '=', mosque.id),
+                                                                             ('state', '=', 'rejected'),
+                                                                         ] + ([('supervisor_id', '=',
+                                                                                supervisor.id)] if supervisor else []),
+                                                                         ) if has_access else []
 
         return request.render('waqf_contractor_portal.tmpl_home', {
-            'supervisor':     supervisor,
-            'mosque':         mosque,
-            'access':         access,
-            'has_access':     has_access,
-            'tasks':          tasks,
-            'recent_logs':    recent_logs,
-            'rejected_logs':  rejected_logs,
+            'supervisor': supervisor,
+            'portal_user': portal_user,
+            'mosque': mosque,
+            'access': access,
+            'has_access': has_access,
+            'tasks': tasks,
+            'recent_logs': recent_logs,
+            'rejected_logs': rejected_logs,
         })
 
     # ── Request BOQ Access ────────────────────────────────────────
