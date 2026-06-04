@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- Sequences -->
+  <record id="seq_work_order" model="ir.sequence">
+    <field name="name">أمر عمل المقاول</field>
+    <field name="code">contractor.work.order</field>
+    <field name="prefix">WO-%(year)s-</field>
+    <field name="padding">4</field>
+  </record>
+
+  <record id="seq_qualification" model="ir.sequence">
+    <field name="name">تأهيل المقاول</field>
+    <field name="code">contractor.qualification</field>
+    <field name="prefix">QUA-%(year)s-</field>
+    <field name="padding">3</field>
+  </record>
+
+  <record id="seq_submittal" model="ir.sequence">
+    <field name="name">عينة مادة</field>
+    <field name="code">contractor.material.submittal</field>
+    <field name="prefix">SUB-%(year)s-</field>
+    <field name="padding">3</field>
+  </record>
+
+  <!-- Default ABCD config -->
+  <record id="grade_a" model="ir.config_parameter">
+    <field name="key">contractor.grade_a_pct</field>
+    <field name="value">100</field>
+  </record>
+  <record id="grade_b" model="ir.config_parameter">
+    <field name="key">contractor.grade_b_pct</field>
+    <field name="value">100</field>
+  </record>
+  <record id="grade_c" model="ir.config_parameter">
+    <field name="key">contractor.grade_c_pct</field>
+    <field name="value">0</field>
+  </record>
+  <record id="grade_d" model="ir.config_parameter">
+    <field name="key">contractor.grade_d_pct</field>
+    <field name="value">0</field>
+  </record>
+</odoo>

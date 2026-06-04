@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <menuitem id="menu_contractor_root"
+            name="أعمال المقاولين"
+            sequence="85"
+            web_icon="contractor_work,static/description/icon.png"/>
+
+  <menuitem id="menu_work_orders"
+            name="أوامر العمل"
+            parent="menu_contractor_root"
+            action="action_contractor_work_order"
+            sequence="10"/>
+
+  <menuitem id="menu_qualifications"
+            name="تأهيل المقاولين"
+            parent="menu_contractor_root"
+            action="action_contractor_qualification"
+            sequence="20"/>
+
+  <menuitem id="menu_submittals"
+            name="عينات المواد"
+            parent="menu_contractor_root"
+            action="action_contractor_submittal"
+            sequence="30"/>
+</odoo>

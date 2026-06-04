@@ -1,0 +1,12 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_work_order_admin,work.order admin,model_contractor_work_order,base.group_system,1,1,1,1
+access_work_order_user,work.order user,model_contractor_work_order,base.group_user,1,1,1,0
+access_work_order_boq_admin,work.order.boq admin,model_contractor_work_order_boq,base.group_system,1,1,1,1
+access_work_order_boq_user,work.order.boq user,model_contractor_work_order_boq,base.group_user,1,1,1,0
+access_work_order_rework,work.order.rework,model_contractor_work_order_rework,base.group_user,1,1,1,0
+access_work_order_test,work.order.test,model_contractor_work_order_test,base.group_user,1,1,1,0
+access_work_order_warranty,work.order.warranty,model_contractor_work_order_warranty,base.group_user,1,1,1,0
+access_qualification_admin,qualification admin,model_contractor_qualification,base.group_system,1,1,1,1
+access_qualification_user,qualification user,model_contractor_qualification,base.group_user,1,1,1,0
+access_submittal_admin,submittal admin,model_contractor_material_submittal,base.group_system,1,1,1,1
+access_submittal_user,submittal user,model_contractor_material_submittal,base.group_user,1,1,1,0

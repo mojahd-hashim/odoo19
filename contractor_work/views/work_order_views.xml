@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<!-- ══ FORM VIEW ═════════════════════════════════════════════════ -->
+<record id="view_work_order_form" model="ir.ui.view">
+  <field name="name">contractor.work.order.form</field>
+  <field name="model">contractor.work.order</field>
+  <field name="arch" type="xml">
+    <form string="أمر عمل المقاول">
+      <header>
+        <button name="action_submit_commencement" type="object"
+                string="إرسال طلب البدء" class="btn-primary"
+                invisible="state != 'draft'"/>
+        <button name="action_approve_commencement" type="object"
+                string="اعتماد البدء ✅" class="btn-success"
+                invisible="state != 'submitted'"/>
+        <button name="action_reject_commencement" type="object"
+                string="رفض البدء" class="btn-danger"
+                invisible="state != 'submitted'"/>
+        <button name="action_submit_delivery" type="object"
+                string="إرسال التسليم" class="btn-primary"
+                invisible="state != 'approved'"/>
+        <button name="action_start_testing" type="object"
+                string="بدء الاختبارات" class="btn-secondary"
+                invisible="state not in ['graded']"/>
+        <button name="action_close" type="object"
+                string="إغلاق الأمر" class="btn-secondary"
+                invisible="state not in ['graded','testing']"/>
+        <field name="state" widget="statusbar"
+               statusbar_visible="draft,submitted,approved,delivered,graded,testing,warranty,closed"/>
+      </header>
+
+      <sheet>
+        <div class="oe_title">
+          <h1><field name="name" readonly="1"/></h1>
+        </div>
+
+        <group>
+          <group string="معلومات أساسية">
+            <field name="mosque_id"/>
+            <field name="task_id"/>
+            <field name="supervisor_id"/>
+            <field name="work_description"/>
+            <field name="date_requested"/>
+            <field name="date_planned_start"/>
+            <field name="date_planned_end"/>
+          </group>
+          <group string="التقييم والدفع"
+                 invisible="state not in ['delivered','graded','rework','testing','warranty','closed']">
+            <field name="grade"/>
+            <field name="payment_pct" widget="percentage"/>
+            <field name="graded_by" readonly="1"/>
+            <field name="grade_date" readonly="1"/>
+            <field name="rework_count" readonly="1"/>
+          </group>
+        </group>
+
+        <notebook>
+
+          <!-- ① طلب البدء -->
+          <page string="① طلب البدء" name="commencement">
+            <group>
+              <field name="qualification_id"/>
+              <field name="commencement_notes"/>
+              <field name="commencement_approved_by" readonly="1"/>
+              <field name="commencement_approval_date" readonly="1"/>
+              <field name="commencement_reject_reason"
+                     invisible="state != 'draft'"/>
+            </group>
+
+            <separator string="بنود جدول الكميات"/>
+            <field name="boq_line_ids">
+              <list editable="bottom">
+                <field name="boq_id"/>
+                <field name="description" optional="show"/>
+                <field name="item_code" optional="show"/>
+                <field name="uom" readonly="1"/>
+                <field name="contracted_qty" readonly="1"/>
+                <field name="remaining_qty" readonly="1"/>
+                <field name="qty_requested"/>
+                <field name="unit_price" readonly="1"/>
+                <field name="line_value" readonly="1"/>
+                <field name="requires_sample" readonly="1" optional="show"/>
+                <field name="requires_qualification" readonly="1" optional="show"/>
+              </list>
+            </field>
+
+            <group>
+              <field name="total_value" readonly="1"/>
+            </group>
+
+            <separator string="صور الموقع (قبل البدء)"/>
+            <field name="site_photo_ids" widget="many2many_binary"/>
+          </page>
+
+          <!-- ② التسليم -->
+          <page string="② التسليم" name="delivery"
+                invisible="state not in ['approved','delivered','graded','rework','testing','warranty','closed']">
+            <group>
+              <field name="date_delivered" readonly="1"/>
+              <field name="delivery_notes"/>
+            </group>
+            <separator string="صور إثبات التسليم"/>
+            <field name="delivery_photo_ids" widget="many2many_binary"/>
+
+            <separator string="التقييم"/>
+            <group>
+              <field name="grade"/>
+              <field name="grade_notes"/>
+            </group>
+
+            <separator string="سجل إعادة العمل"
+                       invisible="rework_count == 0"/>
+            <field name="rework_log_ids" readonly="1"
+                   invisible="rework_count == 0">
+              <list>
+                <field name="date"/>
+                <field name="grade"/>
+                <field name="notes"/>
+                <field name="resolved"/>
+                <field name="resolved_date"/>
+              </list>
+            </field>
+          </page>
+
+          <!-- ③ عينات المواد -->
+          <page string="③ عينات المواد" name="submittals">
+            <field name="submittal_ids">
+              <list>
+                <field name="name" readonly="1"/>
+                <field name="boq_id"/>
+                <field name="material_name"/>
+                <field name="manufacturer"/>
+                <field name="date_submitted"/>
+                <field name="state"/>
+              </list>
+            </field>
+            <group>
+              <button name="%(action_contractor_submittal)d" type="action"
+                      string="إضافة عينة" class="btn-secondary btn-sm"/>
+            </group>
+          </page>
+
+          <!-- ④ الاختبارات -->
+          <page string="④ الاختبارات" name="tests"
+                invisible="state not in ['testing','graded','warranty','closed']">
+            <field name="test_ids">
+              <list editable="bottom">
+                <field name="name"/>
+                <field name="test_type"/>
+                <field name="date"/>
+                <field name="result"/>
+                <field name="tested_by"/>
+                <field name="notes" optional="show"/>
+                <field name="retry_count" optional="show"/>
+              </list>
+            </field>
+            <group>
+              <field name="tests_passed" readonly="1"/>
+            </group>
+          </page>
+
+          <!-- ⑤ الضمانات -->
+          <page string="⑤ الضمانات" name="warranties">
+            <field name="warranty_ids">
+              <list editable="bottom">
+                <field name="name"/>
+                <field name="warranty_type"/>
+                <field name="date_start"/>
+                <field name="duration_months"/>
+                <field name="date_end"/>
+                <field name="status"/>
+                <field name="supplier_name" optional="show"/>
+                <field name="serial_number" optional="show"/>
+              </list>
+            </field>
+          </page>
+
+        </notebook>
+      </sheet>
+      <chatter/>
+    </form>
+  </field>
+</record>
+
+<!-- ══ LIST VIEW ═════════════════════════════════════════════════ -->
+<record id="view_work_order_list" model="ir.ui.view">
+  <field name="name">contractor.work.order.list</field>
+  <field name="model">contractor.work.order</field>
+  <field name="arch" type="xml">
+    <list string="أوامر العمل"
+          decoration-success="state in ['closed','warranty']"
+          decoration-warning="state in ['rework','submitted','delivered']"
+          decoration-danger="state == 'rejected'">
+      <field name="name"/>
+      <field name="mosque_id"/>
+      <field name="task_id" optional="show"/>
+      <field name="supervisor_id"/>
+      <field name="work_description"/>
+      <field name="date_requested"/>
+      <field name="state"/>
+      <field name="grade" optional="show"/>
+      <field name="total_value" optional="show"/>
+      <field name="payment_pct" optional="show"/>
+      <field name="rework_count" optional="show"/>
+    </list>
+  </field>
+</record>
+
+<!-- ══ SEARCH ════════════════════════════════════════════════════ -->
+<record id="view_work_order_search" model="ir.ui.view">
+  <field name="name">contractor.work.order.search</field>
+  <field name="model">contractor.work.order</field>
+  <field name="arch" type="xml">
+    <search>
+      <field name="name"/>
+      <field name="mosque_id"/>
+      <field name="supervisor_id"/>
+      <filter string="مسودة"        name="draft"     domain="[('state','=','draft')]"/>
+      <filter string="بانتظار اعتماد" name="submitted" domain="[('state','=','submitted')]"/>
+      <filter string="قيد التنفيذ"  name="approved"  domain="[('state','=','approved')]"/>
+      <filter string="إعادة عمل"    name="rework"    domain="[('state','=','rework')]"/>
+      <filter string="مغلق"         name="closed"    domain="[('state','=','closed')]"/>
+      <separator/>
+      <group expand="0" string="تجميع">
+        <filter string="المسجد"  name="by_mosque" context="{'group_by':'mosque_id'}"/>
+        <filter string="الحالة"  name="by_state"  context="{'group_by':'state'}"/>
+        <filter string="المقاول" name="by_sup"    context="{'group_by':'supervisor_id'}"/>
+      </group>
+    </search>
+  </field>
+</record>
+
+<!-- ══ ACTION ════════════════════════════════════════════════════ -->
+<record id="action_contractor_work_order" model="ir.actions.act_window">
+  <field name="name">أوامر العمل</field>
+  <field name="res_model">contractor.work.order</field>
+  <field name="view_mode">list,form</field>
+  <field name="search_view_id" ref="view_work_order_search"/>
+</record>
+
+<record id="action_contractor_submittal" model="ir.actions.act_window">
+  <field name="name">عينات المواد</field>
+  <field name="res_model">contractor.material.submittal</field>
+  <field name="view_mode">list,form</field>
+</record>
+
+</odoo>

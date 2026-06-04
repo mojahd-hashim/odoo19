@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<record id="view_qualification_form" model="ir.ui.view">
+  <field name="name">contractor.qualification.form</field>
+  <field name="model">contractor.qualification</field>
+  <field name="arch" type="xml">
+    <form string="تأهيل المقاول">
+      <header>
+        <button name="action_submit" type="object"
+                string="إرسال للمستشار" class="btn-primary"
+                invisible="state != 'draft'"/>
+        <button name="action_consultant_approve" type="object"
+                string="اعتماد المستشار ✅" class="btn-success"
+                invisible="state != 'submitted'"/>
+        <button name="action_submit_waqf" type="object"
+                string="إرسال للوقف" class="btn-primary"
+                invisible="state != 'consultant_ok'"/>
+        <button name="action_waqf_approve" type="object"
+                string="اعتماد الوقف ✅" class="btn-success"
+                invisible="state != 'submitted_waqf'"/>
+        <button name="action_reject" type="object"
+                string="رفض" class="btn-danger"
+                invisible="state in ['draft','approved','rejected']"/>
+        <field name="state" widget="statusbar"
+               statusbar_visible="draft,submitted,consultant_ok,submitted_waqf,approved"/>
+      </header>
+      <sheet>
+        <div class="oe_title">
+          <h1><field name="name" readonly="1"/></h1>
+        </div>
+        <group>
+          <group>
+            <field name="supervisor_id"/>
+            <field name="work_category_id"/>
+            <field name="scope" widget="radio"/>
+            <field name="mosque_ids" widget="many2many_tags"
+                   invisible="scope != 'specific'"
+                   required="scope == 'specific'"/>
+          </group>
+          <group>
+            <field name="date_requested"/>
+            <field name="consultant_approved_by" readonly="1"/>
+            <field name="consultant_approval_date" readonly="1"/>
+            <field name="waqf_approved_by" readonly="1"/>
+            <field name="waqf_approval_date" readonly="1"/>
+          </group>
+        </group>
+        <field name="description" placeholder="وصف الكفاءة والخبرة..."/>
+        <separator string="الوثائق والشهادات"/>
+        <field name="document_ids" widget="many2many_binary"/>
+        <field name="reject_reason" invisible="state != 'rejected'"/>
+        <field name="notes"/>
+      </sheet>
+      <chatter/>
+    </form>
+  </field>
+</record>
+
+<record id="view_qualification_list" model="ir.ui.view">
+  <field name="name">contractor.qualification.list</field>
+  <field name="model">contractor.qualification</field>
+  <field name="arch" type="xml">
+    <list decoration-success="state == 'approved'"
+          decoration-danger="state == 'rejected'">
+      <field name="name"/>
+      <field name="supervisor_id"/>
+      <field name="work_category_id"/>
+      <field name="scope"/>
+      <field name="date_requested"/>
+      <field name="state"/>
+    </list>
+  </field>
+</record>
+
+<record id="action_contractor_qualification" model="ir.actions.act_window">
+  <field name="name">تأهيل المقاولين</field>
+  <field name="res_model">contractor.qualification</field>
+  <field name="view_mode">list,form</field>
+</record>
+
+</odoo>

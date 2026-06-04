@@ -85,30 +85,50 @@ class ContractorPortal(http.Controller):
         if portal_user:
             if mosque not in portal_user.effective_mosque_ids:
                 return request.redirect('/contractor')
-            has_access = portal_user.permission_id[:1].can_submit_works
+            has_access = bool(portal_user.permission_id[:1].can_submit_works)
         else:
             has_access = self._check_mosque_access(mosque_id)
 
-        # باقي المحتوى — نفس الكود الموجود
+        # ── Work Orders (الجديدة) ─────────────────────────────
+        WO = request.env['contractor.work.order'].sudo()
+        wo_domain = [('mosque_id', '=', mosque.id)]
+        if supervisor:
+            wo_domain.append(('supervisor_id', '=', supervisor.id))
+
+        all_wo = WO.search(wo_domain, order='date_requested desc')
+        recent_work_orders = all_wo[:8]
+
+        pending_wo_count = sum(1 for w in all_wo if w.state == 'submitted')
+        active_wo_count = sum(1 for w in all_wo if w.state == 'approved')
+        delivered_wo_count = sum(1 for w in all_wo if w.state == 'delivered')
+        total_wo_count = len(all_wo)
+
+        rejected_work_orders = all_wo.filtered(lambda w: w.state == 'rework')
+
+        # ── Legacy Work Logs ──────────────────────────────────
+        log_domain = [('mosque_id', '=', mosque.id)]
+        if supervisor:
+            log_domain.append(('supervisor_id', '=', supervisor.id))
+
+        recent_logs = request.env['contractor.work.log'].sudo().search(
+            log_domain, limit=5, order='log_date desc')
+        rejected_logs = request.env['contractor.work.log'].sudo().search(
+            log_domain + [('state', '=', 'rejected')]) if has_access else []
+
+        # ── Tasks ─────────────────────────────────────────────
         tasks = []
         if mosque.project_id:
             tasks = request.env['project.task'].sudo().search([
                 ('project_id', '=', mosque.project_id.id),
                 ('parent_id', '=', False),
+                ('stage_id.fold', '=', False),
             ], order='date_deadline asc')
 
-        recent_logs = request.env['contractor.work.log'].sudo().search([
-                                                                           ('mosque_id', '=', mosque.id),
-                                                                       ] + ([('supervisor_id', '=',
-                                                                              supervisor.id)] if supervisor else []),
-                                                                       limit=5, order='log_date desc')
-
-        rejected_logs = request.env['contractor.work.log'].sudo().search([
-                                                                             ('mosque_id', '=', mosque.id),
-                                                                             ('state', '=', 'rejected'),
-                                                                         ] + ([('supervisor_id', '=',
-                                                                                supervisor.id)] if supervisor else []),
-                                                                         ) if has_access else []
+        # ── Submittals count ──────────────────────────────────
+        active_submittals = request.env['contractor.material.submittal'].sudo().search_count([
+            ('mosque_id', '=', mosque.id),
+            ('state', 'in', ['draft', 'submitted']),
+        ])
 
         return request.render('waqf_contractor_portal.tmpl_home', {
             'supervisor': supervisor,
@@ -118,6 +138,13 @@ class ContractorPortal(http.Controller):
             'tasks': tasks,
             'recent_logs': recent_logs,
             'rejected_logs': rejected_logs,
+            'recent_work_orders': recent_work_orders,
+            'rejected_work_orders': rejected_work_orders,
+            'pending_wo_count': pending_wo_count,
+            'active_wo_count': active_wo_count,
+            'delivered_wo_count': delivered_wo_count,
+            'total_wo_count': total_wo_count,
+            'active_submittals': active_submittals,
         })
 
     @http.route('/contractor/task/<int:task_id>', type='http',

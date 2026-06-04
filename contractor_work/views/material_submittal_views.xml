@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<record id="view_submittal_form" model="ir.ui.view">
+  <field name="name">contractor.material.submittal.form</field>
+  <field name="model">contractor.material.submittal</field>
+  <field name="arch" type="xml">
+    <form string="عينة مادة">
+      <header>
+        <button name="action_submit" type="object"
+                string="إرسال للمراجعة" class="btn-primary"
+                invisible="state != 'draft'"/>
+        <button name="action_approve" type="object"
+                string="اعتماد العينة ✅" class="btn-success"
+                invisible="state != 'submitted'"/>
+        <button name="action_reject" type="object"
+                string="رفض" class="btn-danger"
+                invisible="state != 'submitted'"/>
+        <field name="state" widget="statusbar"
+               statusbar_visible="draft,submitted,approved"/>
+      </header>
+      <sheet>
+        <div class="oe_title">
+          <h1><field name="name" readonly="1"/></h1>
+        </div>
+        <group>
+          <group>
+            <field name="work_order_id"/>
+            <field name="boq_id"/>
+            <field name="material_name"/>
+            <field name="manufacturer"/>
+            <field name="model_number"/>
+          </group>
+          <group>
+            <field name="date_submitted"/>
+            <field name="approved_by" readonly="1"/>
+            <field name="approval_date" readonly="1"/>
+          </group>
+        </group>
+        <field name="specifications" placeholder="المواصفات الفنية..."/>
+        <separator string="الوثائق والصور"/>
+        <field name="document_ids" widget="many2many_binary"/>
+        <field name="reject_reason" invisible="state != 'rejected'"/>
+        <field name="notes"/>
+      </sheet>
+      <chatter/>
+    </form>
+  </field>
+</record>
+
+<record id="view_submittal_list" model="ir.ui.view">
+  <field name="name">contractor.material.submittal.list</field>
+  <field name="model">contractor.material.submittal</field>
+  <field name="arch" type="xml">
+    <list decoration-success="state == 'approved'"
+          decoration-danger="state == 'rejected'">
+      <field name="name"/>
+      <field name="mosque_id"/>
+      <field name="boq_id"/>
+      <field name="material_name"/>
+      <field name="manufacturer"/>
+      <field name="date_submitted"/>
+      <field name="state"/>
+    </list>
+  </field>
+</record>
+
+</odoo>
