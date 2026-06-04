@@ -100,7 +100,7 @@ class ContractorPortal(http.Controller):
             access = None
 
         tasks = []
-        if has_access and mosque.project_id:
+        if mosque.project_id:
             tasks = request.env['project.task'].sudo().search([
                 ('project_id', '=', mosque.project_id.id),
                 ('parent_id', '=', False),
