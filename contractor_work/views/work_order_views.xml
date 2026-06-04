@@ -6,7 +6,6 @@
   <field name="name">أوامر العمل</field>
   <field name="res_model">contractor.work.order</field>
   <field name="view_mode">list,form</field>
-  <field name="search_view_id" ref="view_work_order_search"/>
 </record>
 
 <record id="action_contractor_submittal" model="ir.actions.act_window">
@@ -218,30 +217,6 @@
       <field name="payment_pct" optional="show"/>
       <field name="rework_count" optional="show"/>
     </list>
-  </field>
-</record>
-
-<!-- ══ SEARCH ════════════════════════════════════════════════════ -->
-<record id="view_work_order_search" model="ir.ui.view">
-  <field name="name">contractor.work.order.search</field>
-  <field name="model">contractor.work.order</field>
-  <field name="arch" type="xml">
-    <search>
-      <field name="name"/>
-      <field name="mosque_id"/>
-      <field name="supervisor_id"/>
-      <filter string="مسودة"        name="draft"     domain="[('state','=','draft')]"/>
-      <filter string="بانتظار اعتماد" name="submitted" domain="[('state','=','submitted')]"/>
-      <filter string="قيد التنفيذ"  name="approved"  domain="[('state','=','approved')]"/>
-      <filter string="إعادة عمل"    name="rework"    domain="[('state','=','rework')]"/>
-      <filter string="مغلق"         name="closed"    domain="[('state','=','closed')]"/>
-      <separator/>
-      <group expand="0" string="تجميع">
-        <filter string="المسجد"  name="by_mosque" context="{'group_by':'mosque_id'}"/>
-        <filter string="الحالة"  name="by_state"  context="{'group_by':'state'}"/>
-        <filter string="المقاول" name="by_sup"    context="{'group_by':'supervisor_id'}"/>
-      </group>
-    </search>
   </field>
 </record>
 
