@@ -90,15 +90,6 @@ class ContractorPortal(http.Controller):
             has_access = self._check_mosque_access(mosque_id)
 
         # باقي المحتوى — نفس الكود الموجود
-        Access = request.env['contractor.boq.access'].sudo()
-        if supervisor:
-            access = Access.search([
-                ('mosque_id', '=', mosque.id),
-                ('supervisor_id', '=', supervisor.id),
-            ], limit=1)
-        else:
-            access = None
-
         tasks = []
         if mosque.project_id:
             tasks = request.env['project.task'].sudo().search([
@@ -130,64 +121,57 @@ class ContractorPortal(http.Controller):
             'rejected_logs': rejected_logs,
         })
 
-    # ── Request BOQ Access ────────────────────────────────────────
-    @http.route('/contractor/request-access', type='http',
-                auth='user', website=True, methods=['POST'])
-    def request_access(self, **post):
-        supervisor = self._get_supervisor()
-        if not supervisor or not supervisor.assigned_mosque_id:
-            return request.redirect('/contractor')
-
-        mosque = supervisor.assigned_mosque_id
-        Access = request.env['contractor.boq.access'].sudo()
-
-        existing = Access.search([
-            ('mosque_id', '=', mosque.id),
-            ('supervisor_id', '=', supervisor.id),
-        ], limit=1)
-
-        if not existing:
-            Access.create({
-                'mosque_id':     mosque.id,
-                'supervisor_id': supervisor.id,
-                'state':         'requested',
-            })
-
-        return request.redirect('/contractor?access_requested=1')
-
-    # ── Task Detail + Work Logs ───────────────────────────────────
     @http.route('/contractor/task/<int:task_id>', type='http',
                 auth='user', website=True)
     def task_detail(self, task_id, **kwargs):
+        portal_user = self._get_portal_user()
         supervisor = self._get_supervisor()
-        if not supervisor:
-            return request.redirect('/contractor')
 
-        mosque = supervisor.assigned_mosque_id
-        if not mosque or not self._check_mosque_access(mosque.id):
+        if not portal_user and not supervisor:
             return request.redirect('/contractor')
 
         task = request.env['project.task'].sudo().browse(task_id)
-        if not task.exists() or task.project_id.mosque_id.id != mosque.id:
+        if not task.exists():
             return request.redirect('/contractor')
 
-        # BOQ items for this mosque
+        # تحديد المسجد من المهمة
+        mosque = task.project_id.mosque_id if task.project_id else None
+        if not mosque:
+            return request.redirect('/contractor')
+
+        # تحقق من الصلاحية
+        if portal_user:
+            if mosque not in portal_user.effective_mosque_ids:
+                return request.redirect('/contractor')
+            has_access = portal_user.permission_id[:1].can_submit_works
+            if not has_access:
+                return request.redirect(f'/contractor/mosque/{mosque.id}')
+        else:
+            if mosque.id != supervisor.assigned_mosque_id.id:
+                return request.redirect('/contractor')
+            if not self._check_mosque_access(mosque.id):
+                return request.redirect('/contractor')
+
+        # BOQ items
         boq_items = request.env['mosque.boq'].sudo().search([
             ('mosque_id', '=', mosque.id),
         ], order='category_id, sequence')
 
-        # Work logs for this task
-        logs = request.env['contractor.work.log'].sudo().search([
-            ('task_id', '=', task_id),
-            ('supervisor_id', '=', supervisor.id),
-        ], order='log_date desc')
+        # Work logs
+        domain_logs = [('task_id', '=', task_id)]
+        if supervisor:
+            domain_logs.append(('supervisor_id', '=', supervisor.id))
+
+        logs = request.env['contractor.work.log'].sudo().search(
+            domain_logs, order='log_date desc')
 
         return request.render('waqf_contractor_portal.tmpl_task_detail', {
             'supervisor': supervisor,
-            'mosque':     mosque,
-            'task':       task,
-            'boq_items':  boq_items,
-            'logs':       logs,
+            'portal_user': portal_user,
+            'mosque': mosque,
+            'task': task,
+            'boq_items': boq_items,
+            'logs': logs,
         })
 
     # ── Submit Work Log ───────────────────────────────────────────
