@@ -86,6 +86,16 @@ class ContractorPortal(http.Controller):
                 return None, None
         return mosque, portal_user
 
+    def _wo_domain(self, portal_user, supervisor, mosque_id=None):
+        domain = []
+        if mosque_id:
+            domain.append(('mosque_id', '=', mosque_id))
+        if portal_user:
+            domain.append(('portal_user_id', '=', portal_user.user_id.id))
+        elif supervisor:
+            domain.append(('supervisor_id', '=', supervisor.id))
+        return domain
+
     @http.route('/contractor/mosque/<int:mosque_id>', type='http', auth='user', website=True)
     def mosque_home(self, mosque_id, **kwargs):
         portal_user = self._get_portal_user()
