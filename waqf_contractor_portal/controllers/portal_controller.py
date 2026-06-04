@@ -132,25 +132,6 @@ class ContractorPortal(http.Controller):
         task = request.env['project.task'].sudo().browse(task_id)
         if not task.exists():
             return request.redirect('/contractor')
-
-        # تحديد المسجد من المهمة
-        mosque = task.project_id.mosque_id if task.project_id else None
-        if not mosque:
-            return request.redirect('/contractor')
-
-        # تحقق من الصلاحية
-        if portal_user:
-            if mosque not in portal_user.effective_mosque_ids:
-                return request.redirect('/contractor')
-            has_access = portal_user.permission_id[:1].can_submit_works
-            if not has_access:
-                return request.redirect(f'/contractor/mosque/{mosque.id}')
-        else:
-            if mosque.id != supervisor.assigned_mosque_id.id:
-                return request.redirect('/contractor')
-            if not self._check_mosque_access(mosque.id):
-                return request.redirect('/contractor')
-
         # BOQ items
         boq_items = request.env['mosque.boq'].sudo().search([
             ('mosque_id', '=', mosque.id),
