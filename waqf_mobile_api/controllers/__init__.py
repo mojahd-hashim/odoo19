@@ -4,3 +4,4 @@ from . import attendance_controller
 from . import worklog_controller
 from . import supervision_controller
 from . import settings_controller
+from . import consultant_controller
