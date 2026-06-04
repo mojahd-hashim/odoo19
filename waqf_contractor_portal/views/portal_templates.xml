@@ -1243,8 +1243,9 @@
                                                         <strong style="color:var(--primary)">
                                                             <t t-esc="'%.1f' % boq.remaining_qty"/>
                                                         </strong>
-                                                        <t t-esc="boq.uom or ''/></span>
-                      <span style=" color:var(--border2)">·
+                                                        <t t-esc="boq.uom or ''"/>
+                                                    </span>
+                                                    <span style="color:var(--border2)">·
                                                     </span>
                                                     <span>
                                                         <t t-esc="'{:,.2f}'.format(boq.unit_price)"/>
