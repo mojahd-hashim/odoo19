@@ -10,9 +10,9 @@
 
   <!-- Invite Email Template -->
   <record id="mail_template_portal_invite" model="mail.template">
-    <field name="name">دعوة مستخدم بوابة كوقف</field>
+    <field name="name">دعوة مستخدم بوابة ماذن</field>
     <field name="model_id" ref="waqf_portal_access.model_waqf_portal_user"/>
-    <field name="subject">دعوة للوصول إلى بوابة وقف الملك عبدالله</field>
+    <field name="subject">دعوة للوصول إلى  لمنصة ماذن</field>
     <field name="email_to">{{ object.email }}</field>
     <field name="email_from">{{ (user.email_formatted or user.company_id.email) }}</field>
     <field name="body_html"><![CDATA[
@@ -84,7 +84,7 @@
 
     <p style="font-size:11px;color:#8FA3B3;line-height:1.7;text-align:center">
       إذا واجهتك أي مشكلة في الدخول، تواصل مع فريق تقنية المعلومات<br/>
-      <a href="mailto:it@kawaqf.gov.sa" style="color:#237292">it@kawaqf.gov.sa</a>
+      <a href="mailto:it@kawaqf.org" style="color:#237292">it@kawaqf.org</a>
     </p>
   </div>
 
