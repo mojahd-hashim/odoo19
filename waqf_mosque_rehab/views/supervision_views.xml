@@ -55,8 +55,7 @@
                             <field name="workforce_ids">
                                 <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
-                                    <field name="type_id"
-                                           domain="[('category','=',parent.workforce_filter)]"/>
+                                    <field name="type_id" />
                                     <field name="category" readonly="1" optional="show"/>
                                     <field name="count"/>
                                 </list>
