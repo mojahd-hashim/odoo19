@@ -66,7 +66,7 @@ class WaqfSupervisionController(http.Controller):
                 within_fence = att.is_validated
 
         # engineer_id
-        engineer_id = employee.id if employee else False
+        engineer_id = request.env.user.id
 
         sup_vals = {
             'mosque_id': mosque.id,
