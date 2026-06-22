@@ -148,7 +148,7 @@ class WaqfSupervisionController(http.Controller):
             mail_create_nosubscribe=True,
             mail_notrack=True,
         ).message_post(
-            body=f'تقرير مرفوع من التطبيق بواسطة {reporter}',
+            body=f'تقرير مرفوع من التطبيق بواسطة {portal_user.name}',
             message_type='comment',
             subtype_xmlid='mail.mt_note',
             author_id=author_id,
