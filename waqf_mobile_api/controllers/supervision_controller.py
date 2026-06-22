@@ -3,6 +3,9 @@ from odoo.http import request
 from .base import api_response, require_token, get_json_body
 import base64
 from datetime import date
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class WaqfSupervisionController(http.Controller):
@@ -67,10 +70,14 @@ class WaqfSupervisionController(http.Controller):
 
         # engineer_id
         engineer_id = request.env.user.id
-        print("**************************************")
-        print(portal_user)
-        print(engineer_id)
-        print("**************************************")
+        engineer_id = request.env.user.id
+
+        _logger.info("**************************************")
+        _logger.info("portal_user = %s", portal_user)
+        _logger.info("request.env.user = %s", request.env.user)
+        _logger.info("request.env.user.id = %s", request.env.user.id)
+        _logger.info("engineer_id = %s", engineer_id)
+        _logger.info("**************************************")
 
         sup_vals = {
             'mosque_id': mosque.id,
