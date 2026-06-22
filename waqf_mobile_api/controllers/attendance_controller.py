@@ -37,7 +37,7 @@ class WaqfAttendanceController(http.Controller):
                     'is_validated':    existing.is_validated,
                     'distance_m':      existing.distance_m,
                     'within_geofence': existing.distance_m <= (
-                        existing.mosque_id.geofence_radius or 100),
+                        existing.mosque_id.geofence_radius or 150),
                     'check_in':        str(existing.check_in),
                     'duplicate':       True,
                 })
@@ -67,7 +67,7 @@ class WaqfAttendanceController(http.Controller):
         if mosque.latitude and mosque.longitude:
             distance = haversine_distance(lat, lng, mosque.latitude, mosque.longitude)
 
-        radius       = mosque.geofence_radius or 100
+        radius       = mosque.geofence_radius or 150
         within_fence = distance <= radius
         qr_ok        = bool(qr_token and mosque.qr_code == qr_token)
 
@@ -195,7 +195,7 @@ class WaqfAttendanceController(http.Controller):
             'mosque_code':     active.mosque_id.code,
             'mosque_lat':      active.mosque_id.latitude,
             'mosque_lng':      active.mosque_id.longitude,
-            'mosque_radius':   active.mosque_id.geofence_radius or 100,
+            'mosque_radius':   active.mosque_id.geofence_radius or 150,
             'check_in':        str(active.check_in),
             'elapsed_hrs':     round(elapsed, 2),
             'elapsed_label':   _format_duration(elapsed),
