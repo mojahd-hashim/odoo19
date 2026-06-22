@@ -51,6 +51,21 @@
                         <field name="itp_hold_points_approved"/>
                     </group>
                     <notebook>
+                         <page string="بيان العمالة والمعدات">
+                            <field name="workforce_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="type_id"
+                                           domain="[('category','=',parent.workforce_filter)]"/>
+                                    <field name="category" readonly="1" optional="show"/>
+                                    <field name="count"/>
+                                </list>
+                            </field>
+                            <group>
+                                <field name="manpower_count" readonly="1"/>
+                                <field name="equipment_count_total" readonly="1"/>
+                            </group>
+                        </page>
                         <page string="Activities">
                             <field name="activities_done" placeholder="Describe completed activities..."/>
                             <separator string="Planned for Next Period"/>
@@ -211,24 +226,7 @@
                     </field>
 
                     <field name="notes" placeholder="Internal notes..."/>
-                    <notebook>
-                        <page string="بيان العمالة والمعدات">
-                            <field name="workforce_ids">
-                                <list editable="bottom">
-                                    <field name="sequence" widget="handle"/>
-                                    <field name="type_id"
-                                           domain="[('category','=',parent.workforce_filter)]"/>
-                                    <field name="category" readonly="1" optional="show"/>
-                                    <field name="count"/>
-                                </list>
-                            </field>
-                            <group>
-                                <field name="manpower_count" readonly="1"/>
-                                <field name="equipment_count_total" readonly="1"/>
-                            </group>
-                        </page>
 
-                    </notebook>
 
 
                 </sheet>
