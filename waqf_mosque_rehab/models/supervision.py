@@ -13,8 +13,12 @@ class MosqueSupervision(models.Model):
                        default=lambda self: _('New'))
     mosque_id   = fields.Many2one('mosque.mosque', string='Mosque',
                                   required=True, index=True)
-    engineer_id = fields.Many2one('hr.employee', string='Supervising Engineer',
-                                  required=True)
+    engineer_id = fields.Many2one(
+        'res.users',
+        string='User',
+        required=True,
+        default=lambda self: self.env.user
+    )
     report_date = fields.Date(string='Report Date', required=True,
                               default=fields.Date.today)
     report_type = fields.Selection([
