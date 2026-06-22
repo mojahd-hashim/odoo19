@@ -67,6 +67,10 @@ class WaqfSupervisionController(http.Controller):
 
         # engineer_id
         engineer_id = request.env.user.id
+        print("**************************************")
+        print(portal_user)
+        print(engineer_id)
+        print("**************************************")
 
         sup_vals = {
             'mosque_id': mosque.id,
