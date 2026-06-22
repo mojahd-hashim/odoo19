@@ -139,8 +139,11 @@ class WaqfSupervisionController(http.Controller):
                 pass
 
         # ── Chatter ────────────────────────────────────────────────
-        reporter = employee.name if employee else (
-            portal_user.name if portal_user else 'مستخدم')
+        author_id = False
+
+        if portal_user and portal_user.user_id:
+            author_id = portal_user.user_id.partner_id.id
+
         supervision.sudo().with_context(
             mail_create_nosubscribe=True,
             mail_notrack=True,
@@ -148,6 +151,7 @@ class WaqfSupervisionController(http.Controller):
             body=f'تقرير مرفوع من التطبيق بواسطة {reporter}',
             message_type='comment',
             subtype_xmlid='mail.mt_note',
+            author_id=author_id,
         )
 
         return api_response(data={
