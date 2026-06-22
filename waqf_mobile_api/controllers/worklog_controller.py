@@ -1,4 +1,4 @@
-from odoo import http
+from odoo import http,fields,models,api
 from odoo.http import request
 from .base import api_response, require_token, get_json_body
 import base64
