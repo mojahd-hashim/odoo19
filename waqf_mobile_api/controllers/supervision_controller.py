@@ -69,8 +69,7 @@ class WaqfSupervisionController(http.Controller):
                 within_fence = att.is_validated
 
         # engineer_id
-        engineer_id = request.env.user.id
-        engineer_id = request.env.user.id
+        engineer_id = portal_user.id
 
         _logger.info("**************************************")
         _logger.info("portal_user = %s", portal_user)
