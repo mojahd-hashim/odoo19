@@ -73,6 +73,27 @@ class MosqueSupervision(models.Model):
     is_within_geofence = fields.Boolean(string='Within Geofence',
                                         compute='_compute_distance', store=True)
 
+    # ── Quality & Safety ──────────────────────────────────────────
+    workforce_ids = fields.One2many(
+        'mosque.supervision.workforce', 'supervision_id',
+        string='بيان العمالة والمعدات')
+
+    manpower_count = fields.Integer(
+        string='إجمالي العمالة',
+        compute='_compute_workforce_totals', store=True)
+    equipment_count_total = fields.Integer(
+        string='إجمالي المعدات',
+        compute='_compute_workforce_totals', store=True)
+
+    @api.depends('workforce_ids.count', 'workforce_ids.category')
+    def _compute_workforce_totals(self):
+        for rec in self:
+            lines = rec.workforce_ids
+            rec.manpower_count = sum(
+                l.count for l in lines if l.category == 'manpower')
+            rec.equipment_count_total = sum(
+                l.count for l in lines if l.category == 'equipment')
+
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
@@ -137,3 +158,32 @@ class MosqueSupervisionBOQ(models.Model):
                     rec.cumulative_qty / rec.boq_id.contracted_qty * 100)
             else:
                 rec.progress_pct = 0.0
+
+class MosqueWorkforceType(models.Model):
+    _name = 'mosque.workforce.type'
+    _description = 'نوع العمالة أو المعدة'
+    _order = 'category, sequence'
+
+    name     = fields.Char(string='الاسم', required=True)
+    category = fields.Selection([
+        ('manpower',  'عمالة'),
+        ('equipment', 'معدات'),
+    ], string='التصنيف', required=True, default='manpower')
+    sequence = fields.Integer(default=10)
+    active   = fields.Boolean(default=True)
+
+
+class MosqueSupervisionWorkforce(models.Model):
+    _name = 'mosque.supervision.workforce'
+    _description = 'بيان العمالة والمعدات'
+    _order = 'sequence'
+
+    supervision_id = fields.Many2one(
+        'mosque.supervision', required=True, ondelete='cascade')
+    type_id  = fields.Many2one(
+        'mosque.workforce.type', string='جهاز المقاول',
+        required=True)
+    category = fields.Selection(
+        related='type_id.category', readonly=True, store=True)
+    count    = fields.Integer(string='العدد', default=0)
+    sequence = fields.Integer(default=10)

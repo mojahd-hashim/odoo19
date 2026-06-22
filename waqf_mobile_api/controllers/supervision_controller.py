@@ -7,38 +7,37 @@ from datetime import date
 
 class WaqfSupervisionController(http.Controller):
 
+    # ── GET /api/waqf/supervision/workforce-types ─────────────────
+    @http.route('/api/waqf/supervision/workforce-types',
+                type='http', auth='none', methods=['GET'], csrf=False)
+    @require_token
+    def workforce_types(self, employee=None, **kwargs):
+        """قائمة أنواع العمالة والمعدات للاختيار منها في التطبيق."""
+        types = request.env['mosque.workforce.type'].sudo().search(
+            [('active', '=', True)], order='category, sequence')
+
+        manpower = []
+        equipment = []
+        for t in types:
+            item = {'id': t.id, 'name': t.name}
+            if t.category == 'manpower':
+                manpower.append(item)
+            else:
+                equipment.append(item)
+
+        return api_response(data={
+            'manpower': manpower,
+            'equipment': equipment,
+        })
+
     # ── POST /api/waqf/supervision/submit ────────────────────────
+    # ── POST /api/waqf/supervision/submit ─────────────────────────
     @http.route('/api/waqf/supervision/submit',
                 type='http', auth='none', methods=['POST'], csrf=False)
     @require_token
     def submit_report(self, employee=None, **kwargs):
-        """
-        Submit a supervision report from mobile.
-
-        Request:
-        {
-            "mosque_id": 12,
-            "attendance_id": 45,       (links report to visit)
-            "report_type": "daily",
-            "weather": "sunny",
-            "workers_on_site": 12,
-            "equipment_count": 3,
-            "activities_done": "...",
-            "issues": "...",           (optional)
-            "ncr_count": 0,
-            "safety_incidents": 0,
-            "itp_checked": 2,
-            "itp_approved": 2,
-            "photos": [                (optional — base64 images)
-                {
-                    "name": "site_photo_1.jpg",
-                    "data": "base64...",
-                    "mimetype": "image/jpeg"
-                }
-            ]
-        }
-        """
         body = get_json_body()
+        portal_user = kwargs.get('portal_user')
         mosque_id = body.get('mosque_id')
         attendance_id = body.get('attendance_id')
 
@@ -49,30 +48,34 @@ class WaqfSupervisionController(http.Controller):
         if not mosque.exists():
             return api_response(error='Mosque not found', status=404)
 
-        if mosque not in employee.all_mosque_ids:
+        # تحقق من الصلاحية
+        if employee and mosque not in employee.all_mosque_ids:
+            return api_response(error='Access denied', status=403)
+        if portal_user and mosque not in portal_user.effective_mosque_ids:
             return api_response(error='Access denied', status=403)
 
-        # Get GPS from attendance record
-        gps_lat, gps_lng, gps_valid, within_fence = 0.0, 0.0, False, False
+        # GPS من سجل الحضور
+        gps_lat = gps_lng = 0.0
+        gps_valid = within_fence = False
         if attendance_id:
-            att = request.env['mosque.attendance'].sudo().browse(
-                int(attendance_id))
-            if att.exists() and att.engineer_id.id == employee.id:
+            att = request.env['mosque.attendance'].sudo().browse(int(attendance_id))
+            if att.exists():
                 gps_lat = att.gps_latitude
                 gps_lng = att.gps_longitude
                 gps_valid = att.gps_validated
                 within_fence = att.is_validated
 
-        # Create supervision report
+        # engineer_id
+        engineer_id = employee.id if employee else False
+
         sup_vals = {
             'mosque_id': mosque.id,
-            'engineer_id': employee.id,
+            'engineer_id': engineer_id,
             'report_date': date.today(),
             'report_type': body.get('report_type', 'daily'),
             'state': 'submitted',
             'weather': body.get('weather', 'sunny'),
             'workers_on_site': int(body.get('workers_on_site', 0)),
-            'equipment_count': int(body.get('equipment_count', 0)),
             'activities_done': body.get('activities_done', ''),
             'activities_planned': body.get('activities_planned', ''),
             'issues': body.get('issues', ''),
@@ -89,7 +92,26 @@ class WaqfSupervisionController(http.Controller):
 
         supervision = request.env['mosque.supervision'].sudo().create(sup_vals)
 
-        # Attach photos
+        # ── العمالة والمعدات ───────────────────────────────────────
+        # Request format:
+        # "workforce": [
+        #   {"type_id": 1, "count": 3},
+        #   {"type_id": 5, "count": 1}
+        # ]
+        Workforce = request.env['mosque.supervision.workforce'].sudo()
+        workforce_created = 0
+        for item in body.get('workforce', []):
+            type_id = item.get('type_id')
+            count = int(item.get('count', 0))
+            if type_id and count > 0:
+                Workforce.create({
+                    'supervision_id': supervision.id,
+                    'type_id': int(type_id),
+                    'count': count,
+                })
+                workforce_created += 1
+
+        # ── الصور ─────────────────────────────────────────────────
         photos_attached = 0
         Attachment = request.env['ir.attachment'].sudo()
         for photo in body.get('photos', []):
@@ -106,13 +128,14 @@ class WaqfSupervisionController(http.Controller):
             except Exception:
                 pass
 
-        # Post chatter message
+        # ── Chatter ────────────────────────────────────────────────
+        reporter = employee.name if employee else (
+            portal_user.name if portal_user else 'مستخدم')
         supervision.sudo().with_context(
             mail_create_nosubscribe=True,
             mail_notrack=True,
         ).message_post(
-            body=f'تقرير مرفوع من التطبيق بواسطة {employee.name}',
-            author_id=employee.user_id.partner_id.id,
+            body=f'تقرير مرفوع من التطبيق بواسطة {reporter}',
             message_type='comment',
             subtype_xmlid='mail.mt_note',
         )
@@ -125,6 +148,7 @@ class WaqfSupervisionController(http.Controller):
             'report_date': str(supervision.report_date),
             'state': supervision.state,
             'photos_attached': photos_attached,
+            'workforce_added': workforce_created,
             'gps_validated': gps_valid,
         })
 

@@ -30,6 +30,7 @@
         'data/mosque_sequence.xml',
         'data/mosque_package_data.xml',
         'data/boq_template_data.xml',
+        'data/workforce_types.xml',
         'views/mosque_views.xml',
         'views/boq_views.xml',
         'views/supervision_views.xml',

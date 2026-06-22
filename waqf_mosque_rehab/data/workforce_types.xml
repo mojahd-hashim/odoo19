@@ -1,0 +1,29 @@
+<odoo noupdate="1">
+  <!-- عمالة -->
+  <record id="wf_pm"        model="mosque.workforce.type"><field name="name">مدير مشروع</field>    <field name="category">manpower</field><field name="sequence">1</field></record>
+  <record id="wf_exec_mgr"  model="mosque.workforce.type"><field name="name">مدير تنفيذ</field>    <field name="category">manpower</field><field name="sequence">2</field></record>
+  <record id="wf_civil_eng" model="mosque.workforce.type"><field name="name">مهندس مدني</field>    <field name="category">manpower</field><field name="sequence">3</field></record>
+  <record id="wf_mech_eng"  model="mosque.workforce.type"><field name="name">مهندس ميكانيكا</field><field name="category">manpower</field><field name="sequence">4</field></record>
+  <record id="wf_elec_eng"  model="mosque.workforce.type"><field name="name">مهندس كهرباء</field>  <field name="category">manpower</field><field name="sequence">5</field></record>
+  <record id="wf_surveyor"  model="mosque.workforce.type"><field name="name">مساح</field>           <field name="category">manpower</field><field name="sequence">6</field></record>
+  <record id="wf_gen_sup"   model="mosque.workforce.type"><field name="name">مراقب عام</field>     <field name="category">manpower</field><field name="sequence">7</field></record>
+  <record id="wf_admin"     model="mosque.workforce.type"><field name="name">إداري</field>          <field name="category">manpower</field><field name="sequence">8</field></record>
+  <record id="wf_civil_def" model="mosque.workforce.type"><field name="name">دفاع مدني</field>     <field name="category">manpower</field><field name="sequence">9</field></record>
+  <record id="wf_qty_eng"   model="mosque.workforce.type"><field name="name">حاسب كميات</field>    <field name="category">manpower</field><field name="sequence">10</field></record>
+  <record id="wf_carp_sup"  model="mosque.workforce.type"><field name="name">مشرف نجارين</field>   <field name="category">manpower</field><field name="sequence">11</field></record>
+  <record id="wf_carp"      model="mosque.workforce.type"><field name="name">نجارين</field>         <field name="category">manpower</field><field name="sequence">12</field></record>
+  <record id="wf_smith_sup" model="mosque.workforce.type"><field name="name">مشرف حدادين</field>   <field name="category">manpower</field><field name="sequence">13</field></record>
+  <record id="wf_smith"     model="mosque.workforce.type"><field name="name">حدادين</field>         <field name="category">manpower</field><field name="sequence">14</field></record>
+  <record id="wf_mason"     model="mosque.workforce.type"><field name="name">معلم بناء</field>      <field name="category">manpower</field><field name="sequence">15</field></record>
+  <!-- معدات -->
+  <record id="eq_concrete"  model="mosque.workforce.type"><field name="name">خلاطة خرسانة</field>  <field name="category">equipment</field><field name="sequence">1</field></record>
+  <record id="eq_pump"      model="mosque.workforce.type"><field name="name">مضخة خرسانة</field>   <field name="category">equipment</field><field name="sequence">2</field></record>
+  <record id="eq_crane"     model="mosque.workforce.type"><field name="name">رافعة</field>          <field name="category">equipment</field><field name="sequence">3</field></record>
+  <record id="eq_generator" model="mosque.workforce.type"><field name="name">مولدات كهرباء</field> <field name="category">equipment</field><field name="sequence">4</field></record>
+  <record id="eq_loader"    model="mosque.workforce.type"><field name="name">لودر</field>           <field name="category">equipment</field><field name="sequence">5</field></record>
+  <record id="eq_compressor" model="mosque.workforce.type"><field name="name">كمبروسر</field>        <field name="category">equipment</field><field name="sequence">6</field></record>
+  <record id="eq_vibrator"  model="mosque.workforce.type"><field name="name">مضخبات</field>         <field name="category">equipment</field><field name="sequence">7</field></record>
+  <record id="eq_water_tank"  model="mosque.workforce.type"><field name="name">خزان ماء متحرك</field><field name="category">equipment</field><field name="sequence">8</field></record>
+  <record id="eq_surveying" model="mosque.workforce.type"><field name="name">أجهزة مساحية</field>  <field name="category">equipment</field><field name="sequence">9</field></record>
+  <record id="eq_fork"      model="mosque.workforce.type"><field name="name">رافعة شوكية</field>   <field name="category">equipment</field><field name="sequence">10</field></record>
+</odoo>

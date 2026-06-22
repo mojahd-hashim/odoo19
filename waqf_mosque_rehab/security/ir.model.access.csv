@@ -30,3 +30,7 @@ access_mosque_attendance_admin,mosque.attendance admin,model_mosque_attendance,g
 access_mosque_attendance_manager,mosque.attendance manager,model_mosque_attendance,group_mosque_waqf_manager,1,1,0,0
 access_mosque_attendance_all,mosque.attendance all,model_mosque_attendance,group_mosque_contractor,1,1,1,0
 access_mosque_dashboard_all,mosque.dashboard all,model_mosque_dashboard,group_mosque_contractor,1,0,0,0
+access_workforce_type_admin,workforce.type admin,model_mosque_workforce_type,group_mosque_admin,1,1,1,1
+access_workforce_type_user,workforce.type user,model_mosque_workforce_type,base.group_user,1,0,0,0
+access_supervision_workforce_admin,supervision.workforce admin,model_mosque_supervision_workforce,group_mosque_admin,1,1,1,1
+access_supervision_workforce_user,supervision.workforce user,model_mosque_supervision_workforce,base.group_user,1,1,1,1
