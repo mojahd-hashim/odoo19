@@ -25,7 +25,7 @@ class ContractorWorkOrder(models.Model):
 
     task_id = fields.Many2one(
         'project.task', string='المهمة الرئيسية',
-        domain="[('project_id.mosque_id','=',mosque_id),('parent_id','=',False)]",
+        domain="[('parent_id','=',False)]",
         tracking=True)
 
     supervisor_id = fields.Many2one(
