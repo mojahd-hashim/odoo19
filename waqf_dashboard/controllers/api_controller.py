@@ -86,16 +86,16 @@ class WaqfDashboardAPI(http.Controller):
                     'low'
                 )
 
-                points.append({
-                    'mosque_id': s.mosque_id.id,
-                    'mosque_name': s.mosque_id.name,
-                    'mosque_code': s.mosque_id.code,
-                    'impact': round(impact, 1),
-                    'probability': round(probability, 1),
-                    'size': s.contract_value or s.mosque_id.contract_value,
-                    'kpi': round(s.overall_kpi or 0, 1),
-                    'risk_level': risk_level,
-                })
+                # points.append({
+                #     'mosque_id': s.mosque_id.id,
+                #     'mosque_name': s.mosque_id.name,
+                #     'mosque_code': s.mosque_id.code,
+                #     'impact': round(impact, 1),
+                #     'probability': round(probability, 1),
+                #     'size': s.contract_value or s.mosque_id.contract_value,
+                #     'kpi': round(s.overall_kpi or 0, 1),
+                #     'risk_level': risk_level,
+                # })
 
         return _json({
             'total_contract_value': total_value,
