@@ -23,15 +23,21 @@ class WaqfConsultantController(http.Controller):
         return mosque
 
     def _msg(self, record, body):
-        """message_post آمن يعمل مع auth='none'."""
-        record.sudo().with_context(
-            mail_create_nosubscribe=True,
-            mail_notrack=True,
-        ).message_post(
-            body=body,
-            message_type='comment',
-            subtype_xmlid='mail.mt_note',
-        )
+        """message_post آمن مع auth='none'."""
+        try:
+            bot = request.env.ref('base.user_root').sudo()
+            record.sudo(bot).with_context(
+                mail_create_nosubscribe=True,
+                mail_notrack=True,
+            ).message_post(
+                body=body,
+                message_type='comment',
+                subtype_xmlid='mail.mt_note',
+                author_id=bot.partner_id.id,
+            )
+        except Exception:
+            # لا نوقف العملية إذا فشل الـ chatter
+            pass
 
     # ══════════════════════════════════════════════════════
     @http.route('/api/waqf/consultant/mosque/<int:mosque_id>/pending',
