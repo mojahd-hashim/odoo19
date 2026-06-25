@@ -1902,6 +1902,7 @@
 
             <form action="/contractor/submittals/create" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <input type="hidden" name="mosque_id" t-att-value="mosque_id"/>
                 <t t-if="work_order">
                     <input type="hidden" name="work_order_id" t-att-value="work_order.id"/>
                 </t>
