@@ -260,7 +260,7 @@ class WaqfWorkLogController(http.Controller):
         return api_response(data={
             'has_stream': True,
             'stream_id': stream.id,
-            'stream_url': stream.stream_url,
+            'stream_url': stream.stream_live_url,
             'stream_name': stream.name,
             'mosque_id': stream.mosque_id.id,
             'mosque_name': stream.mosque_id.name,

@@ -412,6 +412,7 @@ class WaqfConsultantController(http.Controller):
             'model_number':  s.model_number or '',
             'specifications': s.specifications or '',
             'state':         s.state,
+            'mosque_id':        mosque_id,
             'date_submitted': str(s.date_submitted) if s.date_submitted else '',
             'work_order_id': s.work_order_id.id if s.work_order_id else None,
             'work_order_name': s.work_order_id.name if s.work_order_id else '',

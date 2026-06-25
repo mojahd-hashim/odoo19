@@ -19,8 +19,7 @@ class ContractorMaterialSubmittal(models.Model):
         ondelete='cascade')
 
     mosque_id = fields.Many2one(
-        'mosque.mosque', string='المسجد',
-        related='work_order_id.mosque_id', store=True)
+        'mosque.mosque', string='المسجد')
 
     boq_id = fields.Many2one(
         'mosque.boq', string='البند المرتبط',
