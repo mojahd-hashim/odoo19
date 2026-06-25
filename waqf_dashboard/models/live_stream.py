@@ -11,6 +11,7 @@ class WaqfLiveStream(models.Model):
     name        = fields.Char(string='Stream Title', required=True)
     mosque_id   = fields.Many2one('mosque.mosque', string='Mosque')
     stream_url  = fields.Char(string='Stream URL', required=True)
+    stream_live_url  = fields.Char(string='Stream URL')
     started_by  = fields.Many2one('hr.employee', string='Started By')
     start_time  = fields.Datetime(string='Start Time', default=fields.Datetime.now)
     end_time    = fields.Datetime(string='End Time')
