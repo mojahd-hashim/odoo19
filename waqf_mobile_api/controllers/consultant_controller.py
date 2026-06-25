@@ -447,6 +447,9 @@ class WaqfConsultantController(http.Controller):
             'boq_description': sub.boq_id.description[:80] if sub.boq_id else '',
             'work_order_name': sub.work_order_id.name if sub.work_order_id else '',
             'photos': [_photo_data(att) for att in sub.document_ids],
+            # في consultant_controller.py — أضف للـ response
+            'mosque_id': sub.mosque_id.id if sub.mosque_id else 0,
+            'mosque_name': sub.mosque_id.name if sub.mosque_id else '',
         })
 
     # ══════════════════════════════════════════════════════
