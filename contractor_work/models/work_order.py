@@ -219,15 +219,21 @@ class ContractorWorkOrder(models.Model):
             rec.message_post(body='📋 تم إرسال طلب البدء للاستشاري')
 
     def action_approve_commencement(self):
-        """الاستشاري يعتمد البدء."""
         for rec in self:
             rec.write({
                 'state': 'approved',
-                'commencement_approved_by':   self.env.user.id,
+                'commencement_approved_by': self.env.user.id,
                 'commencement_approval_date': date.today(),
             })
-            rec.message_post(
-                body=f'✅ اعتمد البدء: {self.env.user.name}')
+            # استخدم sudo مع user محدد بدل env.user الفارغ
+            rec.sudo().with_context(
+                mail_create_nosubscribe=True,
+                mail_notrack=True,
+            ).message_post(
+                body=f'✅ اعتمد البدء: {self.env.user.name if self.env.user.id else "مستشار"}',
+                message_type='comment',
+                subtype_xmlid='mail.mt_note',
+            )
 
     def action_reject_commencement(self):
         """الاستشاري يرفض طلب البدء."""
