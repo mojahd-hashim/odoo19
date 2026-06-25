@@ -921,6 +921,7 @@ class ContractorPortal(http.Controller):
         manufacturer = post.get('manufacturer', '').strip()
         model_number = post.get('model_number', '').strip()
         specs = post.get('specifications', '').strip()
+        mosque_id = int(post.get('mosque_id', 0) or 0)
 
         if not boq_id or not material_name:
             return request.redirect('/contractor/submittals/new?error=missing')
@@ -932,6 +933,8 @@ class ContractorPortal(http.Controller):
             'model_number': model_number,
             'specifications': specs,
         }
+        if mosque_id:
+            vals['mosque_id'] = mosque_id
         if wo_id:
             vals['work_order_id'] = wo_id
 
