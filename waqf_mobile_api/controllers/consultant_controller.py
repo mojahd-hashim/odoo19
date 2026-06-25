@@ -424,6 +424,31 @@ class WaqfConsultantController(http.Controller):
             'total':      len(result),
         })
 
+    @http.route('/api/waqf/consultant/submittal/<int:sub_id>',
+                type='http', auth='none', methods=['GET'], csrf=False)
+    @require_token
+    def submittal_detail(self, sub_id, employee=None, **kwargs):
+        portal_user = self._get_portal_user(kwargs)
+        sub = request.env['contractor.material.submittal'].sudo().browse(sub_id)
+        if not sub.exists():
+            return api_response(error='not found', status=404)
+        if not self._check_mosque_access(portal_user, employee, sub.mosque_id.id):
+            return api_response(error='Access denied', status=403)
+        return api_response(data={
+            'id': sub.id,
+            'name': sub.name,
+            'state': sub.state,
+            'material_name': sub.material_name,
+            'manufacturer': sub.manufacturer or '',
+            'model_number': sub.model_number or '',
+            'specifications': sub.specifications or '',
+            'reject_reason': sub.reject_reason or '',
+            'date_submitted': str(sub.date_submitted) if sub.date_submitted else '',
+            'boq_description': sub.boq_id.description[:80] if sub.boq_id else '',
+            'work_order_name': sub.work_order_id.name if sub.work_order_id else '',
+            'photos': [_photo_data(att) for att in sub.document_ids],
+        })
+
     # ══════════════════════════════════════════════════════
     # POST /api/waqf/consultant/submittal/<id>/approve
     # اعتماد عينة مادة
