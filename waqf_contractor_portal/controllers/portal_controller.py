@@ -1187,3 +1187,205 @@ class ContractorPortal(http.Controller):
             pass
 
         return request.redirect('/contractor?qual_submitted=1')
+
+        # ══════════════════════════════════════════════════════════════
+        # أضف هذه الدوال داخل class ContractorPortal
+        # ══════════════════════════════════════════════════════════════
+
+        # ══════════════════════════════════════════════════════
+        # SUBMITTAL DETAIL — /contractor/submittal/<id>
+        # ══════════════════════════════════════════════════════
+
+    @http.route('/contractor/submittal/<int:sub_id>', type='http',
+                auth='user', website=True)
+    def submittal_detail(self, sub_id, **kwargs):
+        portal_user = self._get_portal_user()
+        supervisor = self._get_supervisor()
+        if not portal_user and not supervisor:
+            return request.redirect('/web')
+
+        sub = request.env['contractor.material.submittal'].sudo().browse(sub_id)
+        if not sub.exists():
+            return request.redirect('/contractor/submittals')
+
+        # تحقق الصلاحية
+        if portal_user:
+            if sub.mosque_id not in portal_user.effective_mosque_ids:
+                return request.redirect('/contractor/submittals')
+        elif supervisor:
+            if sub.mosque_id != supervisor.assigned_mosque_id:
+                return request.redirect('/contractor/submittals')
+
+        # BOQ items للتعديل
+        boq_items = request.env['mosque.boq'].sudo().search([
+            ('mosque_id', '=', sub.mosque_id.id),
+        ]) if sub.state == 'draft' else []
+
+        return request.render('waqf_contractor_portal.tmpl_submittal_detail', {
+            'portal_user': portal_user,
+            'supervisor': supervisor,
+            'sub': sub,
+            'boq_items': boq_items,
+            'mosque': sub.mosque_id,
+        })
+
+    # ══════════════════════════════════════════════════════
+    # SUBMITTAL SUBMIT — POST /contractor/submittal/<id>/submit
+    # ══════════════════════════════════════════════════════
+    @http.route('/contractor/submittal/<int:sub_id>/submit', type='http',
+                auth='user', website=True, methods=['POST'])
+    def submittal_submit(self, sub_id, **post):
+        portal_user = self._get_portal_user()
+        supervisor = self._get_supervisor()
+
+        sub = request.env['contractor.material.submittal'].sudo().browse(sub_id)
+        if not sub.exists() or sub.state != 'draft':
+            return request.redirect('/contractor/submittals')
+
+        # تحديث الحقول إذا أرسلها المستخدم
+        material_name = post.get('material_name', '').strip()
+        manufacturer = post.get('manufacturer', '').strip()
+        model_number = post.get('model_number', '').strip()
+        specs = post.get('specifications', '').strip()
+        boq_id = int(post.get('boq_id', 0) or 0)
+
+        vals = {}
+        if material_name: vals['material_name'] = material_name
+        if manufacturer:  vals['manufacturer'] = manufacturer
+        if model_number:  vals['model_number'] = model_number
+        if specs:         vals['specifications'] = specs
+        if boq_id:        vals['boq_id'] = boq_id
+        if vals:
+            sub.write(vals)
+
+        # رفع وثائق إضافية
+        files = request.httprequest.files.getlist('documents')
+        for f in files:
+            if f and f.filename:
+                att = request.env['ir.attachment'].sudo().create({
+                    'name': f.filename,
+                    'datas': base64.b64encode(f.read()),
+                    'res_model': 'contractor.material.submittal',
+                    'res_id': sub.id,
+                    'mimetype': f.content_type,
+                })
+                sub.write({'document_ids': [(4, att.id)]})
+
+        # إرسال الطلب
+        try:
+            sub.action_submit()
+        except Exception as e:
+            return request.redirect(
+                f'/contractor/submittal/{sub_id}?error={str(e)[:80]}')
+
+        return request.redirect(f'/contractor/submittal/{sub_id}?submitted=1')
+
+    # ══════════════════════════════════════════════════════
+    # SUBMITTAL DELETE DOC — POST /contractor/submittal/<id>/delete-doc/<att_id>
+    # ══════════════════════════════════════════════════════
+    @http.route('/contractor/submittal/<int:sub_id>/delete-doc/<int:att_id>',
+                type='http', auth='user', website=True, methods=['POST'])
+    def submittal_delete_doc(self, sub_id, att_id, **kwargs):
+        sub = request.env['contractor.material.submittal'].sudo().browse(sub_id)
+        if sub.exists() and sub.state == 'draft':
+            att = request.env['ir.attachment'].sudo().browse(att_id)
+            if att.exists() and att.res_model == 'contractor.material.submittal' \
+                    and att.res_id == sub_id:
+                att.unlink()
+        return request.redirect(f'/contractor/submittal/{sub_id}')
+
+    @http.route('/contractor/qualification/<int:qual_id>', type='http',
+                auth='user', website=True)
+    def qualification_detail(self, qual_id, **kwargs):
+        portal_user = self._get_portal_user()
+        supervisor = self._get_supervisor()
+        if not portal_user and not supervisor:
+            return request.redirect('/web')
+
+        qual = request.env['contractor.qualification'].sudo().browse(qual_id)
+        if not qual.exists():
+            return request.redirect('/contractor/qualifications')
+
+        # تحقق الصلاحية
+        if supervisor and qual.supervisor_id != supervisor:
+            return request.redirect('/contractor/qualifications')
+
+        # فئات العمل للتعديل
+        categories = request.env['mosque.boq.category'].sudo().search([]) \
+            if qual.state == 'draft' else []
+
+        # مساجد للتعديل
+        mosques = portal_user.effective_mosque_ids \
+            if portal_user and qual.state == 'draft' else []
+
+        return request.render('waqf_contractor_portal.tmpl_qual_detail', {
+            'portal_user': portal_user,
+            'supervisor': supervisor,
+            'qual': qual,
+            'categories': categories,
+            'mosques': mosques,
+        })
+
+    # ══════════════════════════════════════════════════════
+    # QUALIFICATION SUBMIT — POST /contractor/qualification/<id>/submit
+    # ══════════════════════════════════════════════════════
+    @http.route('/contractor/qualification/<int:qual_id>/submit', type='http',
+                auth='user', website=True, methods=['POST'])
+    def qualification_submit(self, qual_id, **post):
+        portal_user = self._get_portal_user()
+        supervisor = self._get_supervisor()
+
+        qual = request.env['contractor.qualification'].sudo().browse(qual_id)
+        if not qual.exists() or qual.state != 'draft':
+            return request.redirect('/contractor/qualifications')
+
+        # تحديث الحقول
+        category_id = int(post.get('work_category_id', 0) or 0)
+        scope = post.get('scope', 'all')
+        desc = post.get('description', '').strip()
+        mosque_ids = [int(i) for i in
+                      request.httprequest.form.getlist('mosque_ids')]
+
+        vals = {'scope': scope}
+        if category_id: vals['work_category_id'] = category_id
+        if desc:         vals['description'] = desc
+        if mosque_ids and scope == 'specific':
+            vals['mosque_ids'] = [(6, 0, mosque_ids)]
+        qual.write(vals)
+
+        # رفع وثائق جديدة
+        files = request.httprequest.files.getlist('documents')
+        for f in files:
+            if f and f.filename:
+                att = request.env['ir.attachment'].sudo().create({
+                    'name': f.filename,
+                    'datas': base64.b64encode(f.read()),
+                    'res_model': 'contractor.qualification',
+                    'res_id': qual.id,
+                    'mimetype': f.content_type,
+                })
+                qual.write({'document_ids': [(4, att.id)]})
+
+        # إرسال الطلب
+        try:
+            qual.action_submit()
+        except Exception as e:
+            return request.redirect(
+                f'/contractor/qualification/{qual_id}?error={str(e)[:80]}')
+
+        return request.redirect(
+            f'/contractor/qualification/{qual_id}?submitted=1')
+
+    # ══════════════════════════════════════════════════════
+    # QUALIFICATION DELETE DOC
+    # ══════════════════════════════════════════════════════
+    @http.route('/contractor/qualification/<int:qual_id>/delete-doc/<int:att_id>',
+                type='http', auth='user', website=True, methods=['POST'])
+    def qualification_delete_doc(self, qual_id, att_id, **kwargs):
+        qual = request.env['contractor.qualification'].sudo().browse(qual_id)
+        if qual.exists() and qual.state == 'draft':
+            att = request.env['ir.attachment'].sudo().browse(att_id)
+            if att.exists() and att.res_model == 'contractor.qualification' \
+                    and att.res_id == qual_id:
+                att.unlink()
+        return request.redirect(f'/contractor/qualification/{qual_id}')

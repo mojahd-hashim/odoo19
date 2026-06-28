@@ -130,7 +130,9 @@
                         </svg>
                     </div>
                     <div>
-                        <div class="cp-hero-name">مرحباً، <t t-esc="portal_user.name"/></div>
+                        <div class="cp-hero-name">مرحباً،
+                            <t t-esc="portal_user.name"/>
+                        </div>
                         <div class="cp-hero-location">
                             <t t-esc="portal_user.company_id.name or ''"/>
                             <t t-if="portal_user.role">
@@ -144,7 +146,8 @@
                 </div>
                 <span class="cp-status-badge active">
                     <span class="cp-status-dot"/>
-                    <t t-esc="len(mosques)"/> مسجد
+                    <t t-esc="len(mosques)"/>
+                    مسجد
                 </span>
             </div>
 
@@ -167,17 +170,21 @@
                             <div class="cp-alert-item">
                                 <div>
                                     <span class="cp-alert-name">
-                                        <t t-esc="wo.name"/> — <t t-esc="(wo.work_description or '')[:45]"/>
+                                        <t t-esc="wo.name"/>
+                                        —
+                                        <t t-esc="(wo.work_description or '')[:45]"/>
                                     </span>
                                     <span class="cp-alert-reason">
                                         أمر عمل — إعادة تسليم مطلوب
                                         <t t-if="wo.mosque_id">
-                                            · <t t-esc="wo.mosque_id.code"/>
+                                            ·
+                                            <t t-esc="wo.mosque_id.code"/>
                                         </t>
                                     </span>
                                 </div>
                                 <a t-attf-href="/contractor/work-order/#{wo.id}"
-                                   class="cp-btn-sm cp-btn-danger">عرض</a>
+                                   class="cp-btn-sm cp-btn-danger">عرض
+                                </a>
                             </div>
                         </t>
                         <t t-foreach="rejected_subs" t-as="s">
@@ -192,7 +199,8 @@
                                     </span>
                                 </div>
                                 <a href="/contractor/submittals?state=rejected"
-                                   class="cp-btn-sm cp-btn-danger">عرض</a>
+                                   class="cp-btn-sm cp-btn-danger">عرض
+                                </a>
                             </div>
                         </t>
                     </div>
@@ -201,7 +209,8 @@
 
             <!-- ── Stats Dashboard ───────────────────────────── -->
             <div style="font-size:11px;font-weight:600;color:var(--text3);
-                        letter-spacing:.5px;margin-bottom:10px">نظرة عامة</div>
+                        letter-spacing:.5px;margin-bottom:10px">نظرة عامة
+            </div>
 
             <!-- Row 1: أوامر العمل -->
             <div style="background:white;border:1px solid var(--border);
@@ -279,7 +288,8 @@
                             <div style="display:flex;justify-content:space-between;font-size:11px">
                                 <span style="color:var(--text3)">معتمد</span>
                                 <span style="color:var(--green);font-weight:700">
-                                    <t t-esc="sub_approved or 0"/> ✓
+                                    <t t-esc="sub_approved or 0"/>
+                                    ✓
                                 </span>
                             </div>
                             <div style="display:flex;justify-content:space-between;font-size:11px">
@@ -317,7 +327,8 @@
                             <div style="display:flex;justify-content:space-between;font-size:11px">
                                 <span style="color:var(--text3)">معتمد</span>
                                 <span style="color:var(--green);font-weight:700">
-                                    <t t-esc="qual_approved or 0"/> ✓
+                                    <t t-esc="qual_approved or 0"/>
+                                    ✓
                                 </span>
                             </div>
                             <div style="display:flex;justify-content:space-between;font-size:11px">
@@ -336,7 +347,8 @@
 
             <!-- ── Quick Actions ──────────────────────────────── -->
             <div style="font-size:11px;font-weight:600;color:var(--text3);
-                        letter-spacing:.5px;margin-bottom:10px">إجراءات سريعة</div>
+                        letter-spacing:.5px;margin-bottom:10px">إجراءات سريعة
+            </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px">
                 <a href="/contractor/work-orders/new" class="cp-action-btn cp-action-primary"
                    style="justify-content:center">
@@ -997,52 +1009,40 @@
     <template id="tmpl_qual_list" name="Qualifications List">
         <t t-call="waqf_contractor_portal.tmpl_base">
             <div class="cp-breadcrumb">
-                <a href="/contractor">الرئيسية</a>
-                <span>←</span>
+                <a href="/contractor">الرئيسية</a><span>←</span>
                 <span>طلبات التأهيل</span>
             </div>
             <!-- Stats -->
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
                 <div class="cp-mini-stat" style="flex:1;min-width:70px">
-                    <div class="cp-mini-stat-val" style="color:var(--text2)">
-                        <t t-esc="counts['all']"/>
-                    </div>
+                    <div class="cp-mini-stat-val" style="color:var(--text2)"><t t-esc="counts['all']"/></div>
                     <div class="cp-mini-stat-lbl">إجمالي</div>
                 </div>
                 <div class="cp-mini-stat" style="flex:1;min-width:70px">
-                    <div class="cp-mini-stat-val" style="color:var(--gold)">
-                        <t t-esc="counts['submitted']"/>
-                    </div>
+                    <div class="cp-mini-stat-val" style="color:var(--gold)"><t t-esc="counts['submitted']"/></div>
                     <div class="cp-mini-stat-lbl">قيد المراجعة</div>
                 </div>
                 <div class="cp-mini-stat" style="flex:1;min-width:70px">
-                    <div class="cp-mini-stat-val" style="color:var(--green)">
-                        <t t-esc="counts['approved']"/>
-                    </div>
+                    <div class="cp-mini-stat-val" style="color:var(--green)"><t t-esc="counts['approved']"/></div>
                     <div class="cp-mini-stat-lbl">معتمد</div>
                 </div>
                 <div class="cp-mini-stat" style="flex:1;min-width:70px">
-                    <div class="cp-mini-stat-val" style="color:var(--red)">
-                        <t t-esc="counts['rejected']"/>
-                    </div>
+                    <div class="cp-mini-stat-val" style="color:var(--red)"><t t-esc="counts['rejected']"/></div>
                     <div class="cp-mini-stat-lbl">مرفوض</div>
                 </div>
             </div>
             <!-- Filter + Action -->
-            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;
+                        flex-wrap:wrap;gap:10px;margin-bottom:16px">
                 <div class="cp-filter-tabs">
                     <a href="/contractor/qualifications"
-                       t-attf-class="cp-filter-tab #{active_state == 'all' and 'active' or ''}">الكل
-                    </a>
+                       t-attf-class="cp-filter-tab #{active_state == 'all' and 'active' or ''}">الكل</a>
                     <a href="/contractor/qualifications?state=submitted"
-                       t-attf-class="cp-filter-tab #{active_state == 'submitted' and 'active' or ''}">قيد المراجعة
-                    </a>
+                       t-attf-class="cp-filter-tab #{active_state == 'submitted' and 'active' or ''}">قيد المراجعة</a>
                     <a href="/contractor/qualifications?state=approved"
-                       t-attf-class="cp-filter-tab #{active_state == 'approved' and 'active' or ''}">معتمد
-                    </a>
+                       t-attf-class="cp-filter-tab #{active_state == 'approved' and 'active' or ''}">معتمد</a>
                     <a href="/contractor/qualifications?state=rejected"
-                       t-attf-class="cp-filter-tab #{active_state == 'rejected' and 'active' or ''}">مرفوض
-                    </a>
+                       t-attf-class="cp-filter-tab #{active_state == 'rejected' and 'active' or ''}">مرفوض</a>
                 </div>
                 <a href="/contractor/qualifications/new" class="cp-action-btn cp-action-primary">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -1061,52 +1061,81 @@
             <!-- List -->
             <div style="display:flex;flex-direction:column;gap:10px">
                 <t t-foreach="qualifications" t-as="q">
-                    <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">
+
+                    <!-- ↓ تغيير: div → a مع href للتفاصيل -->
+                    <a t-attf-href="/contractor/qualification/#{q.id}"
+                       style="text-decoration:none;display:block;background:white;
+                              border:1px solid var(--border);border-radius:var(--r-lg);
+                              overflow:hidden;transition:box-shadow .15s">
+
                         <div t-attf-style="height:3px;background:#{q.state == 'approved' and 'var(--green)' or q.state == 'rejected' and 'var(--red)' or q.state == 'submitted' and 'var(--gold)' or 'var(--border2)'}"/>
+
                         <div style="padding:14px 16px">
-                            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px">
+                            <div style="display:flex;align-items:flex-start;
+                                        justify-content:space-between;gap:12px;margin-bottom:8px">
                                 <div>
-                                    <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px">
+                                    <div style="font-size:14px;font-weight:700;
+                                                color:var(--navy);margin-bottom:3px">
                                         <t t-esc="q.name"/>
                                     </div>
                                     <div style="font-size:12px;color:var(--text3)">
                                         <t t-esc="q.work_category_id.name or '—'"/>
                                     </div>
                                 </div>
-                                <span t-attf-class="cp-status-pill #{q.state == 'approved' and 'approved' or q.state == 'submitted' and 'pending' or q.state == 'rejected' and 'rejected' or 'draft'}">
-                                    <t t-if="q.state == 'draft'">مسودة</t>
-                                    <t t-elif="q.state == 'submitted'">قيد المراجعة</t>
-                                    <t t-elif="q.state == 'approved'">✓ معتمد</t>
-                                    <t t-elif="q.state == 'rejected'">مرفوض</t>
-                                </span>
-                            </div>
-                            <div style="display:flex;gap:16px;font-size:11px;color:var(--text3);flex-wrap:wrap">
-                                <span>النطاق:
-                                    <strong style="color:var(--text2)">
-                                        <t t-if="q.scope == 'all'">كل المساجد</t>
-                                        <t t-else="">مساجد محددة</t>
-                                    </strong>
-                                </span>
-                                <t t-if="q.document_ids">
-                                    <span>📎
-                                        <t t-esc="len(q.document_ids)"/>
-                                        وثيقة
+                                <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+                                    <span t-attf-class="cp-status-pill #{q.state == 'approved' and 'approved' or q.state == 'submitted' and 'pending' or q.state == 'rejected' and 'rejected' or 'draft'}">
+                                        <t t-if="q.state == 'draft'">مسودة</t>
+                                        <t t-elif="q.state == 'submitted'">قيد المراجعة</t>
+                                        <t t-elif="q.state == 'approved'">✓ معتمد</t>
+                                        <t t-elif="q.state == 'rejected'">مرفوض</t>
                                     </span>
+                                    <span style="color:var(--border2);font-size:16px">›</span>
+                                </div>
+                            </div>
+
+                            <div style="display:flex;gap:16px;font-size:11px;
+                                        color:var(--text3);flex-wrap:wrap">
+                                <span>النطاق: <strong style="color:var(--text2)">
+                                    <t t-if="q.scope == 'all'">كل المساجد</t>
+                                    <t t-else="">مساجد محددة</t>
+                                </strong></span>
+                                <t t-if="q.document_ids">
+                                    <span>📎 <t t-esc="len(q.document_ids)"/> وثيقة</span>
                                 </t>
                             </div>
-                            <t t-if="q.state == 'rejected' and q.reject_reason">
-                                <div style="margin-top:8px;padding:8px 12px;background:var(--red-bg);border-radius:var(--r-sm);font-size:11px;color:var(--red)">
-                                    سبب الرفض:
-                                    <t t-esc="q.reject_reason"/>
+
+                            <!-- مسودة — CTA -->
+                            <t t-if="q.state == 'draft'">
+                                <div style="margin-top:10px;padding:8px 12px;
+                                            background:rgba(35,114,146,.06);
+                                            border-radius:var(--r-sm);
+                                            font-size:11px;color:var(--primary);
+                                            font-weight:600">
+                                    ← اضغط لتعديل وإرسال الطلب
                                 </div>
                             </t>
+
+                            <!-- مرفوض -->
+                            <t t-if="q.state == 'rejected' and q.reject_reason">
+                                <div style="margin-top:8px;padding:8px 12px;
+                                            background:var(--red-bg);border-radius:var(--r-sm);
+                                            font-size:11px;color:var(--red)">
+                                    سبب الرفض: <t t-esc="q.reject_reason[:80]"/>
+                                </div>
+                            </t>
+
+                            <!-- معتمد -->
                             <t t-if="q.state == 'approved'">
-                                <div style="margin-top:8px;padding:8px 12px;background:var(--green-bg);border-radius:var(--r-sm);font-size:11px;color:#1A7A55">
-                                    ✅ معتمد — يمكن استخدام هذا التأهيل في أوامر العمل
+                                <div style="margin-top:8px;padding:8px 12px;
+                                            background:var(--green-bg);border-radius:var(--r-sm);
+                                            font-size:11px;color:#1A7A55">
+                                    🏅 معتمد — يمكن استخدامه في أوامر العمل
                                 </div>
                             </t>
                         </div>
-                    </div>
+                    </a>
+                    <!-- ↑ نهاية الـ a -->
+
                 </t>
             </div>
         </t>
@@ -1118,52 +1147,40 @@
     <template id="tmpl_sub_list" name="Submittals List">
         <t t-call="waqf_contractor_portal.tmpl_base">
             <div class="cp-breadcrumb">
-                <a href="/contractor">الرئيسية</a>
-                <span>←</span>
+                <a href="/contractor">الرئيسية</a><span>←</span>
                 <span>عينات المواد</span>
             </div>
             <!-- Stats -->
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
                 <div class="cp-mini-stat" style="flex:1;min-width:70px">
-                    <div class="cp-mini-stat-val" style="color:var(--text2)">
-                        <t t-esc="counts['all']"/>
-                    </div>
+                    <div class="cp-mini-stat-val" style="color:var(--text2)"><t t-esc="counts['all']"/></div>
                     <div class="cp-mini-stat-lbl">إجمالي</div>
                 </div>
                 <div class="cp-mini-stat" style="flex:1;min-width:70px">
-                    <div class="cp-mini-stat-val" style="color:var(--gold)">
-                        <t t-esc="counts['submitted']"/>
-                    </div>
+                    <div class="cp-mini-stat-val" style="color:var(--gold)"><t t-esc="counts['submitted']"/></div>
                     <div class="cp-mini-stat-lbl">بانتظار</div>
                 </div>
                 <div class="cp-mini-stat" style="flex:1;min-width:70px">
-                    <div class="cp-mini-stat-val" style="color:var(--green)">
-                        <t t-esc="counts['approved']"/>
-                    </div>
+                    <div class="cp-mini-stat-val" style="color:var(--green)"><t t-esc="counts['approved']"/></div>
                     <div class="cp-mini-stat-lbl">معتمد</div>
                 </div>
                 <div class="cp-mini-stat" style="flex:1;min-width:70px">
-                    <div class="cp-mini-stat-val" style="color:var(--red)">
-                        <t t-esc="counts['rejected']"/>
-                    </div>
+                    <div class="cp-mini-stat-val" style="color:var(--red)"><t t-esc="counts['rejected']"/></div>
                     <div class="cp-mini-stat-lbl">مرفوض</div>
                 </div>
             </div>
             <!-- Filter + Action -->
-            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;
+                        flex-wrap:wrap;gap:10px;margin-bottom:12px">
                 <div class="cp-filter-tabs">
                     <a href="/contractor/submittals"
-                       t-attf-class="cp-filter-tab #{active_state == 'all' and 'active' or ''}">الكل
-                    </a>
+                       t-attf-class="cp-filter-tab #{active_state == 'all' and 'active' or ''}">الكل</a>
                     <a href="/contractor/submittals?state=submitted"
-                       t-attf-class="cp-filter-tab #{active_state == 'submitted' and 'active' or ''}">بانتظار
-                    </a>
+                       t-attf-class="cp-filter-tab #{active_state == 'submitted' and 'active' or ''}">بانتظار</a>
                     <a href="/contractor/submittals?state=approved"
-                       t-attf-class="cp-filter-tab #{active_state == 'approved' and 'active' or ''}">معتمد
-                    </a>
+                       t-attf-class="cp-filter-tab #{active_state == 'approved' and 'active' or ''}">معتمد</a>
                     <a href="/contractor/submittals?state=rejected"
-                       t-attf-class="cp-filter-tab #{active_state == 'rejected' and 'active' or ''}">مرفوض
-                    </a>
+                       t-attf-class="cp-filter-tab #{active_state == 'rejected' and 'active' or ''}">مرفوض</a>
                 </div>
                 <a href="/contractor/submittals/new" class="cp-action-btn cp-action-primary">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -1176,9 +1193,8 @@
             <t t-if="mosques">
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
                     <a t-attf-href="/contractor/submittals#{active_state != 'all' and '?state=' + active_state or ''}"
-                       t-attf-class="cp-filter-tab #{not active_mosque and 'active' or ''}" style="font-size:11px">كل
-                        المساجد
-                    </a>
+                       t-attf-class="cp-filter-tab #{not active_mosque and 'active' or ''}"
+                       style="font-size:11px">كل المساجد</a>
                     <t t-foreach="mosques" t-as="m">
                         <a t-attf-href="/contractor/submittals?mosque=#{m.id}#{active_state != 'all' and '&amp;state=' + active_state or ''}"
                            t-attf-class="cp-filter-tab #{active_mosque == m.id and 'active' or ''}"
@@ -1198,60 +1214,86 @@
             <!-- List -->
             <div style="display:flex;flex-direction:column;gap:10px">
                 <t t-foreach="submittals" t-as="s">
-                    <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">
+
+                    <!-- ↓ تغيير: div → a مع href للتفاصيل -->
+                    <a t-attf-href="/contractor/submittal/#{s.id}"
+                       style="text-decoration:none;display:block;background:white;
+                              border:1px solid var(--border);border-radius:var(--r-lg);
+                              overflow:hidden;transition:box-shadow .15s">
+
                         <div t-attf-style="height:3px;background:#{s.state == 'approved' and 'var(--green)' or s.state == 'rejected' and 'var(--red)' or s.state == 'submitted' and 'var(--gold)' or 'var(--border2)'}"/>
+
                         <div style="padding:14px 16px">
-                            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+                            <div style="display:flex;align-items:flex-start;
+                                        justify-content:space-between;gap:12px">
                                 <div style="flex:1;min-width:0">
-                                    <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:4px">
+                                    <div style="font-size:14px;font-weight:700;
+                                                color:var(--navy);margin-bottom:4px">
                                         <t t-esc="s.material_name"/>
                                     </div>
-                                    <div style="font-size:11px;color:var(--text3);display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+                                    <div style="font-size:11px;color:var(--text3);
+                                                display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
                                         <t t-if="s.manufacturer">
-                                            <span>🏭
-                                                <t t-esc="s.manufacturer"/>
-                                            </span>
+                                            <span>🏭 <t t-esc="s.manufacturer"/></span>
                                         </t>
                                         <t t-if="s.mosque_id">
-                                            <span>🕌
-                                                <t t-esc="s.mosque_id.name"/>
-                                            </span>
+                                            <span>🕌 <t t-esc="s.mosque_id.name"/></span>
                                         </t>
                                         <t t-if="s.date_submitted">
-                                            <span>📅
-                                                <t t-esc="s.date_submitted"/>
-                                            </span>
+                                            <span>📅 <t t-esc="s.date_submitted"/></span>
                                         </t>
                                     </div>
                                     <t t-if="s.boq_id">
                                         <div style="font-size:11px;color:var(--text3)">
-                                            بند:
-                                            <span style="font-family:monospace;color:var(--primary);font-weight:600">
+                                            بند: <span style="font-family:monospace;
+                                                              color:var(--primary);font-weight:600">
                                                 <t t-esc="s.boq_id.item_code"/>
                                             </span>
                                         </div>
                                     </t>
                                 </div>
-                                <span t-attf-class="cp-status-pill #{s.state == 'approved' and 'approved' or s.state == 'submitted' and 'pending' or s.state == 'rejected' and 'rejected' or 'draft'}">
-                                    <t t-if="s.state == 'draft'">مسودة</t>
-                                    <t t-elif="s.state == 'submitted'">بانتظار</t>
-                                    <t t-elif="s.state == 'approved'">✓ معتمد</t>
-                                    <t t-elif="s.state == 'rejected'">مرفوض</t>
-                                </span>
+                                <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+                                    <span t-attf-class="cp-status-pill #{s.state == 'approved' and 'approved' or s.state == 'submitted' and 'pending' or s.state == 'rejected' and 'rejected' or 'draft'}">
+                                        <t t-if="s.state == 'draft'">مسودة</t>
+                                        <t t-elif="s.state == 'submitted'">بانتظار</t>
+                                        <t t-elif="s.state == 'approved'">✓ معتمد</t>
+                                        <t t-elif="s.state == 'rejected'">مرفوض</t>
+                                    </span>
+                                    <span style="color:var(--border2);font-size:16px">›</span>
+                                </div>
                             </div>
-                            <t t-if="s.state == 'rejected' and s.reject_reason">
-                                <div style="margin-top:8px;padding:8px 12px;background:var(--red-bg);border-radius:var(--r-sm);font-size:11px;color:var(--red)">
-                                    سبب الرفض:
-                                    <t t-esc="s.reject_reason"/>
+
+                            <!-- مسودة — CTA -->
+                            <t t-if="s.state == 'draft'">
+                                <div style="margin-top:10px;padding:8px 12px;
+                                            background:rgba(35,114,146,.06);
+                                            border-radius:var(--r-sm);
+                                            font-size:11px;color:var(--primary);font-weight:600">
+                                    ← اضغط لتعديل وإرسال العينة
                                 </div>
                             </t>
+
+                            <!-- مرفوض -->
+                            <t t-if="s.state == 'rejected' and s.reject_reason">
+                                <div style="margin-top:8px;padding:8px 12px;
+                                            background:var(--red-bg);border-radius:var(--r-sm);
+                                            font-size:11px;color:var(--red)">
+                                    سبب الرفض: <t t-esc="s.reject_reason[:80]"/>
+                                </div>
+                            </t>
+
+                            <!-- معتمد -->
                             <t t-if="s.state == 'approved'">
-                                <div style="margin-top:8px;padding:8px 12px;background:var(--green-bg);border-radius:var(--r-sm);font-size:11px;color:#1A7A55">
+                                <div style="margin-top:8px;padding:8px 12px;
+                                            background:var(--green-bg);border-radius:var(--r-sm);
+                                            font-size:11px;color:#1A7A55">
                                     ✅ معتمد — يمكن استخدام هذه المادة في التنفيذ
                                 </div>
                             </t>
                         </div>
-                    </div>
+                    </a>
+                    <!-- ↑ نهاية الـ a -->
+
                 </t>
             </div>
         </t>
@@ -3137,6 +3179,756 @@
                 });
                 });
             </script>
+
+        </t>
+    </template>
+
+    <!-- ══════════════════════════════════════════════════════
+         SUBMITTAL DETAIL
+    ══════════════════════════════════════════════════════ -->
+    <template id="tmpl_submittal_detail" name="Submittal Detail">
+        <t t-call="waqf_contractor_portal.tmpl_base">
+
+            <div class="cp-breadcrumb">
+                <a href="/contractor">الرئيسية</a>
+                <span>←</span>
+                <a href="/contractor/submittals">عينات المواد</a>
+                <span>←</span>
+                <span>
+                    <t t-esc="sub.material_name"/>
+                </span>
+            </div>
+
+            <!-- Toast -->
+            <t t-if="request.params.get('submitted')">
+                <div class="cp-toast-success">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M5 8l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    تم إرسال العينة بنجاح — بانتظار مراجعة الاستشاري
+                </div>
+            </t>
+
+            <!-- Error -->
+            <t t-if="request.params.get('error')">
+                <div class="cp-alert-banner"
+                     style="background:var(--red-bg);border-color:rgba(232,85,85,.2);margin-bottom:12px">
+                    <div class="cp-alert-banner-hdr" style="color:var(--red)">
+                        <t t-esc="request.params.get('error')"/>
+                    </div>
+                </div>
+            </t>
+
+            <!-- ── Header Card ─────────────────────────────── -->
+            <div style="background:var(--navy);border-radius:var(--r-lg);
+                        padding:18px 20px;margin-bottom:16px">
+                <div style="display:flex;align-items:flex-start;
+                            justify-content:space-between;gap:12px;margin-bottom:12px">
+                    <div>
+                        <div style="font-size:17px;font-weight:800;color:white;margin-bottom:4px">
+                            <t t-esc="sub.material_name"/>
+                        </div>
+                        <div style="font-size:12px;color:rgba(255,255,255,.55)">
+                            <t t-esc="sub.name"/>
+                        </div>
+                    </div>
+                    <!-- State Badge -->
+                    <span t-attf-style="flex-shrink:0;padding:5px 12px;border-radius:999px;
+                        font-size:11px;font-weight:700;
+                        background:#{sub.state == 'approved' and 'rgba(46,204,138,.2)' or sub.state == 'rejected' and 'rgba(232,85,85,.2)' or sub.state == 'submitted' and 'rgba(200,164,48,.2)' or 'rgba(255,255,255,.1)'};
+                        color:#{sub.state == 'approved' and 'var(--green)' or sub.state == 'rejected' and 'var(--red)' or sub.state == 'submitted' and 'var(--gold)' or 'rgba(255,255,255,.6)'}">
+                        <t t-if="sub.state == 'draft'">● مسودة</t>
+                        <t t-elif="sub.state == 'submitted'">● بانتظار المراجعة</t>
+                        <t t-elif="sub.state == 'approved'">✓ معتمد</t>
+                        <t t-elif="sub.state == 'rejected'">✗ مرفوض</t>
+                    </span>
+                </div>
+
+                <!-- Meta row -->
+                <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:rgba(255,255,255,.5)">
+                    <t t-if="sub.mosque_id">
+                        <span>🕌
+                            <t t-esc="sub.mosque_id.name"/>
+                        </span>
+                    </t>
+                    <t t-if="sub.manufacturer">
+                        <span>🏭
+                            <t t-esc="sub.manufacturer"/>
+                        </span>
+                    </t>
+                    <t t-if="sub.date_submitted">
+                        <span>📅
+                            <t t-esc="sub.date_submitted"/>
+                        </span>
+                    </t>
+                    <t t-if="sub.boq_id">
+                        <span>
+                            بند:
+                            <span style="font-family:monospace;color:rgba(255,255,255,.7)">
+                                <t t-esc="sub.boq_id.item_code"/>
+                            </span>
+                        </span>
+                    </t>
+                </div>
+            </div>
+
+            <!-- ── Approved Banner ────────────────────────── -->
+            <t t-if="sub.state == 'approved'">
+                <div style="padding:14px 16px;background:var(--green-bg);
+                            border:1px solid rgba(46,204,138,.25);border-radius:var(--r-lg);
+                            margin-bottom:12px;display:flex;align-items:center;gap:12px">
+                    <div style="width:40px;height:40px;border-radius:50%;background:rgba(46,204,138,.15);
+                                display:flex;align-items:center;justify-content:center;
+                                font-size:20px;flex-shrink:0">✅
+                    </div>
+                    <div>
+                        <div style="font-size:13px;font-weight:700;color:#1A7A55;margin-bottom:2px">
+                            تمت الموافقة على هذه العينة
+                        </div>
+                        <div style="font-size:11px;color:#2A8A65">
+                            يمكنك الآن استخدام هذه المادة في التنفيذ
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- ── Rejected Banner ────────────────────────── -->
+            <t t-if="sub.state == 'rejected'">
+                <div style="padding:14px 16px;background:var(--red-bg);
+                            border:1px solid rgba(232,85,85,.25);border-radius:var(--r-lg);
+                            margin-bottom:12px">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+                        <span style="font-size:18px">❌</span>
+                        <div style="font-size:13px;font-weight:700;color:var(--red)">
+                            تم رفض هذه العينة
+                        </div>
+                    </div>
+                    <t t-if="sub.reject_reason">
+                        <div style="font-size:12px;color:var(--red);
+                                    padding:8px 12px;background:rgba(232,85,85,.08);
+                                    border-radius:var(--r-sm);line-height:1.6">
+                            <strong>السبب:</strong>
+                            <t t-esc="sub.reject_reason"/>
+                        </div>
+                    </t>
+                </div>
+            </t>
+
+            <!-- ── Details Card ───────────────────────────── -->
+            <div style="background:white;border:1px solid var(--border);
+                        border-radius:var(--r-lg);margin-bottom:12px;overflow:hidden">
+                <div style="padding:10px 16px;background:var(--surface2);
+                            border-bottom:1px solid var(--border);
+                            font-size:12px;font-weight:600;color:var(--text2)">
+                    تفاصيل العينة
+                </div>
+
+                <t t-if="sub.state == 'draft'">
+                    <!-- ── EDITABLE FORM for draft ─────────── -->
+                    <form t-attf-action="/contractor/submittal/#{sub.id}/submit"
+                          method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token"
+                               t-att-value="request.csrf_token()"/>
+                        <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+
+                            <div class="cp-form-group" style="margin-bottom:0">
+                                <label class="cp-label">
+                                    <span>*</span>
+                                    اسم المادة
+                                </label>
+                                <input type="text" name="material_name" class="cp-input"
+                                       t-att-value="sub.material_name" required="required"/>
+                            </div>
+
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                                <div class="cp-form-group" style="margin-bottom:0">
+                                    <label class="cp-label">المصنع / المورد</label>
+                                    <input type="text" name="manufacturer" class="cp-input"
+                                           t-att-value="sub.manufacturer or ''"/>
+                                </div>
+                                <div class="cp-form-group" style="margin-bottom:0">
+                                    <label class="cp-label">رقم الموديل</label>
+                                    <input type="text" name="model_number" class="cp-input"
+                                           t-att-value="sub.model_number or ''"/>
+                                </div>
+                            </div>
+
+                            <t t-if="boq_items">
+                                <div class="cp-form-group" style="margin-bottom:0">
+                                    <label class="cp-label">البند المرتبط</label>
+                                    <select name="boq_id" class="cp-select">
+                                        <option value="">— اختر البند —</option>
+                                        <t t-foreach="boq_items" t-as="b">
+                                            <option t-att-value="b.id"
+                                                    t-att-selected="b.id == (sub.boq_id.id or 0)">
+                                                <t t-esc="b.item_code"/>
+                                                —
+                                                <t t-esc="(b.description or '')[:50]"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+                            </t>
+
+                            <div class="cp-form-group" style="margin-bottom:0">
+                                <label class="cp-label">المواصفات الفنية</label>
+                                <textarea name="specifications" class="cp-input" rows="3"
+                                          style="resize:vertical">
+                                    <t t-esc="sub.specifications or ''"/>
+                                </textarea>
+                            </div>
+
+                            <!-- Existing docs -->
+                            <t t-if="sub.document_ids">
+                                <div>
+                                    <div style="font-size:11px;font-weight:600;color:var(--text3);
+                                                margin-bottom:8px">الوثائق الحالية
+                                    </div>
+                                    <div style="display:flex;flex-direction:column;gap:6px">
+                                        <t t-foreach="sub.document_ids" t-as="doc">
+                                            <div style="display:flex;align-items:center;
+                                                        justify-content:space-between;
+                                                        padding:8px 12px;background:var(--surface2);
+                                                        border-radius:var(--r-sm);
+                                                        border:1px solid var(--border)">
+                                                <div style="display:flex;align-items:center;gap:8px">
+                                                    <span style="font-size:16px">
+                                                        <t t-if="'pdf' in (doc.mimetype or '')">📄</t>
+                                                        <t t-else="">🖼️</t>
+                                                    </span>
+                                                    <span style="font-size:12px;color:var(--text1)">
+                                                        <t t-esc="doc.name"/>
+                                                    </span>
+                                                </div>
+                                                <form t-attf-action="/contractor/submittal/#{sub.id}/delete-doc/#{doc.id}"
+                                                      method="post" style="margin:0">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
+                                                    <button type="submit"
+                                                            style="background:none;border:none;
+                                                                   color:var(--red);cursor:pointer;
+                                                                   font-size:12px;padding:2px 6px">
+                                                        ✕ حذف
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </t>
+
+                            <!-- Upload new docs -->
+                            <div class="cp-form-group" style="margin-bottom:0">
+                                <label class="cp-label">
+                                    <t t-if="sub.document_ids">إضافة وثائق</t>
+                                    <t t-else="">الوثائق والصور</t>
+                                </label>
+                                <div class="cp-photo-drop-zone">
+                                    <label style="cursor:pointer">
+                                        <span class="cp-action-btn cp-action-ghost"
+                                              style="font-size:12px;padding:6px 14px">
+                                            اختر الوثائق والصور
+                                        </span>
+                                        <input type="file" name="documents"
+                                               multiple="multiple" accept="image/*,.pdf"
+                                               style="display:none"/>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit"
+                                    class="cp-action-btn cp-action-primary"
+                                    style="width:100%;justify-content:center;height:48px">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M13 8H3M9 4l4 4-4 4" stroke="currentColor"
+                                          stroke-width="1.5" stroke-linecap="round"
+                                          stroke-linejoin="round"/>
+                                </svg>
+                                إرسال العينة للاستشاري
+                            </button>
+
+                        </div>
+                    </form>
+                </t>
+
+                <t t-else="">
+                    <!-- ── READ ONLY for non-draft ────────── -->
+                    <div style="padding:16px;display:flex;flex-direction:column;gap:0">
+                        <t t-if="sub.manufacturer">
+                            <div style="display:flex;padding:10px 0;
+                                        border-bottom:1px solid var(--border)">
+                                <span style="width:110px;font-size:12px;color:var(--text3);flex-shrink:0">
+                                    المصنع
+                                </span>
+                                <span style="font-size:13px;color:var(--text1);font-weight:500">
+                                    <t t-esc="sub.manufacturer"/>
+                                </span>
+                            </div>
+                        </t>
+                        <t t-if="sub.model_number">
+                            <div style="display:flex;padding:10px 0;
+                                        border-bottom:1px solid var(--border)">
+                                <span style="width:110px;font-size:12px;color:var(--text3);flex-shrink:0">
+                                    الموديل
+                                </span>
+                                <span style="font-size:13px;color:var(--text1);
+                                             font-family:monospace">
+                                    <t t-esc="sub.model_number"/>
+                                </span>
+                            </div>
+                        </t>
+                        <t t-if="sub.boq_id">
+                            <div style="display:flex;padding:10px 0;
+                                        border-bottom:1px solid var(--border)">
+                                <span style="width:110px;font-size:12px;color:var(--text3);flex-shrink:0">
+                                    البند
+                                </span>
+                                <span style="font-size:12px;color:var(--primary);font-family:monospace;font-weight:600">
+                                    <t t-esc="sub.boq_id.item_code"/>
+                                </span>
+                                <span style="font-size:12px;color:var(--text2);margin-right:8px">
+                                    <t t-esc="(sub.boq_id.description or '')[:60]"/>
+                                </span>
+                            </div>
+                        </t>
+                        <t t-if="sub.specifications">
+                            <div style="padding:10px 0">
+                                <div style="font-size:12px;color:var(--text3);margin-bottom:6px">
+                                    المواصفات الفنية
+                                </div>
+                                <div style="font-size:13px;color:var(--text1);
+                                            line-height:1.7;padding:10px 12px;
+                                            background:var(--surface2);border-radius:var(--r-sm)">
+                                    <t t-esc="sub.specifications"/>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+            </div>
+
+            <!-- ── Documents (read-only view for non-draft) ── -->
+            <t t-if="sub.state != 'draft' and sub.document_ids">
+                <div style="background:white;border:1px solid var(--border);
+                            border-radius:var(--r-lg);overflow:hidden;margin-bottom:12px">
+                    <div style="padding:10px 16px;background:var(--surface2);
+                                border-bottom:1px solid var(--border);
+                                font-size:12px;font-weight:600;color:var(--text2)">
+                        الوثائق المرفقة
+                        (<t t-esc="len(sub.document_ids)"/>)
+                    </div>
+                    <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px">
+                        <t t-foreach="sub.document_ids" t-as="doc">
+                            <a t-attf-href="/web/content/#{doc.id}?download=true"
+                               target="_blank"
+                               style="display:flex;align-items:center;gap:10px;
+                                      padding:10px 12px;background:var(--surface2);
+                                      border-radius:var(--r-sm);border:1px solid var(--border);
+                                      text-decoration:none;color:var(--text1)">
+                                <span style="font-size:20px">
+                                    <t t-if="'pdf' in (doc.mimetype or '')">📄</t>
+                                    <t t-else="">🖼️</t>
+                                </span>
+                                <span style="flex:1;font-size:12px;font-weight:500">
+                                    <t t-esc="doc.name"/>
+                                </span>
+                                <span style="font-size:11px;color:var(--primary)">↓ تحميل</span>
+                            </a>
+                        </t>
+                    </div>
+                </div>
+            </t>
+
+            <!-- ── Back link ──────────────────────────────── -->
+            <a href="/contractor/submittals"
+               class="cp-btn-ghost cp-btn-block" style="margin-top:8px">
+                ← العودة لقائمة العينات
+            </a>
+
+        </t>
+    </template>
+    <!-- ══════════════════════════════════════════════════════
+             QUALIFICATION DETAIL
+        ══════════════════════════════════════════════════════ -->
+    <template id="tmpl_qual_detail" name="Qualification Detail">
+        <t t-call="waqf_contractor_portal.tmpl_base">
+
+            <div class="cp-breadcrumb">
+                <a href="/contractor">الرئيسية</a>
+                <span>←</span>
+                <a href="/contractor/qualifications">طلبات التأهيل</a>
+                <span>←</span>
+                <span>
+                    <t t-esc="qual.name"/>
+                </span>
+            </div>
+
+            <!-- Toast -->
+            <t t-if="request.params.get('submitted')">
+                <div class="cp-toast-success">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M5 8l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    تم إرسال طلب التأهيل — بانتظار مراجعة الاستشاري
+                </div>
+            </t>
+
+            <!-- Error -->
+            <t t-if="request.params.get('error')">
+                <div class="cp-alert-banner"
+                     style="background:var(--red-bg);border-color:rgba(232,85,85,.2);margin-bottom:12px">
+                    <div class="cp-alert-banner-hdr" style="color:var(--red)">
+                        <t t-esc="request.params.get('error')"/>
+                    </div>
+                </div>
+            </t>
+
+            <!-- ── Header Card ─────────────────────────────── -->
+            <div style="background:var(--navy);border-radius:var(--r-lg);
+                        padding:18px 20px;margin-bottom:16px">
+                <div style="display:flex;align-items:flex-start;
+                            justify-content:space-between;gap:12px;margin-bottom:12px">
+                    <div>
+                        <div style="font-size:17px;font-weight:800;color:white;margin-bottom:4px">
+                            <t t-esc="qual.name"/>
+                        </div>
+                        <div style="font-size:12px;color:rgba(255,255,255,.55)">
+                            <t t-esc="qual.work_category_id.name or '—'"/>
+                        </div>
+                    </div>
+                    <span t-attf-style="flex-shrink:0;padding:5px 12px;border-radius:999px;
+                        font-size:11px;font-weight:700;
+                        background:#{qual.state == 'approved' and 'rgba(46,204,138,.2)' or qual.state == 'rejected' and 'rgba(232,85,85,.2)' or qual.state == 'submitted' and 'rgba(200,164,48,.2)' or 'rgba(255,255,255,.1)'};
+                        color:#{qual.state == 'approved' and 'var(--green)' or qual.state == 'rejected' and 'var(--red)' or qual.state == 'submitted' and 'var(--gold)' or 'rgba(255,255,255,.6)'}">
+                        <t t-if="qual.state == 'draft'">● مسودة</t>
+                        <t t-elif="qual.state == 'submitted'">● قيد المراجعة</t>
+                        <t t-elif="qual.state == 'approved'">✓ معتمد</t>
+                        <t t-elif="qual.state == 'rejected'">✗ مرفوض</t>
+                    </span>
+                </div>
+                <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:rgba(255,255,255,.5)">
+                    <span>النطاق:
+                        <strong style="color:rgba(255,255,255,.7)">
+                            <t t-if="qual.scope == 'all'">كل المساجد</t>
+                            <t t-else="">مساجد محددة</t>
+                        </strong>
+                    </span>
+                    <t t-if="qual.document_ids">
+                        <span>📎
+                            <t t-esc="len(qual.document_ids)"/>
+                            وثيقة
+                        </span>
+                    </t>
+                </div>
+            </div>
+
+            <!-- ── Approved Banner ────────────────────────── -->
+            <t t-if="qual.state == 'approved'">
+                <div style="padding:14px 16px;background:var(--green-bg);
+                            border:1px solid rgba(46,204,138,.25);border-radius:var(--r-lg);
+                            margin-bottom:12px;display:flex;align-items:center;gap:12px">
+                    <div style="width:40px;height:40px;border-radius:50%;
+                                background:rgba(46,204,138,.15);display:flex;
+                                align-items:center;justify-content:center;
+                                font-size:20px;flex-shrink:0">🏅
+                    </div>
+                    <div>
+                        <div style="font-size:13px;font-weight:700;color:#1A7A55;margin-bottom:2px">
+                            تمت الموافقة على هذا التأهيل
+                        </div>
+                        <div style="font-size:11px;color:#2A8A65">
+                            يمكنك استخدام هذا التأهيل عند إنشاء أوامر العمل
+                            <t t-if="qual.approved_by">
+                                · اعتمده:
+                                <strong>
+                                    <t t-esc="qual.approved_by.name"/>
+                                </strong>
+                            </t>
+                            <t t-if="qual.approval_date">
+                                ·
+                                <t t-esc="qual.approval_date"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- ── Rejected Banner ────────────────────────── -->
+            <t t-if="qual.state == 'rejected'">
+                <div style="padding:14px 16px;background:var(--red-bg);
+                            border:1px solid rgba(232,85,85,.25);border-radius:var(--r-lg);
+                            margin-bottom:12px">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+                        <span style="font-size:18px">❌</span>
+                        <div style="font-size:13px;font-weight:700;color:var(--red)">
+                            تم رفض طلب التأهيل
+                        </div>
+                    </div>
+                    <t t-if="qual.reject_reason">
+                        <div style="font-size:12px;color:var(--red);
+                                    padding:8px 12px;background:rgba(232,85,85,.08);
+                                    border-radius:var(--r-sm);line-height:1.6">
+                            <strong>السبب:</strong>
+                            <t t-esc="qual.reject_reason"/>
+                        </div>
+                    </t>
+                </div>
+            </t>
+
+            <!-- ── Submitted Banner ───────────────────────── -->
+            <t t-if="qual.state == 'submitted'">
+                <div style="padding:12px 16px;background:rgba(200,164,48,.08);
+                            border:1px solid rgba(200,164,48,.25);border-radius:var(--r-lg);
+                            margin-bottom:12px;font-size:12px;color:#8A6A00;
+                            display:flex;align-items:center;gap:8px">
+                    <span style="font-size:16px">⏳</span>
+                    طلبك قيد المراجعة من قِبل الاستشاري — سيتم إشعارك عند البت فيه
+                </div>
+            </t>
+
+            <!-- ── Details Card ───────────────────────────── -->
+            <div style="background:white;border:1px solid var(--border);
+                        border-radius:var(--r-lg);margin-bottom:12px;overflow:hidden">
+                <div style="padding:10px 16px;background:var(--surface2);
+                            border-bottom:1px solid var(--border);
+                            font-size:12px;font-weight:600;color:var(--text2)">
+                    تفاصيل التأهيل
+                </div>
+
+                <t t-if="qual.state == 'draft'">
+                    <!-- ── EDITABLE FORM for draft ─────────── -->
+                    <form t-attf-action="/contractor/qualification/#{qual.id}/submit"
+                          method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token"
+                               t-att-value="request.csrf_token()"/>
+                        <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+
+                            <!-- نوع العمل -->
+                            <div class="cp-form-group" style="margin-bottom:0">
+                                <label class="cp-label">
+                                    <span>*</span>
+                                    نوع العمل
+                                </label>
+                                <select name="work_category_id" class="cp-select" required="required">
+                                    <option value="">— اختر التصنيف —</option>
+                                    <t t-foreach="categories" t-as="cat">
+                                        <option t-att-value="cat.id"
+                                                t-att-selected="cat.id == (qual.work_category_id.id or 0)">
+                                            <t t-esc="cat.name"/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+
+                            <!-- النطاق -->
+                            <div class="cp-form-group" style="margin-bottom:0">
+                                <label class="cp-label">نطاق التأهيل</label>
+                                <div style="display:flex;gap:16px">
+                                    <label style="display:flex;align-items:center;gap:6px;
+                                                  cursor:pointer;font-size:13px;color:var(--text2)">
+                                        <input type="radio" name="scope" value="all"
+                                               t-att-checked="qual.scope == 'all' and 'checked' or ''"/>
+                                        كل المساجد
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:6px;
+                                                  cursor:pointer;font-size:13px;color:var(--text2)">
+                                        <input type="radio" name="scope" value="specific"
+                                               t-att-checked="qual.scope == 'specific' and 'checked' or ''"/>
+                                        مساجد محددة
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- مساجد محددة -->
+                            <t t-if="mosques">
+                                <div class="cp-form-group" id="mosque-select-wrap"
+                                     t-attf-style="margin-bottom:0;#{qual.scope != 'specific' and 'display:none' or ''}">
+                                    <label class="cp-label">اختر المساجد</label>
+                                    <t t-foreach="mosques" t-as="m">
+                                        <label style="display:flex;align-items:center;gap:8px;
+                                                      margin-bottom:6px;font-size:13px;color:var(--text2)">
+                                            <input type="checkbox" name="mosque_ids" t-att-value="m.id"
+                                                   t-att-checked="m in qual.mosque_ids and 'checked' or ''"/>
+                                            <t t-esc="m.code"/>
+                                            —
+                                            <t t-esc="m.name"/>
+                                        </label>
+                                    </t>
+                                </div>
+                            </t>
+
+                            <!-- الوصف -->
+                            <div class="cp-form-group" style="margin-bottom:0">
+                                <label class="cp-label">وصف الكفاءة والخبرة</label>
+                                <textarea name="description" class="cp-input" rows="4"
+                                          style="resize:vertical"
+                                          placeholder="اذكر سنوات الخبرة، المشاريع السابقة، الشهادات...">
+                                    <t t-esc="qual.description or ''"/>
+                                </textarea>
+                            </div>
+
+                            <!-- الوثائق الحالية -->
+                            <t t-if="qual.document_ids">
+                                <div>
+                                    <div style="font-size:11px;font-weight:600;color:var(--text3);
+                                                margin-bottom:8px">الوثائق الحالية
+                                    </div>
+                                    <div style="display:flex;flex-direction:column;gap:6px">
+                                        <t t-foreach="qual.document_ids" t-as="doc">
+                                            <div style="display:flex;align-items:center;
+                                                        justify-content:space-between;
+                                                        padding:8px 12px;background:var(--surface2);
+                                                        border-radius:var(--r-sm);
+                                                        border:1px solid var(--border)">
+                                                <div style="display:flex;align-items:center;gap:8px">
+                                                    <span style="font-size:16px">
+                                                        <t t-if="'pdf' in (doc.mimetype or '')">📄</t>
+                                                        <t t-else="">🖼️</t>
+                                                    </span>
+                                                    <span style="font-size:12px;color:var(--text1)">
+                                                        <t t-esc="doc.name"/>
+                                                    </span>
+                                                </div>
+                                                <form t-attf-action="/contractor/qualification/#{qual.id}/delete-doc/#{doc.id}"
+                                                      method="post" style="margin:0">
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
+                                                    <button type="submit"
+                                                            style="background:none;border:none;
+                                                                   color:var(--red);cursor:pointer;
+                                                                   font-size:12px;padding:2px 6px">
+                                                        ✕ حذف
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </t>
+
+                            <!-- رفع وثائق -->
+                            <div class="cp-form-group" style="margin-bottom:0">
+                                <label class="cp-label">
+                                    <t t-if="qual.document_ids">إضافة وثائق</t>
+                                    <t t-else="">الوثائق والشهادات</t>
+                                </label>
+                                <div class="cp-photo-drop-zone">
+                                    <label style="cursor:pointer">
+                                        <span class="cp-action-btn cp-action-ghost"
+                                              style="font-size:12px;padding:6px 14px">
+                                            رفع الوثائق والشهادات
+                                        </span>
+                                        <input type="file" name="documents"
+                                               multiple="multiple" accept=".pdf,image/*"
+                                               style="display:none"/>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- زر الإرسال -->
+                            <button type="submit"
+                                    class="cp-action-btn cp-action-primary"
+                                    style="width:100%;justify-content:center;height:48px">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M13 8H3M9 4l4 4-4 4" stroke="currentColor"
+                                          stroke-width="1.5" stroke-linecap="round"
+                                          stroke-linejoin="round"/>
+                                </svg>
+                                إرسال طلب التأهيل
+                            </button>
+                        </div>
+                    </form>
+
+                    <script>
+                        document.querySelectorAll('input[name="scope"]').forEach(r => {
+                        r.addEventListener('change', () => {
+                        const wrap = document.getElementById('mosque-select-wrap');
+                        if (wrap) wrap.style.display = r.value === 'specific' ? 'block' : 'none';
+                        });
+                        });
+                    </script>
+
+                </t>
+
+                <t t-else="">
+                    <!-- ── READ ONLY ───────────────────────── -->
+                    <div style="padding:16px;display:flex;flex-direction:column;gap:0">
+                        <div style="display:flex;padding:10px 0;border-bottom:1px solid var(--border)">
+                            <span style="width:110px;font-size:12px;color:var(--text3);flex-shrink:0">
+                                نوع العمل
+                            </span>
+                            <span style="font-size:13px;color:var(--text1);font-weight:500">
+                                <t t-esc="qual.work_category_id.name or '—'"/>
+                            </span>
+                        </div>
+                        <div style="display:flex;padding:10px 0;border-bottom:1px solid var(--border)">
+                            <span style="width:110px;font-size:12px;color:var(--text3);flex-shrink:0">
+                                النطاق
+                            </span>
+                            <span style="font-size:13px;color:var(--text1)">
+                                <t t-if="qual.scope == 'all'">كل المساجد</t>
+                                <t t-else="">
+                                    مساجد محددة
+                                    <t t-if="qual.mosque_ids">
+                                        (<t t-esc="', '.join(qual.mosque_ids.mapped('code'))"/>)
+                                    </t>
+                                </t>
+                            </span>
+                        </div>
+                        <t t-if="qual.description">
+                            <div style="padding:10px 0">
+                                <div style="font-size:12px;color:var(--text3);margin-bottom:6px">
+                                    وصف الكفاءة والخبرة
+                                </div>
+                                <div style="font-size:13px;color:var(--text1);line-height:1.7;
+                                            padding:10px 12px;background:var(--surface2);
+                                            border-radius:var(--r-sm)">
+                                    <t t-esc="qual.description"/>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+            </div>
+
+            <!-- ── Documents read-only ────────────────────── -->
+            <t t-if="qual.state != 'draft' and qual.document_ids">
+                <div style="background:white;border:1px solid var(--border);
+                            border-radius:var(--r-lg);overflow:hidden;margin-bottom:12px">
+                    <div style="padding:10px 16px;background:var(--surface2);
+                                border-bottom:1px solid var(--border);
+                                font-size:12px;font-weight:600;color:var(--text2)">
+                        الوثائق المرفقة (<t t-esc="len(qual.document_ids)"/>)
+                    </div>
+                    <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px">
+                        <t t-foreach="qual.document_ids" t-as="doc">
+                            <a t-attf-href="/web/content/#{doc.id}?download=true"
+                               target="_blank"
+                               style="display:flex;align-items:center;gap:10px;
+                                      padding:10px 12px;background:var(--surface2);
+                                      border-radius:var(--r-sm);border:1px solid var(--border);
+                                      text-decoration:none;color:var(--text1)">
+                                <span style="font-size:20px">
+                                    <t t-if="'pdf' in (doc.mimetype or '')">📄</t>
+                                    <t t-else="">🖼️</t>
+                                </span>
+                                <span style="flex:1;font-size:12px;font-weight:500">
+                                    <t t-esc="doc.name"/>
+                                </span>
+                                <span style="font-size:11px;color:var(--primary)">↓ تحميل</span>
+                            </a>
+                        </t>
+                    </div>
+                </div>
+            </t>
+
+            <a href="/contractor/qualifications"
+               class="cp-btn-ghost cp-btn-block" style="margin-top:8px">
+                ← العودة لقائمة التأهيلات
+            </a>
 
         </t>
     </template>
