@@ -118,19 +118,19 @@
     ══════════════════════════════════════════════════════ -->
     <template id="tmpl_mosque_select" name="Contractor Mosque Select">
         <t t-call="waqf_contractor_portal.tmpl_base">
-            <div class="cp-hero" style="margin-bottom:20px">
+
+            <!-- ── User Hero ─────────────────────────────────── -->
+            <div class="cp-hero" style="margin-bottom:16px">
                 <div class="cp-hero-identity">
                     <div class="cp-hero-icon">
                         <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
                             <circle cx="14" cy="9" r="5" stroke="currentColor" stroke-width="1.5"/>
-                            <path d="M4 24c0-5.5 4.5-10 10-10s10 4.5 10 10" stroke="currentColor" stroke-width="1.5"
-                                  stroke-linecap="round"/>
+                            <path d="M4 24c0-5.5 4.5-10 10-10s10 4.5 10 10"
+                                  stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
                     </div>
                     <div>
-                        <div class="cp-hero-name">مرحباً،
-                            <t t-esc="portal_user.name"/>
-                        </div>
+                        <div class="cp-hero-name">مرحباً، <t t-esc="portal_user.name"/></div>
                         <div class="cp-hero-location">
                             <t t-esc="portal_user.company_id.name or ''"/>
                             <t t-if="portal_user.role">
@@ -144,11 +144,241 @@
                 </div>
                 <span class="cp-status-badge active">
                     <span class="cp-status-dot"/>
-                    <t t-esc="len(mosques)"/>
-                    مسجد
+                    <t t-esc="len(mosques)"/> مسجد
                 </span>
             </div>
-            <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.5px;margin-bottom:12px">
+
+            <!-- ── Action Alert — تتطلب إجراء ──────────────── -->
+            <t t-if="rework_orders or rejected_subs">
+                <div class="cp-alert-banner" style="margin-bottom:16px">
+                    <div class="cp-alert-banner-hdr">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M8 1.5L14.5 13H1.5L8 1.5z" stroke="currentColor"
+                                  stroke-width="1.4" stroke-linejoin="round"/>
+                            <path d="M8 6v4M8 11.5v.5" stroke="currentColor"
+                                  stroke-width="1.4" stroke-linecap="round"/>
+                        </svg>
+                        يتطلب إجراءً منك (
+                        <t t-esc="(rework_orders|length) + (rejected_subs|length)"/>
+                        )
+                    </div>
+                    <div class="cp-alert-items">
+                        <t t-foreach="rework_orders" t-as="wo">
+                            <div class="cp-alert-item">
+                                <div>
+                                    <span class="cp-alert-name">
+                                        <t t-esc="wo.name"/> — <t t-esc="(wo.work_description or '')[:45]"/>
+                                    </span>
+                                    <span class="cp-alert-reason">
+                                        أمر عمل — إعادة تسليم مطلوب
+                                        <t t-if="wo.mosque_id">
+                                            · <t t-esc="wo.mosque_id.code"/>
+                                        </t>
+                                    </span>
+                                </div>
+                                <a t-attf-href="/contractor/work-order/#{wo.id}"
+                                   class="cp-btn-sm cp-btn-danger">عرض</a>
+                            </div>
+                        </t>
+                        <t t-foreach="rejected_subs" t-as="s">
+                            <div class="cp-alert-item">
+                                <div>
+                                    <span class="cp-alert-name">
+                                        <t t-esc="s.material_name"/>
+                                    </span>
+                                    <span class="cp-alert-reason">
+                                        عينة مرفوضة:
+                                        <t t-esc="(s.reject_reason or 'راجع التفاصيل')[:50]"/>
+                                    </span>
+                                </div>
+                                <a href="/contractor/submittals?state=rejected"
+                                   class="cp-btn-sm cp-btn-danger">عرض</a>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </t>
+
+            <!-- ── Stats Dashboard ───────────────────────────── -->
+            <div style="font-size:11px;font-weight:600;color:var(--text3);
+                        letter-spacing:.5px;margin-bottom:10px">نظرة عامة</div>
+
+            <!-- Row 1: أوامر العمل -->
+            <div style="background:white;border:1px solid var(--border);
+                        border-radius:var(--r-lg);padding:16px;margin-bottom:10px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                    <div style="width:32px;height:32px;border-radius:var(--r-sm);
+                                background:rgba(35,114,146,.1);display:flex;
+                                align-items:center;justify-content:center">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <rect x="2" y="2" width="12" height="12" rx="2"
+                                  stroke="var(--primary)" stroke-width="1.4"/>
+                            <path d="M5 6h6M5 9h4" stroke="var(--primary)"
+                                  stroke-width="1.4" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <span style="font-size:12px;font-weight:700;color:var(--navy)">أوامر العمل</span>
+                    <a href="/contractor/work-orders"
+                       style="margin-right:auto;font-size:11px;color:var(--primary);text-decoration:none">
+                        عرض الكل ←
+                    </a>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                    <a href="/contractor/work-orders?state=approved" style="text-decoration:none">
+                        <div style="text-align:center;padding:10px 6px;background:rgba(35,114,146,.05);
+                                    border-radius:var(--r-md);border:1px solid rgba(35,114,146,.15)">
+                            <div style="font-size:22px;font-weight:800;color:var(--primary)">
+                                <t t-esc="wo_active or 0"/>
+                            </div>
+                            <div style="font-size:10px;color:var(--text3);margin-top:2px">قيد التنفيذ</div>
+                        </div>
+                    </a>
+                    <a href="/contractor/work-orders?state=submitted" style="text-decoration:none">
+                        <div style="text-align:center;padding:10px 6px;background:rgba(200,164,48,.06);
+                                    border-radius:var(--r-md);border:1px solid rgba(200,164,48,.2)">
+                            <div style="font-size:22px;font-weight:800;color:var(--gold)">
+                                <t t-esc="wo_pending or 0"/>
+                            </div>
+                            <div style="font-size:10px;color:var(--text3);margin-top:2px">بانتظار البدء</div>
+                        </div>
+                    </a>
+                    <a href="/contractor/work-orders?state=rework" style="text-decoration:none">
+                        <div t-attf-style="text-align:center;padding:10px 6px;border-radius:var(--r-md);
+                                    border:1px solid #{(wo_rework or 0) > 0 and 'rgba(232,85,85,.3)' or 'var(--border)'};
+                                    background:#{(wo_rework or 0) > 0 and 'var(--red-bg)' or 'var(--surface)'}">
+                            <div t-attf-style="font-size:22px;font-weight:800;color:#{(wo_rework or 0) > 0 and 'var(--red)' or 'var(--text3)'}">
+                                <t t-esc="wo_rework or 0"/>
+                            </div>
+                            <div style="font-size:10px;color:var(--text3);margin-top:2px">إعادة عمل</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Row 2: العينات + التأهيلات -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+
+                <!-- العينات -->
+                <a href="/contractor/submittals" style="text-decoration:none">
+                    <div style="background:white;border:1px solid var(--border);
+                                border-radius:var(--r-lg);padding:14px">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                            <div style="width:30px;height:30px;border-radius:var(--r-sm);
+                                        background:rgba(35,114,146,.1);display:flex;
+                                        align-items:center;justify-content:center">
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                    <rect x="2" y="1" width="10" height="12" rx="1.5"
+                                          stroke="var(--primary)" stroke-width="1.3"/>
+                                    <path d="M4 5h6M4 8h4" stroke="var(--primary)"
+                                          stroke-width="1.3" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <span style="font-size:11px;font-weight:700;color:var(--navy)">عينات المواد</span>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:5px">
+                            <div style="display:flex;justify-content:space-between;font-size:11px">
+                                <span style="color:var(--text3)">معتمد</span>
+                                <span style="color:var(--green);font-weight:700">
+                                    <t t-esc="sub_approved or 0"/> ✓
+                                </span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-size:11px">
+                                <span style="color:var(--text3)">بانتظار</span>
+                                <span style="color:var(--gold);font-weight:700">
+                                    <t t-esc="sub_pending or 0"/>
+                                </span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-size:11px">
+                                <span style="color:var(--text3)">مرفوض</span>
+                                <span t-attf-style="font-weight:700;color:#{(sub_rejected or 0) > 0 and 'var(--red)' or 'var(--text3)'}">
+                                    <t t-esc="sub_rejected or 0"/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- التأهيلات -->
+                <a href="/contractor/qualifications" style="text-decoration:none">
+                    <div style="background:white;border:1px solid var(--border);
+                                border-radius:var(--r-lg);padding:14px">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                            <div style="width:30px;height:30px;border-radius:var(--r-sm);
+                                        background:rgba(155,89,182,.1);display:flex;
+                                        align-items:center;justify-content:center">
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                    <path d="M7 1.5l1.5 3 3.5.5-2.5 2.5.5 3.5L7 9.5l-3 1.5.5-3.5L2 5l3.5-.5L7 1.5z"
+                                          stroke="#7D3C98" stroke-width="1.3" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span style="font-size:11px;font-weight:700;color:var(--navy)">التأهيلات</span>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:5px">
+                            <div style="display:flex;justify-content:space-between;font-size:11px">
+                                <span style="color:var(--text3)">معتمد</span>
+                                <span style="color:var(--green);font-weight:700">
+                                    <t t-esc="qual_approved or 0"/> ✓
+                                </span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-size:11px">
+                                <span style="color:var(--text3)">قيد المراجعة</span>
+                                <span style="color:var(--gold);font-weight:700">
+                                    <t t-esc="qual_pending or 0"/>
+                                </span>
+                            </div>
+                            <div style="margin-top:6px">
+                                <span style="font-size:10px;color:var(--primary)">+ طلب تأهيل جديد</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- ── Quick Actions ──────────────────────────────── -->
+            <div style="font-size:11px;font-weight:600;color:var(--text3);
+                        letter-spacing:.5px;margin-bottom:10px">إجراءات سريعة</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px">
+                <a href="/contractor/work-orders/new" class="cp-action-btn cp-action-primary"
+                   style="justify-content:center">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M7 1.5v11M1.5 7h11" stroke="currentColor"
+                              stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    أمر عمل جديد
+                </a>
+                <a href="/contractor/submittals/new" class="cp-action-btn cp-action-secondary"
+                   style="justify-content:center">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <rect x="2" y="2" width="10" height="10" rx="1.5"
+                              stroke="currentColor" stroke-width="1.4"/>
+                        <path d="M7 4.5v5M4.5 7h5" stroke="currentColor"
+                              stroke-width="1.4" stroke-linecap="round"/>
+                    </svg>
+                    رفع عينة
+                </a>
+                <a href="/contractor/qualifications/new" class="cp-action-btn cp-action-ghost"
+                   style="justify-content:center">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M7 1l1.5 3 3.5.5-2.5 2.5.5 3.5L7 9 4 10.5l.5-3.5L2 4.5 5.5 4 7 1z"
+                              stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+                    </svg>
+                    طلب تأهيل
+                </a>
+                <a href="/contractor/certificate/new" class="cp-action-btn cp-action-ghost"
+                   style="justify-content:center">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <rect x="1" y="3" width="12" height="8" rx="1.5"
+                              stroke="currentColor" stroke-width="1.4"/>
+                        <path d="M4 6.5h6M4 9h3" stroke="currentColor"
+                              stroke-width="1.4" stroke-linecap="round"/>
+                    </svg>
+                    مستخلص جديد
+                </a>
+            </div>
+
+            <!-- ── Mosques Grid ───────────────────────────────── -->
+            <div style="font-size:11px;font-weight:600;color:var(--text3);
+                        letter-spacing:.5px;margin-bottom:10px">
                 اختر الموقع للمتابعة
             </div>
             <div class="cp-mosque-grid">
@@ -162,11 +392,13 @@
                                 </svg>
                             </div>
                             <div style="flex:1;min-width:0">
-                                <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:3px;
-                                            white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                                <div style="font-size:13px;font-weight:700;color:var(--navy);
+                                            margin-bottom:3px;white-space:nowrap;overflow:hidden;
+                                            text-overflow:ellipsis">
                                     <t t-esc="mosque.name"/>
                                 </div>
-                                <div style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px">
+                                <div style="font-size:11px;color:var(--text3);
+                                            display:flex;align-items:center;gap:6px">
                                     <span style="font-family:monospace;color:var(--primary);font-weight:600">
                                         <t t-esc="mosque.code"/>
                                     </span>
@@ -182,14 +414,24 @@
                                     <t t-if="mosque.state == 'active'">قيد التنفيذ</t>
                                     <t t-else="">لم يبدأ</t>
                                 </span>
-                                <span style="font-size:11px;color:var(--text3)">
-                                    <t t-esc="'%.0f' % (mosque.overall_kpi or 0)"/>% KPI
-                                </span>
+                                <div style="display:flex;align-items:center;gap:6px">
+                                    <span style="font-size:10px;color:var(--text3)">
+                                        <t t-esc="'%.0f' % (mosque.overall_kpi or 0)"/>% KPI
+                                    </span>
+                                    <!-- نسبة مئوية بار صغير -->
+                                    <div style="width:40px;height:4px;background:var(--border);
+                                                border-radius:2px;overflow:hidden">
+                                        <div t-attf-style="height:100%;border-radius:2px;
+                                            width:#{min(mosque.overall_kpi or 0, 100)}%;
+                                            background:#{(mosque.overall_kpi or 0) >= 70 and 'var(--green)' or (mosque.overall_kpi or 0) >= 50 and 'var(--gold)' or 'var(--red)'}"/>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </a>
                 </t>
             </div>
+
         </t>
     </template>
 

@@ -45,34 +45,84 @@ class ContractorPortal(http.Controller):
         Access = request.env['contractor.boq.access'].sudo()
         return Access.check_contractor_access(mosque_id, supervisor.id)
 
+        # ══════════════════════════════════════════════════════════════
+        # استبدل portal_home كاملاً
+        # ══════════════════════════════════════════════════════════════
+
     @http.route('/contractor', type='http', auth='user', website=True)
     def portal_home(self, **kwargs):
-        # ── تحقق من الصلاحية ─────────────────────────────────
         portal_user = self._get_portal_user()
         supervisor = self._get_supervisor()
 
         if not portal_user and not supervisor:
             return request.redirect('/web')
 
-        # ── قائمة المساجد المتاحة ─────────────────────────────
         if portal_user:
             mosques = portal_user.effective_mosque_ids.sorted('name')
             is_admin = portal_user.role == 'contractor_admin'
         else:
-            # النظام القديم — مسجد واحد
             mosque = supervisor.assigned_mosque_id
             if mosque:
                 return request.redirect(f'/contractor/mosque/{mosque.id}')
             return request.render('waqf_contractor_portal.tmpl_no_mosque', {})
 
-        # إذا كان لديه مسجد واحد فقط — انتقل مباشرة
         if len(mosques) == 1:
             return request.redirect(f'/contractor/mosque/{mosques[0].id}')
+
+        # ── إحصاءات سريعة لكل المساجد ────────────────────────
+        mosque_ids = mosques.ids
+
+        # أوامر عمل
+        wo_pending = request.env['contractor.work.order'].sudo().search_count([
+            ('mosque_id', 'in', mosque_ids), ('state', '=', 'submitted')])
+        wo_rework = request.env['contractor.work.order'].sudo().search_count([
+            ('mosque_id', 'in', mosque_ids), ('state', '=', 'rework')])
+        wo_active = request.env['contractor.work.order'].sudo().search_count([
+            ('mosque_id', 'in', mosque_ids), ('state', '=', 'approved')])
+
+        # عينات المواد
+        sub_pending = request.env['contractor.material.submittal'].sudo().search_count([
+            ('mosque_id', 'in', mosque_ids), ('state', '=', 'submitted')])
+        sub_approved = request.env['contractor.material.submittal'].sudo().search_count([
+            ('mosque_id', 'in', mosque_ids), ('state', '=', 'approved')])
+        sub_rejected = request.env['contractor.material.submittal'].sudo().search_count([
+            ('mosque_id', 'in', mosque_ids), ('state', '=', 'rejected')])
+
+        # تأهيلات
+        qual_domain = []
+        if supervisor:
+            qual_domain.append(('supervisor_id', '=', supervisor.id))
+        qual_approved = request.env['contractor.qualification'].sudo().search_count(
+            qual_domain + [('state', '=', 'approved')])
+        qual_pending = request.env['contractor.qualification'].sudo().search_count(
+            qual_domain + [('state', '=', 'submitted')])
+
+        # أوامر تتطلب إجراء (rework)
+        rework_orders = request.env['contractor.work.order'].sudo().search([
+            ('mosque_id', 'in', mosque_ids), ('state', '=', 'rework')
+        ], limit=5, order='write_date desc')
+
+        # عينات مرفوضة تتطلب إجراء
+        rejected_subs = request.env['contractor.material.submittal'].sudo().search([
+            ('mosque_id', 'in', mosque_ids), ('state', '=', 'rejected')
+        ], limit=5, order='write_date desc')
 
         return request.render('waqf_contractor_portal.tmpl_mosque_select', {
             'portal_user': portal_user,
             'mosques': mosques,
             'is_admin': is_admin,
+            # إحصاءات
+            'wo_pending': wo_pending,
+            'wo_rework': wo_rework,
+            'wo_active': wo_active,
+            'sub_pending': sub_pending,
+            'sub_approved': sub_approved,
+            'sub_rejected': sub_rejected,
+            'qual_approved': qual_approved,
+            'qual_pending': qual_pending,
+            # طلبات تتطلب إجراء
+            'rework_orders': rework_orders,
+            'rejected_subs': rejected_subs,
         })
 
     def _resolve_mosque(self, mosque_id):
