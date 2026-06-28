@@ -90,8 +90,8 @@ class ContractorPortal(http.Controller):
 
         # تأهيلات
         qual_domain = []
-        if supervisor:
-            qual_domain.append(('supervisor_id', '=', supervisor.id))
+        # if supervisor:
+        #     qual_domain.append(('supervisor_id', '=', supervisor.id))
         qual_approved = request.env['contractor.qualification'].sudo().search_count(
             qual_domain + [('state', '=', 'approved')])
         qual_pending = request.env['contractor.qualification'].sudo().search_count(
@@ -142,8 +142,8 @@ class ContractorPortal(http.Controller):
             domain.append(('mosque_id', '=', mosque_id))
         if portal_user:
             domain.append(('portal_user_id', '=', portal_user.user_id.id))
-        elif supervisor:
-            domain.append(('supervisor_id', '=', supervisor.id))
+        # elif supervisor:
+        #     domain.append(('supervisor_id', '=', supervisor.id))
         return domain
 
     @http.route('/contractor/mosque/<int:mosque_id>', type='http', auth='user', website=True)
@@ -169,8 +169,8 @@ class ContractorPortal(http.Controller):
         # ── Work Orders (الجديدة) ─────────────────────────────
         WO = request.env['contractor.work.order'].sudo()
         wo_domain = [('mosque_id', '=', mosque.id)]
-        if supervisor:
-            wo_domain.append(('supervisor_id', '=', supervisor.id))
+        # if supervisor:
+        #     wo_domain.append(('supervisor_id', '=', supervisor.id))
 
         all_wo = WO.search(wo_domain, order='date_requested desc')
         recent_work_orders = all_wo[:8]
@@ -184,8 +184,8 @@ class ContractorPortal(http.Controller):
 
         # ── Legacy Work Logs ──────────────────────────────────
         log_domain = [('mosque_id', '=', mosque.id)]
-        if supervisor:
-            log_domain.append(('supervisor_id', '=', supervisor.id))
+        # if supervisor:
+        #     log_domain.append(('supervisor_id', '=', supervisor.id))
 
         recent_logs = request.env['contractor.work.log'].sudo().search(
             log_domain, limit=5, order='log_date desc')
@@ -255,8 +255,8 @@ class ContractorPortal(http.Controller):
             return request.redirect('/web')
 
         domain = []
-        if supervisor:
-            domain.append(('supervisor_id', '=', supervisor.id))
+        # if supervisor:
+        #     domain.append(('supervisor_id', '=', supervisor.id))
         if state and state != 'all':
             domain.append(('state', '=', state))
 
