@@ -156,6 +156,21 @@ class ContractorPortal(http.Controller):
             ('mosque_id', '=', mosque.id),
             ('state', 'in', ['draft', 'submitted']),
         ])
+        qual_domain_base = []
+        if supervisor:
+            qual_domain_base.append(('supervisor_id', '=', supervisor.id))
+
+        qual_approved_count = request.env['contractor.qualification'].sudo().search_count(
+            qual_domain_base + [('state', '=', 'approved')])
+        qual_pending_count = request.env['contractor.qualification'].sudo().search_count(
+            qual_domain_base + [('state', '=', 'submitted')])
+
+        # ── Submittals stats ───────────────────────────────────
+        sub_domain_base = [('mosque_id', '=', mosque.id)]
+        sub_approved_count = request.env['contractor.material.submittal'].sudo().search_count(
+            sub_domain_base + [('state', '=', 'approved')])
+        sub_pending_count = request.env['contractor.material.submittal'].sudo().search_count(
+            sub_domain_base + [('state', '=', 'submitted')])
 
         return request.render('waqf_contractor_portal.tmpl_home', {
             'supervisor': supervisor,
@@ -172,7 +187,94 @@ class ContractorPortal(http.Controller):
             'delivered_wo_count': delivered_wo_count,
             'total_wo_count': total_wo_count,
             'active_submittals': active_submittals,
+            'qual_approved_count': qual_approved_count,
+            'qual_pending_count': qual_pending_count,
+            'sub_approved_count': sub_approved_count,
+            'sub_pending_count': sub_pending_count,
         })
+
+    # ══════════════════════════════════════════════════════
+    # QUALIFICATIONS LIST
+    # ══════════════════════════════════════════════════════
+    @http.route('/contractor/qualifications', type='http',
+                auth='user', website=True)
+    def qualifications_list(self, state=None, **kwargs):
+        portal_user = self._get_portal_user()
+        supervisor = self._get_supervisor()
+        if not portal_user and not supervisor:
+            return request.redirect('/web')
+
+        domain = []
+        if supervisor:
+            domain.append(('supervisor_id', '=', supervisor.id))
+        if state and state != 'all':
+            domain.append(('state', '=', state))
+
+        quals = request.env['contractor.qualification'].sudo().search(
+            domain, order='id desc')
+
+        counts = {
+            'all': len(quals),
+            'draft': sum(1 for q in quals if q.state == 'draft'),
+            'submitted': sum(1 for q in quals if q.state == 'submitted'),
+            'approved': sum(1 for q in quals if q.state == 'approved'),
+            'rejected': sum(1 for q in quals if q.state == 'rejected'),
+        }
+
+        return request.render('waqf_contractor_portal.tmpl_qual_list', {
+            'portal_user': portal_user,
+            'supervisor': supervisor,
+            'qualifications': quals,
+            'active_state': state or 'all',
+            'counts': counts,
+        })
+
+    # ══════════════════════════════════════════════════════
+    # SUBMITTALS LIST
+    # ══════════════════════════════════════════════════════
+    @http.route('/contractor/submittals', type='http',
+                auth='user', website=True)
+    def submittals_list(self, state=None, mosque=None, **kwargs):
+        portal_user = self._get_portal_user()
+        supervisor = self._get_supervisor()
+        if not portal_user and not supervisor:
+            return request.redirect('/web')
+
+        domain = []
+        if portal_user:
+            domain.append(('mosque_id', 'in',
+                           portal_user.effective_mosque_ids.ids))
+        elif supervisor and supervisor.assigned_mosque_id:
+            domain.append(('mosque_id', '=', supervisor.assigned_mosque_id.id))
+
+        if mosque:
+            domain.append(('mosque_id', '=', int(mosque)))
+        if state and state != 'all':
+            domain.append(('state', '=', state))
+
+        subs = request.env['contractor.material.submittal'].sudo().search(
+            domain, order='date_submitted desc, id desc')
+
+        counts = {
+            'all': len(subs),
+            'draft': sum(1 for s in subs if s.state == 'draft'),
+            'submitted': sum(1 for s in subs if s.state == 'submitted'),
+            'approved': sum(1 for s in subs if s.state == 'approved'),
+            'rejected': sum(1 for s in subs if s.state == 'rejected'),
+        }
+
+        mosques = portal_user.effective_mosque_ids if portal_user else []
+
+        return request.render('waqf_contractor_portal.tmpl_sub_list', {
+            'portal_user': portal_user,
+            'supervisor': supervisor,
+            'submittals': subs,
+            'active_state': state or 'all',
+            'active_mosque': int(mosque) if mosque else None,
+            'mosques': mosques,
+            'counts': counts,
+        })
+
 
     @http.route('/contractor/task/<int:task_id>', type='http',
                 auth='user', website=True)

@@ -41,33 +41,42 @@
                         </t>
                         <a href="/web/session/logout"
                            style="color:rgba(255,255,255,0.4);font-size:11px;margin-right:6px;
-                    text-decoration:none;white-space:nowrap">
-                            خروج
+                                  text-decoration:none;white-space:nowrap">خروج
                         </a>
                     </div>
                 </header>
 
-                <!-- Bottom Nav (Mobile) -->
+                <!-- Bottom Nav -->
                 <nav class="cp-bottom-nav" id="cp-bottom-nav">
-                    <a href="/contractor" class="cp-bottom-nav-item active" id="nav-home">
+                    <a href="/contractor" class="cp-bottom-nav-item" id="nav-home">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                             <path d="M3 9l7-6 7 6v9H13v-5H7v5H3V9z" stroke="currentColor" stroke-width="1.5"
                                   stroke-linejoin="round"/>
                         </svg>
                         <span>الرئيسية</span>
                     </a>
-                    <a href="/contractor/logs" class="cp-bottom-nav-item" id="nav-logs">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <rect x="3" y="2" width="14" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/>
-                            <path d="M7 7h6M7 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                        </svg>
-                        <span>الأعمال</span>
-                    </a>
                     <a href="/contractor/work-orders" class="cp-bottom-nav-item" id="nav-orders">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            <rect x="3" y="2" width="14" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M7 7h6M7 11h4M7 15h3" stroke="currentColor" stroke-width="1.5"
+                                  stroke-linecap="round"/>
                         </svg>
                         <span>أوامر</span>
+                    </a>
+                    <a href="/contractor/submittals" class="cp-bottom-nav-item" id="nav-subs">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M10 3v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                        <span>عينات</span>
+                    </a>
+                    <a href="/contractor/qualifications" class="cp-bottom-nav-item" id="nav-quals">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M10 2l2.5 5.5 6 .75-4.5 4.25 1.25 6L10 15.5l-5.25 3 1.25-6L1.5 8.25l6-.75L10 2z"
+                                  stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                        </svg>
+                        <span>تأهيل</span>
                     </a>
                     <a href="/contractor/certificate/new" class="cp-bottom-nav-item" id="nav-cert">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -109,15 +118,13 @@
     ══════════════════════════════════════════════════════ -->
     <template id="tmpl_mosque_select" name="Contractor Mosque Select">
         <t t-call="waqf_contractor_portal.tmpl_base">
-
-            <!-- User Hero -->
             <div class="cp-hero" style="margin-bottom:20px">
                 <div class="cp-hero-identity">
                     <div class="cp-hero-icon">
                         <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
                             <circle cx="14" cy="9" r="5" stroke="currentColor" stroke-width="1.5"/>
-                            <path d="M4 24c0-5.5 4.5-10 10-10s10 4.5 10 10" stroke="currentColor"
-                                  stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M4 24c0-5.5 4.5-10 10-10s10 4.5 10 10" stroke="currentColor" stroke-width="1.5"
+                                  stroke-linecap="round"/>
                         </svg>
                     </div>
                     <div>
@@ -141,13 +148,9 @@
                     مسجد
                 </span>
             </div>
-
-            <!-- Mosque Grid -->
-            <div style="font-size:11px;font-weight:600;color:var(--text3);
-                letter-spacing:.5px;margin-bottom:12px">
+            <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.5px;margin-bottom:12px">
                 اختر الموقع للمتابعة
             </div>
-
             <div class="cp-mosque-grid">
                 <t t-foreach="mosques" t-as="mosque">
                     <a t-attf-href="/contractor/mosque/#{mosque.id}" class="cp-mosque-card-link">
@@ -159,13 +162,11 @@
                                 </svg>
                             </div>
                             <div style="flex:1;min-width:0">
-                                <div style="font-size:13px;font-weight:700;color:var(--navy);
-                          margin-bottom:3px;white-space:nowrap;overflow:hidden;
-                          text-overflow:ellipsis">
+                                <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:3px;
+                                            white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
                                     <t t-esc="mosque.name"/>
                                 </div>
-                                <div style="font-size:11px;color:var(--text3);display:flex;
-                          align-items:center;gap:6px">
+                                <div style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px">
                                     <span style="font-family:monospace;color:var(--primary);font-weight:600">
                                         <t t-esc="mosque.code"/>
                                     </span>
@@ -189,7 +190,828 @@
                     </a>
                 </t>
             </div>
+        </t>
+    </template>
 
+    <!-- ══════════════════════════════════════════════════════
+         HOME DASHBOARD
+    ══════════════════════════════════════════════════════ -->
+    <template id="tmpl_home" name="Contractor Home">
+        <t t-call="waqf_contractor_portal.tmpl_base">
+
+            <!-- Toast -->
+            <t t-if="request.params.get('submitted') or request.params.get('cert_submitted') or request.params.get('co_submitted')">
+                <div class="cp-toast-success">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                        <circle cx="9" cy="9" r="8" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M5.5 9l2.5 2.5 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <t t-if="request.params.get('submitted')">تم إرسال العمل بنجاح</t>
+                    <t t-elif="request.params.get('cert_submitted')">تم إرسال المستخلص للاستشاري</t>
+                    <t t-elif="request.params.get('co_submitted')">تم إرسال طلب التعديل</t>
+                </div>
+            </t>
+
+            <!-- Rejected Banner -->
+            <t t-if="rejected_work_orders or rejected_logs">
+                <div class="cp-alert-banner">
+                    <div class="cp-alert-banner-hdr">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M8 1.5L14.5 13H1.5L8 1.5z" stroke="currentColor" stroke-width="1.4"
+                                  stroke-linejoin="round"/>
+                            <path d="M8 6v4M8 11.5v.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                        </svg>
+                        يتطلب إجراءً منك
+                    </div>
+                    <div class="cp-alert-items">
+                        <t t-foreach="rejected_work_orders[:3]" t-as="wo">
+                            <div class="cp-alert-item">
+                                <div>
+                                    <span class="cp-alert-name">
+                                        <t t-esc="wo.name"/>
+                                        —
+                                        <t t-esc="wo.work_description[:40]"/>
+                                    </span>
+                                    <span class="cp-alert-reason">تقييم D — إعادة تسليم مطلوب</span>
+                                </div>
+                                <a t-attf-href="/contractor/work-order/#{wo.id}" class="cp-btn-sm cp-btn-danger">عرض</a>
+                            </div>
+                        </t>
+                        <t t-foreach="rejected_logs[:2]" t-as="rl">
+                            <div class="cp-alert-item">
+                                <div>
+                                    <span class="cp-alert-name">
+                                        <t t-esc="rl.name"/>
+                                    </span>
+                                    <span class="cp-alert-reason">
+                                        <t t-esc="rl.reject_reason or 'بدون سبب محدد'"/>
+                                    </span>
+                                </div>
+                                <a t-attf-href="/contractor/work/#{rl.id}/rejected" class="cp-btn-sm cp-btn-danger">
+                                    تعديل
+                                </a>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </t>
+
+            <!-- Mosque Hero -->
+            <div class="cp-hero">
+                <div class="cp-hero-identity">
+                    <div class="cp-hero-icon">
+                        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                            <path d="M14 4C11.8 4 10 5.8 10 8v1H7l-3 3v12h20V12l-3-3h-3V8c0-2.2-1.8-4-4-4z"
+                                  stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                            <path d="M14 4v2M10 12h8M11 17h2M15 17h2" stroke="currentColor" stroke-width="1.5"
+                                  stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="cp-hero-name">
+                            <t t-esc="mosque.name"/>
+                        </div>
+                        <div class="cp-hero-location">
+                            <t t-esc="mosque.district or ''"/>
+                            <t t-if="mosque.district and mosque.city">—</t>
+                            <t t-esc="mosque.city or ''"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="cp-hero-badges">
+                    <span t-attf-class="cp-status-badge #{mosque.state == 'active' and 'active' or 'draft'}">
+                        <span class="cp-status-dot"/>
+                        <t t-if="mosque.state == 'active'">قيد التنفيذ</t>
+                        <t t-elif="mosque.state == 'mobilizing'">التجهيز</t>
+                        <t t-else="">لم يبدأ</t>
+                    </span>
+                    <t t-if="mosque.days_delay > 0">
+                        <span class="cp-delay-badge">تأخير
+                            <t t-esc="mosque.days_delay"/>
+                            يوم
+                        </span>
+                    </t>
+                    <t t-if="portal_user and portal_user.mosque_count > 1">
+                        <a href="/contractor" style="font-size:11px;color:var(--text3);text-decoration:none">← تغيير
+                            الموقع
+                        </a>
+                    </t>
+                </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="cp-kpi-grid">
+                <div class="cp-kpi-card">
+                    <div class="cp-kpi-header">
+                        <span class="cp-kpi-label">الإنجاز المالي</span>
+                        <span class="cp-kpi-pct financial"><t t-esc="'%.0f' % (mosque.financial_progress or 0)"/>%
+                        </span>
+                    </div>
+                    <div class="cp-kpi-bar-track">
+                        <div class="cp-kpi-bar-fill financial"
+                             t-attf-style="width:#{min(mosque.financial_progress or 0, 100)}%"/>
+                    </div>
+                    <div class="cp-kpi-sub">
+                        <span>المعتمد</span>
+                        <span class="cp-kpi-value">
+                            <t t-esc="'{:,.0f}'.format(mosque.certified_amount or 0)"/>
+                            ر
+                        </span>
+                    </div>
+                </div>
+                <div class="cp-kpi-card">
+                    <div class="cp-kpi-header">
+                        <span class="cp-kpi-label">الإنجاز الزمني</span>
+                        <span class="cp-kpi-pct time"><t t-esc="'%.0f' % (mosque.time_progress or 0)"/>%
+                        </span>
+                    </div>
+                    <div class="cp-kpi-bar-track">
+                        <div class="cp-kpi-bar-fill time" t-attf-style="width:#{min(mosque.time_progress or 0, 100)}%"/>
+                    </div>
+                    <div class="cp-kpi-sub">
+                        <span>منذ البداية</span>
+                        <t t-if="mosque.planned_end">
+                            <span class="cp-kpi-value">حتى
+                                <t t-esc="mosque.planned_end"/>
+                            </span>
+                        </t>
+                    </div>
+                </div>
+                <div class="cp-kpi-card cp-kpi-card-overall">
+                    <div class="cp-kpi-header">
+                        <span class="cp-kpi-label">الأداء العام</span>
+                        <span t-attf-class="cp-kpi-pct overall #{(mosque.overall_kpi or 0) >= 70 and 'good' or (mosque.overall_kpi or 0) >= 50 and 'warn' or 'bad'}">
+                            <t t-esc="'%.0f' % (mosque.overall_kpi or 0)"/>%
+                        </span>
+                    </div>
+                    <div class="cp-kpi-bar-track">
+                        <div t-attf-class="cp-kpi-bar-fill overall #{(mosque.overall_kpi or 0) >= 70 and 'good' or (mosque.overall_kpi or 0) >= 50 and 'warn' or 'bad'}"
+                             t-attf-style="width:#{min(mosque.overall_kpi or 0, 100)}%"/>
+                    </div>
+                    <div class="cp-kpi-sub">
+                        <span>قيمة العقد</span>
+                        <span class="cp-kpi-value">
+                            <t t-esc="'{:,.0f}'.format(mosque.contract_value or 0)"/>
+                            ر
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Work Orders Summary -->
+            <div class="cp-wo-summary">
+                <a t-attf-href="/contractor/work-orders?mosque=#{mosque.id}&amp;state=submitted" class="cp-wo-stat">
+                    <div class="cp-wo-stat-val pending">
+                        <t t-esc="pending_wo_count or 0"/>
+                    </div>
+                    <div class="cp-wo-stat-lbl">بانتظار الاعتماد</div>
+                </a>
+                <div class="cp-wo-divider"/>
+                <a t-attf-href="/contractor/work-orders?mosque=#{mosque.id}&amp;state=approved" class="cp-wo-stat">
+                    <div class="cp-wo-stat-val active">
+                        <t t-esc="active_wo_count or 0"/>
+                    </div>
+                    <div class="cp-wo-stat-lbl">قيد التنفيذ</div>
+                </a>
+                <div class="cp-wo-divider"/>
+                <a t-attf-href="/contractor/work-orders?mosque=#{mosque.id}&amp;state=delivered" class="cp-wo-stat">
+                    <div class="cp-wo-stat-val delivered">
+                        <t t-esc="delivered_wo_count or 0"/>
+                    </div>
+                    <div class="cp-wo-stat-lbl">بانتظار التقييم</div>
+                </a>
+                <div class="cp-wo-divider"/>
+                <a t-attf-href="/contractor/work-orders?mosque=#{mosque.id}" class="cp-wo-stat">
+                    <div class="cp-wo-stat-val total">
+                        <t t-esc="total_wo_count or 0"/>
+                    </div>
+                    <div class="cp-wo-stat-lbl">إجمالي الأوامر</div>
+                </a>
+            </div>
+
+            <!-- Status Cards — التأهيلات والعينات والإحصاءات -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+
+                <!-- التأهيلات -->
+                <a href="/contractor/qualifications" style="text-decoration:none">
+                    <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                            <div style="width:36px;height:36px;border-radius:var(--r-sm);
+                                        background:rgba(155,89,182,.1);display:flex;align-items:center;
+                                        justify-content:center;color:#7D3C98">
+                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                    <path d="M9 2l2 4 4.5.5-3.25 3 1 4.5L9 12 5.25 14l1-4.5L3 6.5 7.5 6 9 2z"
+                                          stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div style="font-size:12px;font-weight:600;color:var(--text2)">التأهيلات</div>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3)">
+                            <span>معتمد</span>
+                            <span style="color:var(--green);font-weight:700">
+                                <t t-esc="qual_approved_count or 0"/>
+                            </span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:3px">
+                            <span>قيد المراجعة</span>
+                            <span style="color:var(--gold);font-weight:700">
+                                <t t-esc="qual_pending_count or 0"/>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- العينات -->
+                <a href="/contractor/submittals" style="text-decoration:none">
+                    <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                            <div style="width:36px;height:36px;border-radius:var(--r-sm);
+                                        background:rgba(35,114,146,.1);display:flex;align-items:center;
+                                        justify-content:center;color:var(--primary)">
+                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                    <rect x="3" y="2" width="12" height="14" rx="2" stroke="currentColor"
+                                          stroke-width="1.4"/>
+                                    <path d="M6 7h6M6 10h4" stroke="currentColor" stroke-width="1.4"
+                                          stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div style="font-size:12px;font-weight:600;color:var(--text2)">عينات المواد</div>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3)">
+                            <span>معتمد</span>
+                            <span style="color:var(--green);font-weight:700">
+                                <t t-esc="sub_approved_count or 0"/>
+                            </span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:3px">
+                            <span>بانتظار</span>
+                            <span style="color:var(--gold);font-weight:700">
+                                <t t-esc="sub_pending_count or 0"/>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- تتطلب تعديل -->
+                <a t-attf-href="/contractor/work-orders?mosque=#{mosque.id}&amp;state=rework"
+                   style="text-decoration:none">
+                    <div t-attf-style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;
+                                       #{(rejected_work_orders|length) > 0 and 'border-color:rgba(232,85,85,.3)' or ''}">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                            <div style="width:36px;height:36px;border-radius:var(--r-sm);background:var(--red-bg);
+                                        display:flex;align-items:center;justify-content:center;color:var(--red)">
+                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                    <path d="M9 3v6M9 12v1" stroke="currentColor" stroke-width="1.5"
+                                          stroke-linecap="round"/>
+                                    <path d="M2 15L9 3l7 12H2z" stroke="currentColor" stroke-width="1.4"
+                                          stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div style="font-size:12px;font-weight:600;color:var(--text2)">تتطلب تعديل</div>
+                        </div>
+                        <div style="font-size:22px;font-weight:800;color:var(--red)">
+                            <t t-esc="rejected_work_orders|length or 0"/>
+                        </div>
+                        <div style="font-size:11px;color:var(--text3)">أمر عمل يحتاج إعادة تسليم</div>
+                    </div>
+                </a>
+
+                <!-- المستخلصات -->
+                <a href="/contractor/certificate/new" style="text-decoration:none">
+                    <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                            <div style="width:36px;height:36px;border-radius:var(--r-sm);
+                                        background:rgba(200,164,48,.1);display:flex;align-items:center;
+                                        justify-content:center;color:var(--gold)">
+                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                    <rect x="2" y="3" width="14" height="12" rx="2" stroke="currentColor"
+                                          stroke-width="1.4"/>
+                                    <path d="M5 8h8M5 11h4" stroke="currentColor" stroke-width="1.4"
+                                          stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div style="font-size:12px;font-weight:600;color:var(--text2)">المستخلصات</div>
+                        </div>
+                        <div style="font-size:22px;font-weight:800;color:var(--gold)">
+                            <t t-esc="mosque.certificate_count or 0"/>
+                        </div>
+                        <div style="font-size:11px;color:var(--text3)">مستخلص مالي مقدّم</div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="cp-quick-actions">
+                <a t-attf-href="/contractor/work-orders/new?mosque=#{mosque.id}"
+                   class="cp-action-btn cp-action-primary">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    أمر عمل جديد
+                </a>
+                <a href="/contractor/certificate/new" class="cp-action-btn cp-action-secondary">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+                        <path d="M5 7h6M5 10h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                    </svg>
+                    مستخلص جديد
+                </a>
+                <a href="/contractor/qualifications/new" class="cp-action-btn cp-action-ghost">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M8 2l1.5 3 3.5.5-2.5 2.5.5 3.5L8 10l-3 1.5.5-3.5L3 5.5l3.5-.5L8 2z"
+                              stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                    </svg>
+                    طلب تأهيل
+                </a>
+                <a t-attf-href="/contractor/submittals/new?mosque=#{mosque.id}" class="cp-action-btn cp-action-ghost">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/>
+                        <path d="M8 5v6M5 8l3-3 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                    </svg>
+                    رفع عينة
+                </a>
+            </div>
+
+            <!-- Main Layout -->
+            <div class="cp-layout">
+                <div class="cp-main-col">
+
+                    <!-- أوامر العمل الأخيرة -->
+                    <div class="cp-section">
+                        <div class="cp-section-hdr">
+                            <div class="cp-section-title">أوامر العمل الأخيرة</div>
+                            <a t-attf-href="/contractor/work-orders?mosque=#{mosque.id}" class="cp-btn-ghost"
+                               style="font-size:11px;padding:4px 10px">الكل
+                            </a>
+                        </div>
+                        <t t-if="not recent_work_orders">
+                            <div class="cp-empty-state">
+                                <svg width="36" height="36" viewBox="0 0 36 36" fill="none" class="cp-empty-icon">
+                                    <rect x="6" y="4" width="24" height="28" rx="3" stroke="currentColor"
+                                          stroke-width="1.5"/>
+                                    <path d="M12 13h12M12 18h8M12 23h6" stroke="currentColor" stroke-width="1.5"
+                                          stroke-linecap="round"/>
+                                </svg>
+                                <div class="cp-empty-title">لا توجد أوامر عمل بعد</div>
+                                <div class="cp-empty-sub">ابدأ بإنشاء أمر عمل جديد</div>
+                            </div>
+                        </t>
+                        <div class="cp-wo-list" t-if="recent_work_orders">
+                            <t t-foreach="recent_work_orders" t-as="wo">
+                                <a t-attf-href="/contractor/work-order/#{wo.id}" class="cp-wo-card">
+                                    <div t-attf-class="cp-wo-state-bar #{wo.state}"/>
+                                    <div class="cp-wo-card-body">
+                                        <div class="cp-wo-card-top">
+                                            <div>
+                                                <div class="cp-wo-card-num">
+                                                    <t t-esc="wo.name"/>
+                                                </div>
+                                                <div class="cp-wo-card-desc">
+                                                    <t t-esc="(wo.work_description or '')[:60]"/>
+                                                </div>
+                                            </div>
+                                            <div style="text-align:left;flex-shrink:0">
+                                                <span t-attf-class="cp-wo-badge #{wo.state}">
+                                                    <t t-if="wo.state == 'draft'">مسودة</t>
+                                                    <t t-elif="wo.state == 'submitted'">بانتظار البدء</t>
+                                                    <t t-elif="wo.state == 'approved'">قيد التنفيذ</t>
+                                                    <t t-elif="wo.state == 'delivered'">مسلّم</t>
+                                                    <t t-elif="wo.state == 'graded'">تقييم
+                                                        <t t-esc="(wo.grade or '').upper()"/>
+                                                    </t>
+                                                    <t t-elif="wo.state == 'rework'">إعادة عمل</t>
+                                                    <t t-elif="wo.state == 'testing'">اختبار</t>
+                                                    <t t-elif="wo.state == 'warranty'">ضمان</t>
+                                                    <t t-elif="wo.state == 'closed'">مغلق</t>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="cp-wo-card-meta">
+                                            <span>
+                                                <t t-esc="wo.total_qty_lines"/>
+                                                بند
+                                            </span>
+                                            <span style="color:var(--border2)">·</span>
+                                            <span style="color:var(--primary);font-weight:600">
+                                                <t t-esc="'{:,.0f}'.format(wo.total_value)"/>
+                                                ر
+                                            </span>
+                                            <t t-if="wo.grade">
+                                                <span style="color:var(--border2)">·</span>
+                                                <span t-attf-style="color:#{wo.grade in ['a','b'] and 'var(--green)' or 'var(--red)'}">
+                                                    تقييم
+                                                    <t t-esc="wo.grade.upper()"/>
+                                                    (<t t-esc="'%.0f' % wo.payment_pct"/>%)
+                                                </span>
+                                            </t>
+                                        </div>
+                                        <div class="cp-wo-phases">
+                                            <div t-attf-class="cp-phase #{wo.state not in ['draft'] and 'done' or 'current'}">
+                                                بدء
+                                            </div>
+                                            <div class="cp-phase-line"/>
+                                            <div t-attf-class="cp-phase #{wo.state in ['delivered','graded','rework','testing','warranty','closed'] and 'done' or wo.state == 'approved' and 'current' or 'pending'}">
+                                                تسليم
+                                            </div>
+                                            <div class="cp-phase-line"/>
+                                            <div t-attf-class="cp-phase #{wo.state in ['testing','warranty','closed'] and 'done' or wo.state == 'graded' and 'current' or 'pending'}">
+                                                اختبار
+                                            </div>
+                                            <div class="cp-phase-line"/>
+                                            <div t-attf-class="cp-phase #{wo.state in ['warranty','closed'] and 'done' or 'pending'}">
+                                                ضمان
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- المهام -->
+                    <div class="cp-section">
+                        <div class="cp-section-hdr">
+                            <div class="cp-section-title">المهام المجدولة</div>
+                            <span class="cp-section-count">
+                                <t t-esc="len(tasks)"/>
+                                مهمة
+                            </span>
+                        </div>
+                        <t t-if="not tasks">
+                            <div class="cp-empty-state">
+                                <div class="cp-empty-title">لا توجد مهام نشطة</div>
+                                <div class="cp-empty-sub">ستظهر المهام حسب الجدول الزمني للمشروع</div>
+                            </div>
+                        </t>
+                        <div class="cp-task-list" t-if="tasks">
+                            <t t-foreach="tasks" t-as="task">
+                                <div class="cp-task-row">
+                                    <div class="cp-task-indicator"/>
+                                    <div class="cp-task-info">
+                                        <div class="cp-task-name">
+                                            <t t-esc="task.name"/>
+                                        </div>
+                                        <div class="cp-task-meta">
+                                            <t t-if="task.date_deadline">الموعد:
+                                                <t t-esc="task.date_deadline"/>
+                                            </t>
+                                            <t t-else="">بدون موعد محدد</t>
+                                        </div>
+                                    </div>
+                                    <a t-attf-href="/contractor/task/#{task.id}" class="cp-btn-outline">فتح</a>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="cp-sidebar">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+                        <div class="cp-mini-stat">
+                            <div class="cp-mini-stat-val" style="color:var(--gold)">
+                                <t t-esc="mosque.certificate_count or 0"/>
+                            </div>
+                            <div class="cp-mini-stat-lbl">مستخلص</div>
+                        </div>
+                        <div class="cp-mini-stat">
+                            <div class="cp-mini-stat-val" style="color:var(--primary)">
+                                <t t-esc="mosque.boq_count or 0"/>
+                            </div>
+                            <div class="cp-mini-stat-lbl">بند كميات</div>
+                        </div>
+                        <div class="cp-mini-stat">
+                            <div class="cp-mini-stat-val" style="color:var(--green)">
+                                <t t-esc="qual_approved_count or 0"/>
+                            </div>
+                            <div class="cp-mini-stat-lbl">تأهيل معتمد</div>
+                        </div>
+                        <div class="cp-mini-stat">
+                            <div class="cp-mini-stat-val" style="color:var(--orange)">
+                                <t t-esc="active_submittals or 0"/>
+                            </div>
+                            <div class="cp-mini-stat-lbl">عينة نشطة</div>
+                        </div>
+                    </div>
+                    <div class="cp-section-hdr" style="margin-bottom:8px">
+                        <div class="cp-section-title" style="font-size:12px">آخر الأعمال</div>
+                        <a href="/contractor/logs" class="cp-btn-ghost" style="font-size:10px;padding:3px 8px">الكل</a>
+                    </div>
+                    <t t-if="not recent_logs">
+                        <div class="cp-empty-sm">
+                            <div class="cp-empty-title">لا توجد أعمال</div>
+                        </div>
+                    </t>
+                    <div class="cp-log-list" t-if="recent_logs">
+                        <t t-foreach="recent_logs" t-as="log">
+                            <div class="cp-log-row cp-log-row-sm">
+                                <div t-attf-class="cp-log-dot #{log.state}"/>
+                                <div class="cp-log-info">
+                                    <div class="cp-log-name">
+                                        <t t-esc="log.name"/>
+                                    </div>
+                                    <div class="cp-log-meta">
+                                        <span class="cp-log-code">
+                                            <t t-esc="log.boq_id.item_code"/>
+                                        </span>
+                                        <span class="cp-log-sep">·</span>
+                                        <span>
+                                            <t t-esc="log.log_date"/>
+                                        </span>
+                                    </div>
+                                </div>
+                                <span t-attf-class="cp-status-pill #{log.state == 'approved' and 'approved' or log.state == 'submitted' and 'pending' or log.state == 'rejected' and 'rejected' or 'draft'}">
+                                    <t t-if="log.state == 'draft'">مسودة</t>
+                                    <t t-elif="log.state == 'submitted'">معلق</t>
+                                    <t t-elif="log.state == 'approved'">معتمد</t>
+                                    <t t-elif="log.state == 'rejected'">مرفوض</t>
+                                </span>
+                            </div>
+                        </t>
+                    </div>
+                    <a href="/contractor/qualifications" class="cp-btn-ghost cp-btn-block"
+                       style="margin-top:10px;margin-bottom:6px">
+                        🏅 طلبات التأهيل
+                    </a>
+                    <a href="/contractor/submittals" class="cp-btn-ghost cp-btn-block" style="margin-bottom:6px">
+                        📋 عينات المواد
+                    </a>
+                    <a href="/contractor/certificate/new" class="cp-btn-primary cp-btn-block" style="margin-top:4px">
+                        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                            <path d="M6.5 1.5v10M1.5 6.5h10" stroke="currentColor" stroke-width="1.5"
+                                  stroke-linecap="round"/>
+                        </svg>
+                        إنشاء مستخلص
+                    </a>
+                </div>
+            </div>
+
+        </t>
+    </template>
+
+    <!-- ══════════════════════════════════════════════════════
+         QUALIFICATIONS LIST
+    ══════════════════════════════════════════════════════ -->
+    <template id="tmpl_qual_list" name="Qualifications List">
+        <t t-call="waqf_contractor_portal.tmpl_base">
+            <div class="cp-breadcrumb">
+                <a href="/contractor">الرئيسية</a>
+                <span>←</span>
+                <span>طلبات التأهيل</span>
+            </div>
+            <!-- Stats -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+                <div class="cp-mini-stat" style="flex:1;min-width:70px">
+                    <div class="cp-mini-stat-val" style="color:var(--text2)">
+                        <t t-esc="counts['all']"/>
+                    </div>
+                    <div class="cp-mini-stat-lbl">إجمالي</div>
+                </div>
+                <div class="cp-mini-stat" style="flex:1;min-width:70px">
+                    <div class="cp-mini-stat-val" style="color:var(--gold)">
+                        <t t-esc="counts['submitted']"/>
+                    </div>
+                    <div class="cp-mini-stat-lbl">قيد المراجعة</div>
+                </div>
+                <div class="cp-mini-stat" style="flex:1;min-width:70px">
+                    <div class="cp-mini-stat-val" style="color:var(--green)">
+                        <t t-esc="counts['approved']"/>
+                    </div>
+                    <div class="cp-mini-stat-lbl">معتمد</div>
+                </div>
+                <div class="cp-mini-stat" style="flex:1;min-width:70px">
+                    <div class="cp-mini-stat-val" style="color:var(--red)">
+                        <t t-esc="counts['rejected']"/>
+                    </div>
+                    <div class="cp-mini-stat-lbl">مرفوض</div>
+                </div>
+            </div>
+            <!-- Filter + Action -->
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+                <div class="cp-filter-tabs">
+                    <a href="/contractor/qualifications"
+                       t-attf-class="cp-filter-tab #{active_state == 'all' and 'active' or ''}">الكل
+                    </a>
+                    <a href="/contractor/qualifications?state=submitted"
+                       t-attf-class="cp-filter-tab #{active_state == 'submitted' and 'active' or ''}">قيد المراجعة
+                    </a>
+                    <a href="/contractor/qualifications?state=approved"
+                       t-attf-class="cp-filter-tab #{active_state == 'approved' and 'active' or ''}">معتمد
+                    </a>
+                    <a href="/contractor/qualifications?state=rejected"
+                       t-attf-class="cp-filter-tab #{active_state == 'rejected' and 'active' or ''}">مرفوض
+                    </a>
+                </div>
+                <a href="/contractor/qualifications/new" class="cp-action-btn cp-action-primary">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M7 1.5v11M1.5 7h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    طلب تأهيل جديد
+                </a>
+            </div>
+            <!-- Empty -->
+            <t t-if="not qualifications">
+                <div class="cp-empty-state" style="margin-top:32px">
+                    <div class="cp-empty-title">لا توجد طلبات تأهيل</div>
+                    <div class="cp-empty-sub">قدّم طلب تأهيل جديد لتتمكن من تنفيذ الأعمال</div>
+                </div>
+            </t>
+            <!-- List -->
+            <div style="display:flex;flex-direction:column;gap:10px">
+                <t t-foreach="qualifications" t-as="q">
+                    <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">
+                        <div t-attf-style="height:3px;background:#{q.state == 'approved' and 'var(--green)' or q.state == 'rejected' and 'var(--red)' or q.state == 'submitted' and 'var(--gold)' or 'var(--border2)'}"/>
+                        <div style="padding:14px 16px">
+                            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px">
+                                <div>
+                                    <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px">
+                                        <t t-esc="q.name"/>
+                                    </div>
+                                    <div style="font-size:12px;color:var(--text3)">
+                                        <t t-esc="q.work_category_id.name or '—'"/>
+                                    </div>
+                                </div>
+                                <span t-attf-class="cp-status-pill #{q.state == 'approved' and 'approved' or q.state == 'submitted' and 'pending' or q.state == 'rejected' and 'rejected' or 'draft'}">
+                                    <t t-if="q.state == 'draft'">مسودة</t>
+                                    <t t-elif="q.state == 'submitted'">قيد المراجعة</t>
+                                    <t t-elif="q.state == 'approved'">✓ معتمد</t>
+                                    <t t-elif="q.state == 'rejected'">مرفوض</t>
+                                </span>
+                            </div>
+                            <div style="display:flex;gap:16px;font-size:11px;color:var(--text3);flex-wrap:wrap">
+                                <span>النطاق:
+                                    <strong style="color:var(--text2)">
+                                        <t t-if="q.scope == 'all'">كل المساجد</t>
+                                        <t t-else="">مساجد محددة</t>
+                                    </strong>
+                                </span>
+                                <t t-if="q.document_ids">
+                                    <span>📎
+                                        <t t-esc="len(q.document_ids)"/>
+                                        وثيقة
+                                    </span>
+                                </t>
+                            </div>
+                            <t t-if="q.state == 'rejected' and q.reject_reason">
+                                <div style="margin-top:8px;padding:8px 12px;background:var(--red-bg);border-radius:var(--r-sm);font-size:11px;color:var(--red)">
+                                    سبب الرفض:
+                                    <t t-esc="q.reject_reason"/>
+                                </div>
+                            </t>
+                            <t t-if="q.state == 'approved'">
+                                <div style="margin-top:8px;padding:8px 12px;background:var(--green-bg);border-radius:var(--r-sm);font-size:11px;color:#1A7A55">
+                                    ✅ معتمد — يمكن استخدام هذا التأهيل في أوامر العمل
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <!-- ══════════════════════════════════════════════════════
+         SUBMITTALS LIST
+    ══════════════════════════════════════════════════════ -->
+    <template id="tmpl_sub_list" name="Submittals List">
+        <t t-call="waqf_contractor_portal.tmpl_base">
+            <div class="cp-breadcrumb">
+                <a href="/contractor">الرئيسية</a>
+                <span>←</span>
+                <span>عينات المواد</span>
+            </div>
+            <!-- Stats -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+                <div class="cp-mini-stat" style="flex:1;min-width:70px">
+                    <div class="cp-mini-stat-val" style="color:var(--text2)">
+                        <t t-esc="counts['all']"/>
+                    </div>
+                    <div class="cp-mini-stat-lbl">إجمالي</div>
+                </div>
+                <div class="cp-mini-stat" style="flex:1;min-width:70px">
+                    <div class="cp-mini-stat-val" style="color:var(--gold)">
+                        <t t-esc="counts['submitted']"/>
+                    </div>
+                    <div class="cp-mini-stat-lbl">بانتظار</div>
+                </div>
+                <div class="cp-mini-stat" style="flex:1;min-width:70px">
+                    <div class="cp-mini-stat-val" style="color:var(--green)">
+                        <t t-esc="counts['approved']"/>
+                    </div>
+                    <div class="cp-mini-stat-lbl">معتمد</div>
+                </div>
+                <div class="cp-mini-stat" style="flex:1;min-width:70px">
+                    <div class="cp-mini-stat-val" style="color:var(--red)">
+                        <t t-esc="counts['rejected']"/>
+                    </div>
+                    <div class="cp-mini-stat-lbl">مرفوض</div>
+                </div>
+            </div>
+            <!-- Filter + Action -->
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+                <div class="cp-filter-tabs">
+                    <a href="/contractor/submittals"
+                       t-attf-class="cp-filter-tab #{active_state == 'all' and 'active' or ''}">الكل
+                    </a>
+                    <a href="/contractor/submittals?state=submitted"
+                       t-attf-class="cp-filter-tab #{active_state == 'submitted' and 'active' or ''}">بانتظار
+                    </a>
+                    <a href="/contractor/submittals?state=approved"
+                       t-attf-class="cp-filter-tab #{active_state == 'approved' and 'active' or ''}">معتمد
+                    </a>
+                    <a href="/contractor/submittals?state=rejected"
+                       t-attf-class="cp-filter-tab #{active_state == 'rejected' and 'active' or ''}">مرفوض
+                    </a>
+                </div>
+                <a href="/contractor/submittals/new" class="cp-action-btn cp-action-primary">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M7 1.5v11M1.5 7h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    عينة جديدة
+                </a>
+            </div>
+            <!-- Mosque filter -->
+            <t t-if="mosques">
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+                    <a t-attf-href="/contractor/submittals#{active_state != 'all' and '?state=' + active_state or ''}"
+                       t-attf-class="cp-filter-tab #{not active_mosque and 'active' or ''}" style="font-size:11px">كل
+                        المساجد
+                    </a>
+                    <t t-foreach="mosques" t-as="m">
+                        <a t-attf-href="/contractor/submittals?mosque=#{m.id}#{active_state != 'all' and '&amp;state=' + active_state or ''}"
+                           t-attf-class="cp-filter-tab #{active_mosque == m.id and 'active' or ''}"
+                           style="font-size:11px">
+                            <t t-esc="m.code"/>
+                        </a>
+                    </t>
+                </div>
+            </t>
+            <!-- Empty -->
+            <t t-if="not submittals">
+                <div class="cp-empty-state" style="margin-top:32px">
+                    <div class="cp-empty-title">لا توجد عينات</div>
+                    <div class="cp-empty-sub">ارفع عينة مادة للحصول على اعتماد الاستشاري</div>
+                </div>
+            </t>
+            <!-- List -->
+            <div style="display:flex;flex-direction:column;gap:10px">
+                <t t-foreach="submittals" t-as="s">
+                    <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">
+                        <div t-attf-style="height:3px;background:#{s.state == 'approved' and 'var(--green)' or s.state == 'rejected' and 'var(--red)' or s.state == 'submitted' and 'var(--gold)' or 'var(--border2)'}"/>
+                        <div style="padding:14px 16px">
+                            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+                                <div style="flex:1;min-width:0">
+                                    <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:4px">
+                                        <t t-esc="s.material_name"/>
+                                    </div>
+                                    <div style="font-size:11px;color:var(--text3);display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+                                        <t t-if="s.manufacturer">
+                                            <span>🏭
+                                                <t t-esc="s.manufacturer"/>
+                                            </span>
+                                        </t>
+                                        <t t-if="s.mosque_id">
+                                            <span>🕌
+                                                <t t-esc="s.mosque_id.name"/>
+                                            </span>
+                                        </t>
+                                        <t t-if="s.date_submitted">
+                                            <span>📅
+                                                <t t-esc="s.date_submitted"/>
+                                            </span>
+                                        </t>
+                                    </div>
+                                    <t t-if="s.boq_id">
+                                        <div style="font-size:11px;color:var(--text3)">
+                                            بند:
+                                            <span style="font-family:monospace;color:var(--primary);font-weight:600">
+                                                <t t-esc="s.boq_id.item_code"/>
+                                            </span>
+                                        </div>
+                                    </t>
+                                </div>
+                                <span t-attf-class="cp-status-pill #{s.state == 'approved' and 'approved' or s.state == 'submitted' and 'pending' or s.state == 'rejected' and 'rejected' or 'draft'}">
+                                    <t t-if="s.state == 'draft'">مسودة</t>
+                                    <t t-elif="s.state == 'submitted'">بانتظار</t>
+                                    <t t-elif="s.state == 'approved'">✓ معتمد</t>
+                                    <t t-elif="s.state == 'rejected'">مرفوض</t>
+                                </span>
+                            </div>
+                            <t t-if="s.state == 'rejected' and s.reject_reason">
+                                <div style="margin-top:8px;padding:8px 12px;background:var(--red-bg);border-radius:var(--r-sm);font-size:11px;color:var(--red)">
+                                    سبب الرفض:
+                                    <t t-esc="s.reject_reason"/>
+                                </div>
+                            </t>
+                            <t t-if="s.state == 'approved'">
+                                <div style="margin-top:8px;padding:8px 12px;background:var(--green-bg);border-radius:var(--r-sm);font-size:11px;color:#1A7A55">
+                                    ✅ معتمد — يمكن استخدام هذه المادة في التنفيذ
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+            </div>
         </t>
     </template>
 
