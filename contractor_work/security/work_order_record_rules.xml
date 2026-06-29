@@ -27,19 +27,23 @@
 
         <!-- ══════════════════════════════════════════════════
              RECORD RULES — أوامر العمل
+             ملاحظة: نستخدم بحثاً مباشراً في waqf.portal.user
+             بدل حقل على res.users (لتجنّب اعتماد التحميل)
         ══════════════════════════════════════════════════ -->
 
-        <!-- ① المقاول يرى فقط أوامر مساجده المخوّلة -->
+        <!-- ① المقاول يرى أوامر مساجده فقط -->
         <record id="rule_wo_contractor_own_mosques" model="ir.rule">
-            <field name="name">أوامر العمل: مساجد المقاول المخوّلة فقط</field>
+            <field name="name">أوامر العمل: مساجد المقاول فقط</field>
             <field name="model_id" ref="model_contractor_work_order"/>
             <field name="groups" eval="[(4, ref('group_contractor_site'))]"/>
             <field name="domain_force">
                 ['|',
                     ('portal_user_id', '=', user.id),
                     ('mosque_id', 'in',
-                        user.waqf_portal_user_id.effective_mosque_ids.ids
-                        if user.waqf_portal_user_id else [])
+                        env['waqf.portal.user'].sudo().search([
+                            ('user_id', '=', user.id),
+                            ('is_active', '=', True),
+                        ]).effective_mosque_ids.ids)
                 ]
             </field>
             <field name="perm_read" eval="True"/>
@@ -48,7 +52,7 @@
             <field name="perm_unlink" eval="False"/>
         </record>
 
-        <!-- ② الاستشاري يرى كل أوامر العمل -->
+        <!-- ② الاستشاري يرى الكل -->
         <record id="rule_wo_consultant_all" model="ir.rule">
             <field name="name">أوامر العمل: الاستشاري يرى الكل</field>
             <field name="model_id" ref="model_contractor_work_order"/>
@@ -61,7 +65,7 @@
         </record>
 
         <!-- ══════════════════════════════════════════════════
-             RECORD RULES — العينات (Submittals)
+             RECORD RULES — العينات
         ══════════════════════════════════════════════════ -->
         <record id="rule_sub_contractor_own" model="ir.rule">
             <field name="name">العينات: مساجد المقاول فقط</field>
@@ -69,8 +73,10 @@
             <field name="groups" eval="[(4, ref('group_contractor_site'))]"/>
             <field name="domain_force">
                 [('mosque_id', 'in',
-                    user.waqf_portal_user_id.effective_mosque_ids.ids
-                    if user.waqf_portal_user_id else [])]
+                    env['waqf.portal.user'].sudo().search([
+                        ('user_id', '=', user.id),
+                        ('is_active', '=', True),
+                    ]).effective_mosque_ids.ids)]
             </field>
         </record>
 
