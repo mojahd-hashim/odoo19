@@ -125,7 +125,7 @@ class MosqueAttendance(models.Model):
         for rec in self:
             person = rec.engineer_id.name or rec.portal_user_id.name or ''
             date_str = rec.check_in.strftime('%Y-%m-%d %H:%M') if rec.check_in else ''
-            rec.name = f'{rec.mosque_id.name or ""} - {person} - {date_str}'
+            rec.name = f'{rec.mosque_id.name or ""} - {person}'
 
     @api.depends('check_in', 'check_out')
     def _compute_duration(self):

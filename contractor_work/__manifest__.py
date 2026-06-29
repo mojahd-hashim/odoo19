@@ -6,6 +6,7 @@
     'depends':     ['waqf_mosque_rehab', 'project', 'hr', 'mail'],
     'data': [
         'security/ir.model.access.csv',
+        'security/work_order_record_rules.xml',
         'data/config_data.xml',
         'views/work_order_views.xml',
         'views/qualification_views.xml',

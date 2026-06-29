@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ══════════════════════════════════════════════════
+             مجموعات المقاولين
+        ══════════════════════════════════════════════════ -->
+
+        <!-- مهندس/مشرف موقع — مساجده فقط -->
+        <record id="group_contractor_site" model="res.groups">
+            <field name="name">مقاول: مشرف موقع</field>
+            <field name="category_id" ref="base.module_category_services_project"/>
+        </record>
+
+        <!-- مشرف عام — كل مساجده المخوّلة -->
+        <record id="group_contractor_admin" model="res.groups">
+            <field name="name">مقاول: مشرف عام</field>
+            <field name="category_id" ref="base.module_category_services_project"/>
+            <field name="implied_ids" eval="[(4, ref('group_contractor_site'))]"/>
+        </record>
+
+        <!-- استشاري — يطّلع على الكل -->
+        <record id="group_consultant_all" model="res.groups">
+            <field name="name">استشاري: كل المساجد</field>
+            <field name="category_id" ref="base.module_category_services_project"/>
+        </record>
+
+    </data>
+
+    <data noupdate="0">
+
+        <!-- ══════════════════════════════════════════════════
+             RECORD RULES — أوامر العمل
+        ══════════════════════════════════════════════════ -->
+
+        <!-- ① المقاول يرى فقط أوامر مساجده المخوّلة -->
+        <record id="rule_wo_contractor_own_mosques" model="ir.rule">
+            <field name="name">أوامر العمل: مساجد المقاول المخوّلة فقط</field>
+            <field name="model_id" ref="model_contractor_work_order"/>
+            <field name="groups" eval="[(4, ref('group_contractor_site'))]"/>
+            <field name="domain_force">
+                ['|',
+                    ('portal_user_id', '=', user.id),
+                    ('mosque_id', 'in',
+                        user.waqf_portal_user_id.effective_mosque_ids.ids
+                        if user.waqf_portal_user_id else [])
+                ]
+            </field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- ② الاستشاري يرى كل أوامر العمل -->
+        <record id="rule_wo_consultant_all" model="ir.rule">
+            <field name="name">أوامر العمل: الاستشاري يرى الكل</field>
+            <field name="model_id" ref="model_contractor_work_order"/>
+            <field name="groups" eval="[(4, ref('group_consultant_all'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- ══════════════════════════════════════════════════
+             RECORD RULES — العينات (Submittals)
+        ══════════════════════════════════════════════════ -->
+        <record id="rule_sub_contractor_own" model="ir.rule">
+            <field name="name">العينات: مساجد المقاول فقط</field>
+            <field name="model_id" ref="model_contractor_material_submittal"/>
+            <field name="groups" eval="[(4, ref('group_contractor_site'))]"/>
+            <field name="domain_force">
+                [('mosque_id', 'in',
+                    user.waqf_portal_user_id.effective_mosque_ids.ids
+                    if user.waqf_portal_user_id else [])]
+            </field>
+        </record>
+
+        <record id="rule_sub_consultant_all" model="ir.rule">
+            <field name="name">العينات: الاستشاري يرى الكل</field>
+            <field name="model_id" ref="model_contractor_material_submittal"/>
+            <field name="groups" eval="[(4, ref('group_consultant_all'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <!-- ══════════════════════════════════════════════════
+             RECORD RULES — التأهيلات
+        ══════════════════════════════════════════════════ -->
+        <record id="rule_qual_contractor_own" model="ir.rule">
+            <field name="name">التأهيلات: المقاول يرى تأهيلاته فقط</field>
+            <field name="model_id" ref="model_contractor_qualification"/>
+            <field name="groups" eval="[(4, ref('group_contractor_site'))]"/>
+            <field name="domain_force">
+                [('supervisor_id', '=', user.partner_id.id)]
+            </field>
+        </record>
+
+        <record id="rule_qual_consultant_all" model="ir.rule">
+            <field name="name">التأهيلات: الاستشاري يرى الكل</field>
+            <field name="model_id" ref="model_contractor_qualification"/>
+            <field name="groups" eval="[(4, ref('group_consultant_all'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+    </data>
+</odoo>

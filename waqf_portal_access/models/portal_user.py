@@ -3,6 +3,26 @@ from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 import secrets, string
 
+from odoo import models, fields, api
+
+
+class ResUsers(models.Model):
+    _inherit = 'res.users'
+
+    waqf_portal_user_id = fields.Many2one(
+        'waqf.portal.user', string='سجل بوابة المقاول',
+        compute='_compute_waqf_portal_user', store=True,
+        help='يربط المستخدم بسجل المقاول لتطبيق صلاحيات المساجد')
+
+    @api.depends('login')
+    def _compute_waqf_portal_user(self):
+        PortalUser = self.env['waqf.portal.user'].sudo()
+        for user in self:
+            pu = PortalUser.search([
+                ('user_id', '=', user.id),
+                ('is_active', '=', True),
+            ], limit=1)
+            user.waqf_portal_user_id = pu.id if pu else False
 
 class WaqfPortalUser(models.Model):
     _name        = 'waqf.portal.user'
