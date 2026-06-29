@@ -9,20 +9,16 @@
         <!-- مهندس/مشرف موقع — مساجده فقط -->
         <record id="group_contractor_site" model="res.groups">
             <field name="name">مقاول: مشرف موقع</field>
-            <field name="category_id" ref="base.module_category_services_project"/>
         </record>
 
         <!-- مشرف عام — كل مساجده المخوّلة -->
         <record id="group_contractor_admin" model="res.groups">
             <field name="name">مقاول: مشرف عام</field>
-            <field name="category_id" ref="base.module_category_services_project"/>
-            <field name="implied_ids" eval="[(4, ref('group_contractor_site'))]"/>
         </record>
 
         <!-- استشاري — يطّلع على الكل -->
         <record id="group_consultant_all" model="res.groups">
             <field name="name">استشاري: كل المساجد</field>
-            <field name="category_id" ref="base.module_category_services_project"/>
         </record>
 
     </data>
