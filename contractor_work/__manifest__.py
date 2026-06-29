@@ -3,7 +3,7 @@
     'version':     '1.0',
     'summary':     'إدارة أوامر عمل المقاولين — بدء، تسليم، اختبار، ضمان',
     'author':      'Kawaqf IT',
-    'depends':     ['waqf_mosque_rehab', 'project', 'hr', 'mail'],
+    'depends':     ['waqf_mosque_rehab','waqf_portal_access', 'project', 'hr', 'mail'],
     'data': [
         'security/ir.model.access.csv',
         'security/work_order_record_rules.xml',
