@@ -9,5 +9,5 @@
     <menuitem id="menu_doc_type" name="أنواع الوثائق"
               parent="menu_doc_approval_root"
               action="action_doc_type" sequence="90"
-              groups="waqf_document_approval.group_doc_consultant"/>
+              groups="waqf_document_approval.group_doc_consultant_all"/>
 </odoo>
