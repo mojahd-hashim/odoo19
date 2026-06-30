@@ -65,17 +65,23 @@
                     </div>
                     <group>
                         <group>
-                            <field name="mosque_id"/>
-                            <field name="doc_type_id"/>
-                            <field name="work_order_id"/>
-                            <field name="revision"/>
+                            <field name="mosque_id"  readonly="1"/>
+                            <field name="doc_type_id"  readonly="1"/>
+                            <field name="work_order_id"  readonly="1"/>
+                            <field name="revision"  readonly="1"/>
+                            <field name="description" placeholder="وصف المقدّم..."/>
+                                <field name="review_notes"
+                                       placeholder="ملاحظات الاستشاري..."/>
+                                <field name="reject_reason"
+                                       placeholder="سبب الرفض..."
+                                       invisible="state not in ('submitted','rejected')"/>
                         </group>
                         <group>
-                            <field name="contractor_id"/>
-                            <field name="submitted_by"/>
-                            <field name="reviewed_by"/>
-                            <field name="review_date"/>
-                            <field name="file_count"/>
+                            <field name="contractor_id"  readonly="1"/>
+                            <field name="submitted_by"  readonly="1"/>
+                            <field name="reviewed_by"  readonly="1"/>
+                            <field name="review_date"  readonly="1"/>
+                            <field name="file_count"  readonly="1"/>
                             <field name="total_size" digits="[8,2]"/>
                         </group>
                     </group>
@@ -93,16 +99,6 @@
                                             string="تحميل" icon="fa-download"/>
                                 </list>
                             </field>
-                        </page>
-                        <page string="الوصف والملاحظات" name="notes">
-                            <group>
-                                <field name="description" placeholder="وصف المقدّم..."/>
-                                <field name="review_notes"
-                                       placeholder="ملاحظات الاستشاري..."/>
-                                <field name="reject_reason"
-                                       placeholder="سبب الرفض..."
-                                       invisible="state not in ('submitted','rejected')"/>
-                            </group>
                         </page>
                     </notebook>
                 </sheet>

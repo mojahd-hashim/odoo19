@@ -32,23 +32,24 @@
         <group>
           <group>
             <field name="supervisor_id"/>
-            <field name="work_category_id"/>
-            <field name="scope" widget="radio"/>
+            <field name="work_category_id"  readonly="1"/>
+            <field name="scope" widget="radio"  readonly="1"/>
             <field name="mosque_ids" widget="many2many_tags"
+                    readonly="1"
                    invisible="scope != 'specific'"
                    required="scope == 'specific'"/>
           </group>
           <group>
-            <field name="date_requested"/>
+            <field name="date_requested"  readonly="1"/>
             <field name="consultant_approved_by" readonly="1"/>
             <field name="consultant_approval_date" readonly="1"/>
             <field name="waqf_approved_by" readonly="1"/>
             <field name="waqf_approval_date" readonly="1"/>
           </group>
         </group>
-        <field name="description" placeholder="وصف الكفاءة والخبرة..."/>
+        <field name="description"  readonly="1" placeholder="وصف الكفاءة والخبرة..."/>
         <separator string="الوثائق والشهادات"/>
-        <field name="document_ids" widget="many2many_binary"/>
+        <field name="document_ids" widget="many2many_binary"  readonly="1"/>
         <field name="reject_reason" invisible="state != 'rejected'"/>
         <field name="notes"/>
       </sheet>

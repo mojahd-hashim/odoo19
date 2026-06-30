@@ -1,8 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
-        <record id="group_doc_consultant" model="res.groups">
-            <field name="name">اعتماد الوثائق: استشاري</field>
+    <data noupdate="1">
+
+        <!-- ══════════════════════════════════════════════════
+             مجموعات الاستشاري
+        ══════════════════════════════════════════════════ -->
+
+        <!-- استشاري يرى ويعتمد كل المساجد -->
+        <record id="group_doc_consultant_all" model="res.groups">
+            <field name="name">اعتماد الوثائق: استشاري الكل</field>
         </record>
+
+        <!-- استشاري مسجد — يرى ويعتمد مساجده فقط -->
+        <record id="group_doc_consultant_mosque" model="res.groups">
+            <field name="name">اعتماد الوثائق: استشاري المسجد</field>
+        </record>
+
+    </data>
+
+    <data noupdate="0">
+
+        <!-- ══════════════════════════════════════════════════
+             RECORD RULES — طلبات اعتماد الوثائق
+        ══════════════════════════════════════════════════ -->
+
+        <!-- ② استشاري المسجد — يرى ويعتمد طلبات مساجده فقط -->
+        <record id="rule_doc_consultant_mosque" model="ir.rule">
+            <field name="name">الوثائق: استشاري المسجد — مساجده فقط</field>
+            <field name="model_id" ref="model_waqf_document_approval"/>
+            <field name="groups" eval="[(4, ref('group_doc_consultant_mosque'))]"/>
+            <field name="domain_force">
+                [('mosque_id', 'in', user.waqf_portal_mosque_ids.ids)]
+            </field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- ③ استشاري الكل — يرى ويعتمد جميع الطلبات -->
+        <record id="rule_doc_consultant_all" model="ir.rule">
+            <field name="name">الوثائق: استشاري الكل — جميع الطلبات</field>
+            <field name="model_id" ref="model_waqf_document_approval"/>
+            <field name="groups" eval="[(4, ref('group_doc_consultant_all'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- ══════════════════════════════════════════════════
+             RECORD RULES — ملفات الطلبات (نفس صلاحية الطلب)
+        ══════════════════════════════════════════════════ -->
+
+
+        <!-- استشاري المسجد: ملفات مساجده -->
+        <record id="rule_doc_file_consultant_mosque" model="ir.rule">
+            <field name="name">ملفات الوثائق: استشاري المسجد</field>
+            <field name="model_id" ref="model_waqf_document_approval_file"/>
+            <field name="groups" eval="[(4, ref('group_doc_consultant_mosque'))]"/>
+            <field name="domain_force">
+                [('approval_id.mosque_id', 'in', user.waqf_portal_mosque_ids.ids)]
+            </field>
+        </record>
+
+        <!-- استشاري الكل: جميع الملفات -->
+        <record id="rule_doc_file_consultant_all" model="ir.rule">
+            <field name="name">ملفات الوثائق: استشاري الكل</field>
+            <field name="model_id" ref="model_waqf_document_approval_file"/>
+            <field name="groups" eval="[(4, ref('group_doc_consultant_all'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
     </data>
 </odoo>

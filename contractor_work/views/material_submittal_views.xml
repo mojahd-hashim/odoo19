@@ -25,14 +25,14 @@
         </div>
         <group>
           <group>
-            <field name="work_order_id"/>
-            <field name="boq_id"/>
-            <field name="material_name"/>
-            <field name="manufacturer"/>
-            <field name="model_number"/>
+            <field name="work_order_id"  readonly="1"/>
+            <field name="boq_id"  readonly="1"/>
+            <field name="material_name" readonly="1"/>
+            <field name="manufacturer"  readonly="1"/>
+            <field name="model_number"  readonly="1"/>
           </group>
           <group>
-            <field name="date_submitted"/>
+            <field name="date_submitted"  readonly="1"/>
             <field name="approved_by" readonly="1"/>
             <field name="approval_date" readonly="1"/>
           </group>

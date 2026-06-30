@@ -50,13 +50,13 @@
 
         <group>
           <group string="معلومات أساسية">
-            <field name="mosque_id"/>
-            <field name="task_id"/>
+            <field name="mosque_id"  readonly="1"/>
+            <field name="task_id"  readonly="1"/>
             <field name="supervisor_id"/>
-            <field name="work_description"/>
-            <field name="date_requested"/>
-            <field name="date_planned_start"/>
-            <field name="date_planned_end"/>
+            <field name="work_description" readonly="1"/>
+            <field name="date_requested" readonly="1"/>
+            <field name="date_planned_start" readonly="1"/>
+            <field name="date_planned_end" readonly="1"/>
           </group>
           <group string="التقييم والدفع"
                  invisible="state not in ['delivered','graded','rework','testing','warranty','closed']">
@@ -73,8 +73,8 @@
           <!-- ① طلب البدء -->
           <page string="① طلب البدء" name="commencement">
             <group>
-              <field name="qualification_id"/>
-              <field name="commencement_notes"/>
+              <field name="qualification_id" readonly="1"/>
+              <field name="commencement_notes" readonly="1"/>
               <field name="commencement_approved_by" readonly="1"/>
               <field name="commencement_approval_date" readonly="1"/>
               <field name="commencement_reject_reason"
@@ -82,7 +82,7 @@
             </group>
 
             <separator string="بنود جدول الكميات"/>
-            <field name="boq_line_ids">
+            <field name="boq_line_ids" readonly="1">
               <list editable="bottom">
                 <field name="boq_id"/>
                 <field name="description" optional="show"/>
@@ -103,7 +103,7 @@
             </group>
 
             <separator string="صور الموقع (قبل البدء)"/>
-            <field name="site_photo_ids" widget="many2many_binary"/>
+            <field name="site_photo_ids" widget="many2many_binary" readonly="1"/>
           </page>
 
           <!-- ② التسليم -->
@@ -111,10 +111,10 @@
                 invisible="state not in ['approved','delivered','graded','rework','testing','warranty','closed']">
             <group>
               <field name="date_delivered" readonly="1"/>
-              <field name="delivery_notes"/>
+              <field name="delivery_notes" readonly="1"/>
             </group>
             <separator string="صور إثبات التسليم"/>
-            <field name="delivery_photo_ids" widget="many2many_binary"/>
+            <field name="delivery_photo_ids" widget="many2many_binary" readonly="1"/>
 
             <separator string="التقييم"/>
             <group>
@@ -141,10 +141,10 @@
             <field name="submittal_ids">
               <list>
                 <field name="name" readonly="1"/>
-                <field name="boq_id"/>
-                <field name="material_name"/>
-                <field name="manufacturer"/>
-                <field name="date_submitted"/>
+                <field name="boq_id" readonly="1"/>
+                <field name="material_name" readonly="1"/>
+                <field name="manufacturer" readonly="1"/>
+                <field name="date_submitted" readonly="1"/>
                 <field name="state"/>
               </list>
             </field>
@@ -157,7 +157,7 @@
           <!-- ④ الاختبارات -->
           <page string="④ الاختبارات" name="tests"
                 invisible="state not in ['testing','graded','warranty','closed']">
-            <field name="test_ids">
+            <field name="test_ids" readonly="1">
               <list editable="bottom">
                 <field name="name"/>
                 <field name="test_type"/>
@@ -175,7 +175,7 @@
 
           <!-- ⑤ الضمانات -->
           <page string="⑤ الضمانات" name="warranties">
-            <field name="warranty_ids">
+            <field name="warranty_ids" readonly="1">
               <list editable="bottom">
                 <field name="name"/>
                 <field name="warranty_type"/>
