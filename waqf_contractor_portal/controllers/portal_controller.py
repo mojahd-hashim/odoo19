@@ -947,7 +947,7 @@ class ContractorPortal(http.Controller):
     def work_order_detail(self, wo_id, **kwargs):
         portal_user = self._get_portal_user()
         supervisor = self._get_supervisor()
-        if not portal_user and not supervisor:
+        if not portal_user:
             return request.redirect('/web')
 
         wo = request.env['contractor.work.order'].sudo().browse(wo_id)
@@ -957,9 +957,6 @@ class ContractorPortal(http.Controller):
         # تحقق من الصلاحية
         if portal_user:
             if wo.portal_user_id != portal_user.user_id:
-                return request.redirect('/contractor/work-orders')
-        elif supervisor:
-            if wo.supervisor_id != supervisor:
                 return request.redirect('/contractor/work-orders')
 
         return request.render('waqf_contractor_portal.tmpl_wo_detail', {
@@ -1205,8 +1202,6 @@ class ContractorPortal(http.Controller):
             'scope': scope,
             'description': desc,
         }
-        if supervisor:
-            vals['supervisor_id'] = supervisor.id
         if mosque_ids and scope == 'specific':
             vals['mosque_ids'] = [(6, 0, mosque_ids)]
 
@@ -1256,9 +1251,9 @@ class ContractorPortal(http.Controller):
         if portal_user:
             if sub.mosque_id not in portal_user.effective_mosque_ids:
                 return request.redirect('/contractor/submittals')
-        elif supervisor:
-            if sub.mosque_id != supervisor.assigned_mosque_id:
-                return request.redirect('/contractor/submittals')
+        # elif supervisor:
+        #     if sub.mosque_id != supervisor.assigned_mosque_id:
+        #         return request.redirect('/contractor/submittals')
 
         # BOQ items للتعديل
         boq_items = request.env['mosque.boq'].sudo().search([
@@ -1350,9 +1345,9 @@ class ContractorPortal(http.Controller):
         if not qual.exists():
             return request.redirect('/contractor/qualifications')
 
-        # تحقق الصلاحية
-        if supervisor and qual.supervisor_id != supervisor:
-            return request.redirect('/contractor/qualifications')
+        # # تحقق الصلاحية
+        # if supervisor and qual.supervisor_id != supervisor:
+        #     return request.redirect('/contractor/qualifications')
 
         # فئات العمل للتعديل
         categories = request.env['mosque.boq.category'].sudo().search([]) \
