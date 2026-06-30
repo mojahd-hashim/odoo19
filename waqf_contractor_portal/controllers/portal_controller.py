@@ -69,10 +69,9 @@ class ContractorPortal(http.Controller):
         if len(mosques) == 1:
             return request.redirect(f'/contractor/mosque/{mosques[0].id}')
 
-        # ── إحصاءات سريعة لكل المساجد ────────────────────────
         mosque_ids = mosques.ids
 
-        # أوامر عمل
+        # ── أوامر العمل ────────────────────────────────────
         wo_pending = request.env['contractor.work.order'].sudo().search_count([
             ('mosque_id', 'in', mosque_ids), ('state', '=', 'submitted')])
         wo_rework = request.env['contractor.work.order'].sudo().search_count([
@@ -80,7 +79,7 @@ class ContractorPortal(http.Controller):
         wo_active = request.env['contractor.work.order'].sudo().search_count([
             ('mosque_id', 'in', mosque_ids), ('state', '=', 'approved')])
 
-        # عينات المواد
+        # ── عينات المواد ───────────────────────────────────
         sub_pending = request.env['contractor.material.submittal'].sudo().search_count([
             ('mosque_id', 'in', mosque_ids), ('state', '=', 'submitted')])
         sub_approved = request.env['contractor.material.submittal'].sudo().search_count([
@@ -88,41 +87,62 @@ class ContractorPortal(http.Controller):
         sub_rejected = request.env['contractor.material.submittal'].sudo().search_count([
             ('mosque_id', 'in', mosque_ids), ('state', '=', 'rejected')])
 
-        # تأهيلات
+        # ── التأهيلات ──────────────────────────────────────
         qual_domain = []
-        # if supervisor:
-        #     qual_domain.append(('supervisor_id', '=', supervisor.id))
         qual_approved = request.env['contractor.qualification'].sudo().search_count(
             qual_domain + [('state', '=', 'approved')])
         qual_pending = request.env['contractor.qualification'].sudo().search_count(
             qual_domain + [('state', '=', 'submitted')])
 
-        # أوامر تتطلب إجراء (rework)
+        # ── الوثائق والمخططات ──────────────────────────────
+        doc_domain = [('submitted_by', '=', request.env.user.id)]
+        doc_draft = request.env['waqf.document.approval'].sudo().search_count(
+            doc_domain + [('state', '=', 'draft')])
+        doc_pending = request.env['waqf.document.approval'].sudo().search_count(
+            doc_domain + [('state', '=', 'submitted')])
+        doc_approved = request.env['waqf.document.approval'].sudo().search_count(
+            doc_domain + [('state', 'in', ('approved', 'approved_comments'))])
+        doc_rejected = request.env['waqf.document.approval'].sudo().search_count(
+            doc_domain + [('state', '=', 'rejected')])
+
+        # ── طلبات تتطلب إجراء ──────────────────────────────
         rework_orders = request.env['contractor.work.order'].sudo().search([
             ('mosque_id', 'in', mosque_ids), ('state', '=', 'rework')
         ], limit=5, order='write_date desc')
 
-        # عينات مرفوضة تتطلب إجراء
         rejected_subs = request.env['contractor.material.submittal'].sudo().search([
             ('mosque_id', 'in', mosque_ids), ('state', '=', 'rejected')
         ], limit=5, order='write_date desc')
+
+        # وثائق مرفوضة تتطلب إجراء
+        rejected_docs = request.env['waqf.document.approval'].sudo().search(
+            doc_domain + [('state', '=', 'rejected')],
+            limit=5, order='write_date desc')
 
         return request.render('waqf_contractor_portal.tmpl_mosque_select', {
             'portal_user': portal_user,
             'mosques': mosques,
             'is_admin': is_admin,
-            # إحصاءات
+            # أوامر عمل
             'wo_pending': wo_pending,
             'wo_rework': wo_rework,
             'wo_active': wo_active,
+            # عينات
             'sub_pending': sub_pending,
             'sub_approved': sub_approved,
             'sub_rejected': sub_rejected,
+            # تأهيلات
             'qual_approved': qual_approved,
             'qual_pending': qual_pending,
-            # طلبات تتطلب إجراء
+            # وثائق
+            'doc_draft': doc_draft,
+            'doc_pending': doc_pending,
+            'doc_approved': doc_approved,
+            'doc_rejected': doc_rejected,
+            # تتطلب إجراء
             'rework_orders': rework_orders,
             'rejected_subs': rejected_subs,
+            'rejected_docs': rejected_docs,
         })
 
     def _resolve_mosque(self, mosque_id):
