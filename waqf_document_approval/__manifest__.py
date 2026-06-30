@@ -19,6 +19,7 @@
         'base', 'mail', 'web',
         'waqf_contractor_portal',
         'contractor_work',
+        'waqf_portal_access',
         # 'documents',  # فعّلها إذا كان Enterprise Documents مثبّتاً
     ],
     'data': [
