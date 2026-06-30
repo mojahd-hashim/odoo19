@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="seq_document_approval" model="ir.sequence">
+            <field name="name">طلب اعتماد وثيقة</field>
+            <field name="code">waqf.document.approval</field>
+            <field name="prefix">DOC-%(y)s-</field>
+            <field name="padding">4</field>
+            <field name="number_increment">1</field>
+        </record>
+    </data>
+</odoo>

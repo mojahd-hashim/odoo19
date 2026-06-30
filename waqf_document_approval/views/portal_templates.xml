@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<!-- ══════════════════════════════════════════════════════════
+     LIST — قائمة طلبات الوثائق
+══════════════════════════════════════════════════════════ -->
+<template id="tmpl_doc_list" name="Document Approvals List">
+  <t t-call="waqf_contractor_portal.tmpl_base">
+    <div class="cp-breadcrumb">
+      <a href="/contractor">الرئيسية</a><span>←</span>
+      <span>اعتماد الوثائق والمخططات</span>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <div class="cp-mini-stat" style="flex:1;min-width:70px">
+        <div class="cp-mini-stat-val" style="color:var(--text2)"><t t-esc="counts['all']"/></div>
+        <div class="cp-mini-stat-lbl">إجمالي</div>
+      </div>
+      <div class="cp-mini-stat" style="flex:1;min-width:70px">
+        <div class="cp-mini-stat-val" style="color:var(--gold)"><t t-esc="counts['submitted']"/></div>
+        <div class="cp-mini-stat-lbl">بانتظار</div>
+      </div>
+      <div class="cp-mini-stat" style="flex:1;min-width:70px">
+        <div class="cp-mini-stat-val" style="color:var(--green)"><t t-esc="counts['approved']"/></div>
+        <div class="cp-mini-stat-lbl">معتمد</div>
+      </div>
+      <div class="cp-mini-stat" style="flex:1;min-width:70px">
+        <div class="cp-mini-stat-val" style="color:var(--red)"><t t-esc="counts['rejected']"/></div>
+        <div class="cp-mini-stat-lbl">مرفوض</div>
+      </div>
+    </div>
+
+    <!-- Filter + Action -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+      <div class="cp-filter-tabs">
+        <a href="/contractor/documents" t-attf-class="cp-filter-tab #{active_state == 'all' and 'active' or ''}">الكل</a>
+        <a href="/contractor/documents?state=draft" t-attf-class="cp-filter-tab #{active_state == 'draft' and 'active' or ''}">مسودة</a>
+        <a href="/contractor/documents?state=submitted" t-attf-class="cp-filter-tab #{active_state == 'submitted' and 'active' or ''}">بانتظار</a>
+        <a href="/contractor/documents?state=approved" t-attf-class="cp-filter-tab #{active_state == 'approved' and 'active' or ''}">معتمد</a>
+        <a href="/contractor/documents?state=rejected" t-attf-class="cp-filter-tab #{active_state == 'rejected' and 'active' or ''}">مرفوض</a>
+      </div>
+      <a href="/contractor/documents/new" class="cp-action-btn cp-action-primary">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M7 1.5v11M1.5 7h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        طلب اعتماد جديد
+      </a>
+    </div>
+
+    <!-- Empty -->
+    <t t-if="not documents">
+      <div class="cp-empty-state" style="margin-top:32px">
+        <div class="cp-empty-title">لا توجد طلبات</div>
+        <div class="cp-empty-sub">قدّم طلب اعتماد للمخططات أو الوثائق</div>
+      </div>
+    </t>
+
+    <!-- List -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <t t-foreach="documents" t-as="d">
+        <a t-attf-href="/contractor/documents/#{d.id}"
+           style="text-decoration:none;display:block;background:white;
+                  border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">
+          <div t-attf-style="height:3px;background:#{d.state in ('approved','approved_comments') and 'var(--green)' or d.state == 'rejected' and 'var(--red)' or d.state == 'submitted' and 'var(--gold)' or 'var(--border2)'}"/>
+          <div style="padding:14px 16px">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+              <div style="flex:1;min-width:0">
+                <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px">
+                  <t t-esc="d.title"/>
+                </div>
+                <div style="font-size:11px;color:var(--text3);display:flex;gap:8px;flex-wrap:wrap">
+                  <span style="font-family:monospace;color:var(--primary)"><t t-esc="d.name"/></span>
+                  <span style="color:var(--border2)">·</span>
+                  <span><t t-esc="d.doc_type_id.name"/></span>
+                  <span style="color:var(--border2)">·</span>
+                  <span>🕌 <t t-esc="d.mosque_id.name"/></span>
+                </div>
+                <div style="font-size:11px;color:var(--text3);margin-top:4px">
+                  📎 <t t-esc="d.file_count"/> ملف
+                  <t t-if="d.total_size"> · <t t-esc="'%.1f' % d.total_size"/> MB</t>
+                  <t t-if="d.revision > 0"> · مراجعة <t t-esc="d.revision"/></t>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+                <span t-attf-class="cp-status-pill #{d.state in ('approved','approved_comments') and 'approved' or d.state == 'submitted' and 'pending' or d.state == 'rejected' and 'rejected' or 'draft'}">
+                  <t t-if="d.state == 'draft'">مسودة</t>
+                  <t t-elif="d.state == 'submitted'">بانتظار</t>
+                  <t t-elif="d.state == 'approved'">✓ معتمد</t>
+                  <t t-elif="d.state == 'approved_comments'">✓ بملاحظات</t>
+                  <t t-elif="d.state == 'rejected'">مرفوض</t>
+                </span>
+                <span style="color:var(--border2);font-size:16px">›</span>
+              </div>
+            </div>
+            <t t-if="d.state == 'draft'">
+              <div style="margin-top:10px;padding:8px 12px;background:rgba(35,114,146,.06);
+                          border-radius:var(--r-sm);font-size:11px;color:var(--primary);font-weight:600">
+                ← أكمل رفع الملفات وأرسل الطلب
+              </div>
+            </t>
+            <t t-if="d.state == 'rejected' and d.reject_reason">
+              <div style="margin-top:8px;padding:8px 12px;background:var(--red-bg);
+                          border-radius:var(--r-sm);font-size:11px;color:var(--red)">
+                سبب الرفض: <t t-esc="d.reject_reason[:80]"/>
+              </div>
+            </t>
+          </div>
+        </a>
+      </t>
+    </div>
+  </t>
+</template>
+
+<!-- ══════════════════════════════════════════════════════════
+     NEW — إنشاء طلب + رفع أول ملف
+══════════════════════════════════════════════════════════ -->
+<template id="tmpl_doc_new" name="New Document Approval">
+  <t t-call="waqf_contractor_portal.tmpl_base">
+    <div class="cp-breadcrumb">
+      <a href="/contractor">الرئيسية</a><span>←</span>
+      <a href="/contractor/documents">اعتماد الوثائق</a><span>←</span>
+      <span>طلب جديد</span>
+    </div>
+
+    <t t-if="request.params.get('error')">
+      <div class="cp-alert-banner" style="background:var(--red-bg);border-color:rgba(232,85,85,.2);margin-bottom:12px">
+        <div class="cp-alert-banner-hdr" style="color:var(--red)">يرجى تعبئة جميع الحقول المطلوبة ورفع ملف</div>
+      </div>
+    </t>
+
+    <form action="/contractor/documents/create" method="post" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+      <div class="cp-form-card">
+        <div class="cp-form-group">
+          <label class="cp-label"><span>*</span> عنوان الطلب</label>
+          <input type="text" name="title" class="cp-input"
+                 placeholder="مثال: مخططات تنفيذية للواجهة الشمالية" required="required"/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="cp-form-group" style="margin-bottom:0">
+            <label class="cp-label"><span>*</span> المسجد</label>
+            <select name="mosque_id" class="cp-select" required="required">
+              <option value="">— اختر —</option>
+              <t t-foreach="mosques" t-as="m">
+                <option t-att-value="m.id"><t t-esc="m.code"/> — <t t-esc="m.name"/></option>
+              </t>
+            </select>
+          </div>
+          <div class="cp-form-group" style="margin-bottom:0">
+            <label class="cp-label"><span>*</span> نوع الوثيقة</label>
+            <select name="doc_type_id" class="cp-select" required="required">
+              <option value="">— اختر —</option>
+              <t t-foreach="doc_types" t-as="dt">
+                <option t-att-value="dt.id"><t t-esc="dt.name"/></option>
+              </t>
+            </select>
+          </div>
+        </div>
+        <div class="cp-form-group" style="margin-top:12px">
+          <label class="cp-label">وصف / ملاحظات</label>
+          <textarea name="description" class="cp-input" rows="2"
+                    placeholder="أي تفاصيل إضافية..." style="resize:vertical"/>
+        </div>
+
+        <!-- أول ملف -->
+        <div class="cp-form-group" style="margin-bottom:0;margin-top:8px">
+          <label class="cp-label"><span>*</span> الملف الأول</label>
+          <div style="padding:12px;background:rgba(35,114,146,.04);
+                      border:1px dashed rgba(35,114,146,.3);border-radius:var(--r-md)">
+            <input type="file" name="document_file" required="required"
+                   accept=".pdf,.dwg,.dxf,image/*,.zip,.rar,.doc,.docx,.xls,.xlsx"
+                   style="width:100%;font-size:13px"/>
+            <input type="text" name="file_note" class="cp-input"
+                   placeholder="ملاحظة على الملف (اختياري)"
+                   style="margin-top:8px;margin-bottom:0"/>
+          </div>
+          <div style="margin-top:8px;font-size:11px;color:var(--text3);line-height:1.6">
+            💡 بعد رفع هذا الملف سيُحفظ الطلب كمسودة، ثم يمكنك إضافة ملفات أخرى
+            (للملفات الكبيرة) قبل الإرسال النهائي.
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="cp-action-btn cp-action-primary"
+              style="width:100%;justify-content:center;height:48px">
+        رفع الملف ومتابعة
+      </button>
+    </form>
+  </t>
+</template>
+
+<!-- ══════════════════════════════════════════════════════════
+     UPLOAD — رفع ملف-ملف (التتابع)
+══════════════════════════════════════════════════════════ -->
+<template id="tmpl_doc_upload" name="Document Upload Sequential">
+  <t t-call="waqf_contractor_portal.tmpl_base">
+    <div class="cp-breadcrumb">
+      <a href="/contractor/documents">اعتماد الوثائق</a><span>←</span>
+      <span><t t-esc="doc.title"/></span>
+    </div>
+
+    <t t-if="request.params.get('added')">
+      <div class="cp-toast-success">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M5 8l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        تم رفع الملف — يمكنك إضافة ملف آخر أو إنهاء الطلب
+      </div>
+    </t>
+
+    <!-- Header -->
+    <div style="background:var(--navy);border-radius:var(--r-lg);padding:16px 20px;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:800;color:white;margin-bottom:4px">
+        <t t-esc="doc.title"/>
+      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,.55)">
+        <t t-esc="doc.name"/> · <t t-esc="doc.doc_type_id.name"/> · 🕌 <t t-esc="doc.mosque_id.name"/>
+      </div>
+    </div>
+
+    <!-- الملفات المرفوعة -->
+    <div style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.5px;margin-bottom:10px">
+      الملفات المرفوعة (<t t-esc="doc.file_count"/>)
+      <t t-if="doc.total_size"> · <t t-esc="'%.1f' % doc.total_size"/> MB</t>
+    </div>
+
+    <t t-if="doc.file_ids">
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+        <t t-foreach="doc.file_ids" t-as="f">
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;
+                      background:white;border:1px solid var(--border);border-radius:var(--r-md)">
+            <div style="width:36px;height:36px;border-radius:var(--r-sm);
+                        background:rgba(35,114,146,.08);display:flex;align-items:center;
+                        justify-content:center;font-size:18px;flex-shrink:0">
+              <t t-if="'pdf' in (f.mimetype or '')">📄</t>
+              <t t-elif="'image' in (f.mimetype or '')">🖼️</t>
+              <t t-elif="'zip' in (f.mimetype or '') or 'rar' in (f.mimetype or '')">🗜️</t>
+              <t t-else="">📎</t>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:600;color:var(--text1);
+                          white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                <t t-esc="f.name"/>
+              </div>
+              <div style="font-size:11px;color:var(--text3)">
+                <t t-esc="f.file_size_human"/>
+                <t t-if="f.note"> · <t t-esc="f.note"/></t>
+              </div>
+            </div>
+            <form t-attf-action="/contractor/documents/#{doc.id}/delete-file/#{f.id}"
+                  method="post" style="margin:0">
+              <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+              <button type="submit" style="background:none;border:none;color:var(--red);
+                                           cursor:pointer;font-size:18px;padding:4px">×</button>
+            </form>
+          </div>
+        </t>
+      </div>
+    </t>
+
+    <!-- نموذج رفع ملف جديد -->
+    <form action="" t-attf-action="/contractor/documents/#{doc.id}/add-file"
+          method="post" enctype="multipart/form-data" id="upload-form">
+      <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+      <input type="hidden" name="is_final" id="is_final_input" value="0"/>
+
+      <div class="cp-form-card">
+        <div class="cp-form-group" style="margin-bottom:0">
+          <label class="cp-label">إضافة ملف</label>
+          <div style="padding:14px;background:rgba(35,114,146,.04);
+                      border:1px dashed rgba(35,114,146,.3);border-radius:var(--r-md)">
+            <input type="file" name="document_file" required="required"
+                   accept=".pdf,.dwg,.dxf,image/*,.zip,.rar,.doc,.docx,.xls,.xlsx"
+                   style="width:100%;font-size:13px"/>
+            <input type="text" name="file_note" class="cp-input"
+                   placeholder="ملاحظة على الملف (اختياري)"
+                   style="margin-top:8px;margin-bottom:0"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- سؤال: أخير أم لا؟ -->
+      <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);
+                  padding:16px;margin-top:12px">
+        <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:12px;text-align:center">
+          هل هذا آخر ملف في الطلب؟
+        </div>
+        <div style="display:flex;gap:10px">
+          <!-- ليس الأخير -->
+          <button type="submit" onclick="document.getElementById('is_final_input').value='0'"
+                  class="cp-action-btn cp-action-ghost"
+                  style="flex:1;justify-content:center;height:48px">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            رفع وإضافة المزيد
+          </button>
+          <!-- الأخير → إرسال -->
+          <button type="submit" onclick="document.getElementById('is_final_input').value='1'"
+                  class="cp-action-btn cp-action-primary"
+                  style="flex:1;justify-content:center;height:48px">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M13 8H3M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            هذا الأخير — إرسال
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <!-- إرسال بدون ملف إضافي (إذا رُفعت ملفات سابقاً) -->
+    <t t-if="doc.file_ids">
+      <form t-attf-action="/contractor/documents/#{doc.id}/add-file"
+            method="post" style="margin-top:10px">
+        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+        <input type="hidden" name="is_final" value="1"/>
+        <button type="submit" class="cp-btn-ghost cp-btn-block"
+                onclick="return confirm('سيتم إرسال الطلب. متابعة؟')">
+          ✓ إرسال الطلب الآن (<t t-esc="doc.file_count"/> ملف بدون إضافة)
+        </button>
+      </form>
+    </t>
+
+  </t>
+</template>
+
+<!-- ══════════════════════════════════════════════════════════
+     DETAIL — تفاصيل الطلب
+══════════════════════════════════════════════════════════ -->
+<template id="tmpl_doc_detail" name="Document Detail">
+  <t t-call="waqf_contractor_portal.tmpl_base">
+    <div class="cp-breadcrumb">
+      <a href="/contractor/documents">اعتماد الوثائق</a><span>←</span>
+      <span><t t-esc="doc.title"/></span>
+    </div>
+
+    <t t-if="request.params.get('submitted')">
+      <div class="cp-toast-success">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M5 8l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        تم إرسال الطلب للاستشاري — بانتظار الاعتماد
+      </div>
+    </t>
+
+    <!-- Header -->
+    <div style="background:var(--navy);border-radius:var(--r-lg);padding:18px 20px;margin-bottom:16px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px">
+        <div>
+          <div style="font-size:17px;font-weight:800;color:white;margin-bottom:4px">
+            <t t-esc="doc.title"/>
+          </div>
+          <div style="font-size:12px;color:rgba(255,255,255,.55)"><t t-esc="doc.name"/></div>
+        </div>
+        <span t-attf-style="flex-shrink:0;padding:5px 12px;border-radius:999px;font-size:11px;font-weight:700;
+            background:#{doc.state in ('approved','approved_comments') and 'rgba(46,204,138,.2)' or doc.state == 'rejected' and 'rgba(232,85,85,.2)' or doc.state == 'submitted' and 'rgba(200,164,48,.2)' or 'rgba(255,255,255,.1)'};
+            color:#{doc.state in ('approved','approved_comments') and 'var(--green)' or doc.state == 'rejected' and 'var(--red)' or doc.state == 'submitted' and 'var(--gold)' or 'rgba(255,255,255,.6)'}">
+          <t t-if="doc.state == 'draft'">● مسودة</t>
+          <t t-elif="doc.state == 'submitted'">● بانتظار الاعتماد</t>
+          <t t-elif="doc.state == 'approved'">✓ معتمد</t>
+          <t t-elif="doc.state == 'approved_comments'">✓ معتمد بملاحظات</t>
+          <t t-elif="doc.state == 'rejected'">✗ مرفوض</t>
+        </span>
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:rgba(255,255,255,.5)">
+        <span><t t-esc="doc.doc_type_id.name"/></span>
+        <span>🕌 <t t-esc="doc.mosque_id.name"/></span>
+        <span>📎 <t t-esc="doc.file_count"/> ملف</span>
+        <t t-if="doc.total_size"><span><t t-esc="'%.1f' % doc.total_size"/> MB</span></t>
+      </div>
+    </div>
+
+    <!-- Approved -->
+    <t t-if="doc.state in ('approved','approved_comments')">
+      <div style="padding:14px 16px;background:var(--green-bg);border:1px solid rgba(46,204,138,.25);
+                  border-radius:var(--r-lg);margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:#1A7A55;margin-bottom:4px">
+          ✅ تم اعتماد الوثائق
+          <t t-if="doc.reviewed_by"> — <t t-esc="doc.reviewed_by.name"/></t>
+        </div>
+        <t t-if="doc.state == 'approved_comments' and doc.review_notes">
+          <div style="font-size:12px;color:#2A8A65;padding:8px 12px;background:rgba(46,204,138,.08);
+                      border-radius:var(--r-sm);margin-top:6px">
+            <strong>ملاحظات:</strong> <t t-esc="doc.review_notes"/>
+          </div>
+        </t>
+      </div>
+    </t>
+
+    <!-- Rejected -->
+    <t t-if="doc.state == 'rejected'">
+      <div style="padding:14px 16px;background:var(--red-bg);border:1px solid rgba(232,85,85,.25);
+                  border-radius:var(--r-lg);margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:6px">❌ تم رفض الطلب</div>
+        <t t-if="doc.reject_reason">
+          <div style="font-size:12px;color:var(--red);padding:8px 12px;background:rgba(232,85,85,.08);
+                      border-radius:var(--r-sm)">
+            <strong>السبب:</strong> <t t-esc="doc.reject_reason"/>
+          </div>
+        </t>
+        <form t-attf-action="/contractor/documents/#{doc.id}/resubmit" method="post" style="margin-top:10px">
+          <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+          <button type="submit" class="cp-action-btn cp-action-primary"
+                  style="width:100%;justify-content:center">
+            إعادة الرفع والتعديل
+          </button>
+        </form>
+      </div>
+    </t>
+
+    <!-- مسودة — أكمل الرفع -->
+    <t t-if="doc.state == 'draft'">
+      <a t-attf-href="/contractor/documents/#{doc.id}/upload"
+         class="cp-action-btn cp-action-primary"
+         style="width:100%;justify-content:center;margin-bottom:12px">
+        ← متابعة رفع الملفات والإرسال
+      </a>
+    </t>
+
+    <!-- الوصف -->
+    <t t-if="doc.description">
+      <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);
+                  padding:14px 16px;margin-bottom:12px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px">الوصف</div>
+        <div style="font-size:13px;color:var(--text1);line-height:1.6"><t t-esc="doc.description"/></div>
+      </div>
+    </t>
+
+    <!-- الملفات -->
+    <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);
+                overflow:hidden;margin-bottom:12px">
+      <div style="padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border);
+                  font-size:12px;font-weight:600;color:var(--text2)">
+        الملفات (<t t-esc="doc.file_count"/>)
+      </div>
+      <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px">
+        <t t-foreach="doc.file_ids" t-as="f">
+          <a t-attf-href="/web/content/#{f.attachment_id.id}?download=true" target="_blank"
+             style="display:flex;align-items:center;gap:10px;padding:10px 12px;
+                    background:var(--surface2);border-radius:var(--r-sm);
+                    border:1px solid var(--border);text-decoration:none;color:var(--text1)">
+            <span style="font-size:20px">
+              <t t-if="'pdf' in (f.mimetype or '')">📄</t>
+              <t t-elif="'image' in (f.mimetype or '')">🖼️</t>
+              <t t-else="">📎</t>
+            </span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                <t t-esc="f.name"/>
+              </div>
+              <div style="font-size:10px;color:var(--text3)">
+                <t t-esc="f.file_size_human"/>
+                <t t-if="f.note"> · <t t-esc="f.note"/></t>
+              </div>
+            </div>
+            <span style="font-size:11px;color:var(--primary)">↓</span>
+          </a>
+        </t>
+      </div>
+    </div>
+
+    <a href="/contractor/documents" class="cp-btn-ghost cp-btn-block">← العودة للقائمة</a>
+  </t>
+</template>
+
+</odoo>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_doc_approval_root" name="اعتماد الوثائق"
+              web_icon="waqf_document_approval,static/description/icon.png"
+              sequence="50"/>
+    <menuitem id="menu_doc_approval_requests" name="طلبات الاعتماد"
+              parent="menu_doc_approval_root"
+              action="action_doc_approval" sequence="10"/>
+    <menuitem id="menu_doc_type" name="أنواع الوثائق"
+              parent="menu_doc_approval_root"
+              action="action_doc_type" sequence="90"
+              groups="waqf_document_approval.group_doc_consultant"/>
+</odoo>
