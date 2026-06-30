@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <menuitem id="menu_doc_approval_root" name="اعتماد الوثائق"
-              web_icon="waqf_document_approval,static/description/icon.png"
+              web_icon="waqf_document_approval,static/description/icon.svg"
               sequence="50"/>
     <menuitem id="menu_doc_approval_requests" name="طلبات الاعتماد"
               parent="menu_doc_approval_root"
