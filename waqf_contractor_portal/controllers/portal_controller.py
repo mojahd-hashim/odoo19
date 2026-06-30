@@ -137,13 +137,31 @@ class ContractorPortal(http.Controller):
         return mosque, portal_user
 
     def _wo_domain(self, portal_user, supervisor, mosque_id=None):
+        """
+        يحدّد نطاق أوامر العمل حسب صلاحية المستخدم:
+        - مشرف عام (contractor_admin): كل أوامر مساجده المخوّلة
+        - مشرف موقع (site_supervisor): أوامره التي رفعها + مساجده فقط
+        """
         domain = []
+
         if mosque_id:
             domain.append(('mosque_id', '=', mosque_id))
+
         if portal_user:
-            domain.append(('portal_user_id', '=', portal_user.user_id.id))
-        # elif supervisor:
-        #     domain.append(('supervisor_id', '=', supervisor.id))
+            if portal_user.role == 'contractor_admin':
+                # المشرف العام — كل أوامر مساجده المخوّلة
+                domain.append(
+                    ('mosque_id', 'in', portal_user.effective_mosque_ids.ids))
+            else:
+                # مشرف الموقع — أوامره التي رفعها أو في مساجده المتابعة
+                domain += [
+                    '|',
+                    ('portal_user_id', '=', portal_user.user_id.id),
+                    ('mosque_id', 'in', portal_user.effective_mosque_ids.ids),
+                ]
+        elif supervisor:
+            domain.append(('supervisor_id', '=', supervisor.id))
+
         return domain
 
     @http.route('/contractor/mosque/<int:mosque_id>', type='http', auth='user', website=True)
@@ -1046,6 +1064,12 @@ class ContractorPortal(http.Controller):
                 ('mosque_id', '=', mosque_id),
                 # ('requires_sample', '=', True),
             ])
+        # else:
+        #     boq_items = request.env['mosque.boq'].sudo().search([
+        #         ('mosque_id', '=', mosque_id),
+        #         # ('requires_sample', '=', True),
+        #     ])
+
 
         work_order = None
         if wo_id:
