@@ -30,7 +30,9 @@
             <field name="model_id" ref="model_waqf_document_approval"/>
             <field name="groups" eval="[(4, ref('group_doc_consultant_mosque'))]"/>
             <field name="domain_force">
-                [('mosque_id', 'in', user.waqf_portal_mosque_ids.ids)]
+                [ ('mosque_id', 'in',
+                        user.waqf_portal_user_id.effective_mosque_ids.ids
+                        if user.waqf_portal_user_id else [])]
             </field>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="True"/>
@@ -60,8 +62,10 @@
             <field name="name">ملفات الوثائق: استشاري المسجد</field>
             <field name="model_id" ref="model_waqf_document_approval_file"/>
             <field name="groups" eval="[(4, ref('group_doc_consultant_mosque'))]"/>
-            <field name="domain_force">
-                [('approval_id.mosque_id', 'in', user.waqf_portal_mosque_ids.ids)]
+           <field name="domain_force">
+                [ ('approval_id.mosque_id', 'in',
+                        user.waqf_portal_user_id.effective_mosque_ids.ids
+                        if user.waqf_portal_user_id else [])]
             </field>
         </record>
 
