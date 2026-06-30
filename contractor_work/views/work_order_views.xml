@@ -21,9 +21,9 @@
   <field name="arch" type="xml">
     <form string="أمر عمل المقاول">
       <header>
-        <button name="action_submit_commencement" type="object"
-                string="إرسال طلب البدء" class="btn-primary"
-                invisible="state != 'draft'"/>
+<!--        <button name="action_submit_commencement" type="object"-->
+<!--                string="إرسال طلب البدء" class="btn-primary"-->
+<!--                invisible="state != 'draft'"/>-->
         <button name="action_approve_commencement" type="object"
                 string="اعتماد البدء ✅" class="btn-success"
                 invisible="state != 'submitted'"/>

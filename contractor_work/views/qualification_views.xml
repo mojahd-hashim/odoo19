@@ -7,9 +7,9 @@
   <field name="arch" type="xml">
     <form string="تأهيل المقاول">
       <header>
-        <button name="action_submit" type="object"
-                string="إرسال للمستشار" class="btn-primary"
-                invisible="state != 'draft'"/>
+<!--        <button name="action_submit" type="object"-->
+<!--                string="إرسال للمستشار" class="btn-primary"-->
+<!--                invisible="state != 'draft'"/>-->
         <button name="action_consultant_approve" type="object"
                 string="اعتماد المستشار ✅" class="btn-success"
                 invisible="state != 'submitted'"/>

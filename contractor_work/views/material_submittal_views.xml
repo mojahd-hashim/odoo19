@@ -7,9 +7,9 @@
   <field name="arch" type="xml">
     <form string="عينة مادة">
       <header>
-        <button name="action_submit" type="object"
-                string="إرسال للمراجعة" class="btn-primary"
-                invisible="state != 'draft'"/>
+<!--        <button name="action_submit" type="object"-->
+<!--                string="إرسال للمراجعة" class="btn-primary"-->
+<!--                invisible="state != 'draft'"/>-->
         <button name="action_approve" type="object"
                 string="اعتماد العينة ✅" class="btn-success"
                 invisible="state != 'submitted'"/>
