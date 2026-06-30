@@ -18,6 +18,7 @@
     'depends': [
         'base', 'mail', 'web',
         'waqf_contractor_portal',
+        'contractor_work',
         # 'documents',  # فعّلها إذا كان Enterprise Documents مثبّتاً
     ],
     'data': [
