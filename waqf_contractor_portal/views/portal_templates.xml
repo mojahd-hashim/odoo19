@@ -162,7 +162,8 @@
                                   stroke-width="1.4" stroke-linecap="round"/>
                         </svg>
                         يتطلب إجراءً منك (
-                        <t t-esc="(rework_orders|length) + (rejected_subs|length)"/>
+                       <t t-esc="len(rework_orders) + len(rejected_subs)"/>
+
                         )
                     </div>
                     <div class="cp-alert-items">

@@ -8,11 +8,11 @@
         <field name="arch" type="xml">
             <form string="Work Log">
                 <header>
-                    <button name="action_submit"
-                            string="إرسال للاستشاري"
-                            type="object"
-                            class="btn-primary"
-                            invisible="state != 'draft'"/>
+<!--                    <button name="action_submit"-->
+<!--                            string="إرسال للاستشاري"-->
+<!--                            type="object"-->
+<!--                            class="btn-primary"-->
+<!--                            invisible="state != 'draft'"/>-->
                     <button name="action_approve"
                             string="اعتماد"
                             type="object"
