@@ -387,8 +387,8 @@ class ContractorPortal(http.Controller):
 
         # Work logs
         domain_logs = [('task_id', '=', task_id)]
-        if supervisor:
-            domain_logs.append(('supervisor_id', '=', supervisor.id))
+        # if supervisor:
+        #     domain_logs.append(('supervisor_id', '=', supervisor.id))
 
         logs = request.env['contractor.work.log'].sudo().search(
             domain_logs, order='log_date desc')
