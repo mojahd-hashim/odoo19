@@ -114,33 +114,33 @@
     <!-- ══════════════════════════════════════════════════
          SEARCH
     ══════════════════════════════════════════════════ -->
-    <record id="view_doc_approval_search" model="ir.ui.view">
-        <field name="name">doc.approval.search</field>
-        <field name="model">waqf.document.approval</field>
-        <field name="arch" type="xml">
-            <search>
-                <field name="name"/>
-                <field name="title"/>
-                <field name="mosque_id"/>
-                <field name="contractor_id"/>
-                <filter name="f_submitted" string="بانتظار الاعتماد"
-                        domain="[('state','=','submitted')]"/>
-                <filter name="f_approved" string="معتمد"
-                        domain="[('state','in',('approved','approved_comments'))]"/>
-                <filter name="f_rejected" string="مرفوض"
-                        domain="[('state','=','rejected')]"/>
-                <separator/>
-                <group expand="0" string="تجميع">
-                    <filter name="g_mosque" string="المسجد"
-                            context="{'group_by':'mosque_id'}"/>
-                    <filter name="g_type" string="نوع الوثيقة"
-                            context="{'group_by':'doc_type_id'}"/>
-                    <filter name="g_state" string="الحالة"
-                            context="{'group_by':'state'}"/>
-                </group>
-            </search>
-        </field>
-    </record>
+<!--    <record id="view_doc_approval_search" model="ir.ui.view">-->
+<!--        <field name="name">doc.approval.search</field>-->
+<!--        <field name="model">waqf.document.approval</field>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <search>-->
+<!--                <field name="name"/>-->
+<!--                <field name="title"/>-->
+<!--                <field name="mosque_id"/>-->
+<!--                <field name="contractor_id"/>-->
+<!--                <filter name="f_submitted" string="بانتظار الاعتماد"-->
+<!--                        domain="[('state','=','submitted')]"/>-->
+<!--                <filter name="f_approved" string="معتمد"-->
+<!--                        domain="[('state','in',('approved','approved_comments'))]"/>-->
+<!--                <filter name="f_rejected" string="مرفوض"-->
+<!--                        domain="[('state','=','rejected')]"/>-->
+<!--                <separator/>-->
+<!--                <group expand="0" string="تجميع">-->
+<!--                    <filter name="g_mosque" string="المسجد"-->
+<!--                            context="{'group_by':'mosque_id'}"/>-->
+<!--                    <filter name="g_type" string="نوع الوثيقة"-->
+<!--                            context="{'group_by':'doc_type_id'}"/>-->
+<!--                    <filter name="g_state" string="الحالة"-->
+<!--                            context="{'group_by':'state'}"/>-->
+<!--                </group>-->
+<!--            </search>-->
+<!--        </field>-->
+<!--    </record>-->
 
     <!-- ══════════════════════════════════════════════════
          ACTIONS
@@ -149,7 +149,7 @@
         <field name="name">طلبات اعتماد الوثائق</field>
         <field name="res_model">waqf.document.approval</field>
         <field name="view_mode">list,form</field>
-        <field name="context">{'search_default_f_submitted': 1}</field>
+<!--        <field name="context">{'search_default_f_submitted': 1}</field>-->
     </record>
 
     <record id="action_doc_type" model="ir.actions.act_window">
