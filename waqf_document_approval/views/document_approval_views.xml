@@ -41,15 +41,15 @@
                     <!-- أزرار الاستشاري -->
                     <button name="action_approve" type="object"
                             string="اعتماد" class="btn-success"
-                            invisible="state != 'submitted'"
+                           invisible="state not in ('submitted', 'review')"
                             groups="waqf_document_approval.group_doc_consultant_mosque"/>
                     <button name="action_approve_comments" type="object"
                             string="اعتماد مع ملاحظات" class="btn-info"
-                            invisible="state != 'submitted'"
+                           invisible="state not in ('submitted', 'review')"
                             groups="waqf_document_approval.group_doc_consultant_mosque"/>
                     <button name="action_reject" type="object"
                             string="رفض" class="btn-danger"
-                            invisible="state != 'submitted'"
+                           invisible="state not in ('submitted', 'review')"
                             groups="waqf_document_approval.group_doc_consultant_mosque"/>
                     <button name="action_reset_draft" type="object"
                             string="إعادة لمسودة"
