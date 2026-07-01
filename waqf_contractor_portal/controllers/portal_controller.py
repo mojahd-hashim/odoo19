@@ -61,13 +61,10 @@ class ContractorPortal(http.Controller):
             mosques = portal_user.effective_mosque_ids.sorted('name')
             is_admin = portal_user.role == 'contractor_admin'
         else:
-            mosque = supervisor.assigned_mosque_id
-            if mosque:
-                return request.redirect(f'/contractor/mosque/{mosque.id}')
-            return request.render('waqf_contractor_portal.tmpl_no_mosque', {})
+            mosques = portal_user.effective_mosque_ids.sorted('name')
 
-        if len(mosques) == 1:
-            return request.redirect(f'/contractor/mosque/{mosques[0].id}')
+        # if len(mosques) == 1:
+        #     return request.redirect(f'/contractor/mosque/{mosques[0].id}')
 
         mosque_ids = mosques.ids
 
