@@ -96,6 +96,8 @@ class ContractorPortal(http.Controller):
 
         # ── الوثائق والمخططات ──────────────────────────────
         doc_domain = [('submitted_by', '=', request.env.user.id)]
+        if portal_user.role in ['contractor_admin']:
+            doc_domain = []
         doc_draft = request.env['waqf.document.approval'].sudo().search_count(
             doc_domain + [('state', '=', 'draft')])
         doc_pending = request.env['waqf.document.approval'].sudo().search_count(
