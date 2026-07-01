@@ -33,6 +33,8 @@ class DocumentApprovalPortal(http.Controller):
             return request.redirect('/web')
 
         domain = [('submitted_by', '=', request.env.user.id)]
+        if supervisor.role in ['contractor_admin']:
+            domain = []
         if state and state != 'all':
             domain.append(('state', '=', state))
 
