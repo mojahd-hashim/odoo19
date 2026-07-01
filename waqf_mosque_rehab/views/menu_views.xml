@@ -40,6 +40,12 @@
 
 
     <!-- ── Supervision ───────────────────────────────────────── -->
+
+      <menuitem id="menu_mosque_supervision"
+              name="Site Reports"
+              action="action_mosque_supervision"
+                web_icon="waqf_mosque_rehab,static/description/icon.png"
+              sequence="10"/>
     <menuitem id="menu_mosque_supervision_root"
               name="Supervision"
               web_icon="waqf_mosque_rehab,static/description/icon.png"
