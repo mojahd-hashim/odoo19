@@ -1200,6 +1200,7 @@ class ContractorPortal(http.Controller):
         vals = {
             'work_category_id': category_id,
             'scope': scope,
+            'supervisor_id': supervisor.id,
             'description': desc,
         }
         if mosque_ids and scope == 'specific':
@@ -1216,6 +1217,7 @@ class ContractorPortal(http.Controller):
                     'datas': base64.b64encode(f.read()),
                     'res_model': 'contractor.qualification',
                     'res_id': qual.id,
+                    'public': True,
                     'mimetype': f.content_type,
                 })
                 qual.write({'document_ids': [(4, att.id)]})
