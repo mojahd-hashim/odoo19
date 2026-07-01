@@ -43,6 +43,9 @@ class DocumentApprovalPortal(http.Controller):
 
         all_docs = request.env['waqf.document.approval'].sudo().search([
             ('submitted_by', '=', request.env.user.id)])
+
+        if portal_user.role in ['contractor_admin']:
+            all_docs = request.env['waqf.document.approval'].sudo().search([])
         counts = {
             'all':       len(all_docs),
             'draft':     sum(1 for d in all_docs if d.state == 'draft'),
