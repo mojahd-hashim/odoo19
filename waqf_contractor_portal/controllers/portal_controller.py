@@ -934,6 +934,7 @@ class ContractorPortal(http.Controller):
                     'res_model': 'contractor.work.order',
                     'res_id': wo.id,
                     'mimetype': f.content_type,
+                    'public': True,
                 })
                 wo.write({'site_photo_ids': [(4, att.id)]})
 
@@ -1008,6 +1009,7 @@ class ContractorPortal(http.Controller):
                     'res_model': 'contractor.work.order',
                     'res_id': wo.id,
                     'mimetype': f.content_type,
+                    'public': True,
                 })
                 wo.write({'delivery_photo_ids': [(4, att.id)]})
 
@@ -1043,6 +1045,7 @@ class ContractorPortal(http.Controller):
                         'res_model': 'contractor.work.order.rework',
                         'res_id': last_rework.id,
                         'mimetype': f.content_type,
+                        'public': True,
                     })
                     att_ids.append(att.id)
             last_rework.write({
@@ -1143,6 +1146,7 @@ class ContractorPortal(http.Controller):
                     'res_model': 'contractor.material.submittal',
                     'res_id': sub.id,
                     'mimetype': f.content_type,
+                    'public': True,
                 })
                 sub.write({'document_ids': [(4, att.id)]})
 
@@ -1309,6 +1313,7 @@ class ContractorPortal(http.Controller):
                     'res_model': 'contractor.material.submittal',
                     'res_id': sub.id,
                     'mimetype': f.content_type,
+                    'public': True,
                 })
                 sub.write({'document_ids': [(4, att.id)]})
 
@@ -1404,6 +1409,7 @@ class ContractorPortal(http.Controller):
                     'res_model': 'contractor.qualification',
                     'res_id': qual.id,
                     'mimetype': f.content_type,
+                    'public': True,
                 })
                 qual.write({'document_ids': [(4, att.id)]})
 
