@@ -12,6 +12,8 @@ access_mosque_boq_contractor,mosque.boq contractor,model_mosque_boq,group_mosque
 access_mosque_boq_category_admin,mosque.boq.category admin,model_mosque_boq_category,group_mosque_admin,1,1,1,1
 access_mosque_boq_category_all,mosque.boq.category all,model_mosque_boq_category,group_mosque_contractor,1,0,0,0
 access_mosque_supervision_admin,mosque.supervision admin,model_mosque_supervision,group_mosque_admin,1,1,1,1
+access_mosque_supervision_engineer,mosque.supervision.engineer,model_mosque_supervision,contractor_work.group_supervision_engineer,1,1,1,0
+access_mosque_supervision_senior,mosque.supervision.senior,model_mosque_supervision,contractor_work.group_supervision_senior_engineer,1,1,0,0
 access_mosque_supervision_manager,mosque.supervision manager,model_mosque_supervision,group_mosque_waqf_manager,1,1,0,0
 access_mosque_supervision_consultant,mosque.supervision consultant,model_mosque_supervision,group_mosque_consultant,1,1,1,0
 access_mosque_supervision_contractor,mosque.supervision contractor,model_mosque_supervision,group_mosque_contractor,1,1,1,0

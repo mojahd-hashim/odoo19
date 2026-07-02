@@ -23,7 +23,7 @@
               parent="menu_mosque_project"
               action="action_mosque_mosque"
               sequence="20"/>
-     <menuitem id="menu_mosque_boq"
+    <menuitem id="menu_mosque_boq"
               name="BOQ Lines"
               parent="menu_mosque_project"
               action="action_mosque_boq"
@@ -31,20 +31,14 @@
 
 
 
-<!--    &lt;!&ndash; ── BOQ ───────────────────────────────────────────────── &ndash;&gt;-->
-<!--    <menuitem id="menu_mosque_boq_root"-->
-<!--              name="Bill of Quantities"-->
-<!--              parent="menu_mosque_root"-->
-<!--              sequence="20"/>-->
-
-
 
     <!-- ── Supervision ───────────────────────────────────────── -->
 
-      <menuitem id="menu_mosque_supervision_custom"
+    <menuitem id="menu_mosque_supervision_custom"
               name="Site Reports"
               action="action_mosque_supervision"
-                web_icon="waqf_mosque_rehab,static/description/icon.png"
+              web_icon="waqf_mosque_rehab,static/description/icon.png"
+              groups="group_supervision_engineer"
               sequence="10"/>
     <menuitem id="menu_mosque_supervision_root"
               name="Supervision"

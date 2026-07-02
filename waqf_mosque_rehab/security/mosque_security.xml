@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
+    <!-- مهندس التقارير -->
+    <record id="group_supervision_engineer" model="res.groups">
+        <field name="name">مهندس تقارير الإشراف</field>
+        <field name="category_id" ref="base.module_category_hidden"/>
+    </record>
+
+    <!-- كبير مهندسي التقارير -->
+    <record id="group_supervision_senior_engineer" model="res.groups">
+        <field name="name">كبير مهندسي تقارير الإشراف</field>
+        <field name="category_id" ref="base.module_category_hidden"/>
+    </record>
     <!-- ── Groups ─────────────────────────────────────────────── -->
     <record id="group_mosque_contractor" model="res.groups">
         <field name="name">Mosque / Contractor</field>
@@ -42,6 +54,32 @@
         <field name="name">Mosque: Waqf manager sees all mosques</field>
         <field name="model_id" ref="model_mosque_mosque"/>
         <field name="domain_force">[(1,'=',1)]</field>
+        <field name="groups" eval="[(4, ref('group_mosque_waqf_manager'))]"/>
+    </record>
+
+
+    <record id="rule_supervision_engineer" model="ir.rule">
+        <field name="name">Engineer Own Reports</field>
+        <field name="model_id" ref="model_mosque_supervision"/>
+        <field name="domain_force">
+            [('engineer_id', '=', user.id)]
+        </field>
+        <field name="groups" eval="[(4, ref('group_supervision_engineer'))]"/>
+    </record>
+    <record id="rule_supervision_senior" model="ir.rule">
+        <field name="name">Senior Engineer Reports</field>
+        <field name="model_id" ref="model_mosque_supervision"/>
+        <field name="domain_force">
+            [('state', '!=', 'draft')]
+        </field>
+        <field name="groups" eval="[(4, ref('group_supervision_senior_engineer'))]"/>
+    </record>
+    <record id="rule_supervision_waqf" model="ir.rule">
+        <field name="name">Waqf Approved Reports</field>
+        <field name="model_id" ref="model_mosque_supervision"/>
+        <field name="domain_force">
+            [('state', '=', 'approved')]
+        </field>
         <field name="groups" eval="[(4, ref('group_mosque_waqf_manager'))]"/>
     </record>
 </odoo>
