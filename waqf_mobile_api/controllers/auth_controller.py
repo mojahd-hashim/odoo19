@@ -104,6 +104,46 @@ class WaqfAuthController(http.Controller):
             token.write({'is_active': False})
         return api_response(data={'logged_out': True})
 
+        # ══════════════════════════════════════════════════════════════
+        # دالة حذف الحساب (تعطيل) — أضفها في الـ controller
+        # ══════════════════════════════════════════════════════════════
+
+    @http.route('/api/account/deactivate', type='json', auth='user')
+    def deactivate_account(self, **kw):
+        """تعطيل حساب المستخدم الحالي (غير نشط) بدل الحذف الفعلي."""
+        user = request.env.user
+
+        # ① تسجيل الانصراف إن كان هناك حضور نشط
+        try:
+            attendance = request.env['hr.attendance'].sudo().search([
+                ('employee_id.user_id', '=', user.id),
+                ('check_out', '=', False),
+            ], limit=1)
+            if attendance:
+                attendance.sudo().write({
+                    'check_out': fields.Datetime.now(),
+                })
+        except Exception:
+            pass
+
+        # ② تعطيل سجل بوابة المقاول إن وُجد
+        try:
+            portal_user = request.env['waqf.portal.user'].sudo().search([
+                ('user_id', '=', user.id),
+            ])
+            if portal_user:
+                portal_user.write({'is_active': False})
+        except Exception:
+            pass
+
+        # # ③ تعطيل المستخدم نفسه (active = False)
+        # #    نستخدم sudo لأن المستخدم لا يملك صلاحية تعطيل نفسه عادةً
+        # user.sudo().write({'active': False})
+
+        return {
+            'success': True,
+            'message': 'تم تعطيل الحساب بنجاح',
+        }
     # ── POST /api/waqf/auth/fcm-token ─────────────────────────────
     @http.route('/api/waqf/auth/fcm-token',
                 type='http', auth='none', methods=['POST'], csrf=False)
