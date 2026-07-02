@@ -34,12 +34,12 @@
 
     <!-- ── Supervision ───────────────────────────────────────── -->
 
-    <menuitem id="menu_mosque_supervision_custom"
-              name="Site Reports"
-              action="action_mosque_supervision"
-              web_icon="waqf_mosque_rehab,static/description/icon.png"
-              groups="group_supervision_engineer"
-              sequence="10"/>
+<!--    <menuitem id="menu_mosque_supervision_custom"-->
+<!--              name="Site Reports"-->
+<!--              action="action_mosque_supervision"-->
+<!--              web_icon="waqf_mosque_rehab,static/description/icon.png"-->
+<!--              groups="group_supervision_engineer"-->
+<!--              sequence="10"/>-->
     <menuitem id="menu_mosque_supervision_root"
               name="Supervision"
               web_icon="waqf_mosque_rehab,static/description/icon.png"
