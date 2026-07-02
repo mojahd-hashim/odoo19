@@ -46,7 +46,6 @@
           </h1>
           <h3>
             <field name="role" placeholder="الدور"/>
-            <field name="work_category_id"/>
           </h3>
         </div>
 
@@ -57,6 +56,7 @@
             <field name="email"/>
             <field name="phone"/>
             <field name="role"/>
+            <field name="work_category_id"/>
             <field name="company_id"
                    invisible="role not in ['site_supervisor','contractor_admin','contractor_engineer']"
                    required="role in ['site_supervisor','contractor_admin','contractor_engineer']"/>
