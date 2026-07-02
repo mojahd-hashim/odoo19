@@ -30,6 +30,7 @@
     'data': [
         'security/ir.model.access.csv',
         'views/dashboard_template.xml',
+        'views/live.xml',
         'views/menu_views.xml',
     ],
     'installable': True,
