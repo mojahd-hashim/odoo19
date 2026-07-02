@@ -4,7 +4,8 @@ access_mosque_package_manager,mosque.package manager,model_mosque_package,group_
 access_mosque_mosque_admin,mosque.mosque admin,model_mosque_mosque,group_mosque_admin,1,1,1,1
 access_mosque_mosque_manager,mosque.mosque manager,model_mosque_mosque,group_mosque_waqf_manager,1,1,0,0
 access_mosque_mosque_consultant,mosque.mosque consultant,model_mosque_mosque,group_mosque_consultant,1,0,0,0
-access_mosque_mosque_contractor,mosque.mosque contractor,model_mosque_mosque,group_mosque_contractor,1,0,0,0
+access_mosque_mosque_consultant,mosque.mosque consultant,model_mosque_mosque,group_mosque_consultant,1,0,0,0
+access_mosque_mosque_group_supervision_engineer,mosque.mosque contractor,model_mosque_mosque,group_supervision_engineer,1,0,0,0
 access_mosque_boq_admin,mosque.boq admin,model_mosque_boq,group_mosque_admin,1,1,1,1
 access_mosque_boq_manager,mosque.boq manager,model_mosque_boq,group_mosque_waqf_manager,1,1,1,0
 access_mosque_boq_consultant,mosque.boq consultant,model_mosque_boq,group_mosque_consultant,1,1,0,0
