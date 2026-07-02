@@ -158,7 +158,7 @@ class ContractorQualification(models.Model):
                 rec.engineer_grade, rec.engineer_notes,
                 'ملاحظات المهندس المسؤول')
 
-            if rec.engineer_grade == 'd':
+            if rec.engineer_grade in  ['c','d']:
                 # D → رفض مباشر
                 rec.write({
                     'state':         'rejected',
@@ -183,57 +183,28 @@ class ContractorQualification(models.Model):
     # ── كبير المهندسين يقيّم ──────────────────────────────
     def action_senior_approve(self):
         for rec in self:
-            rec._validate_grade(
-                rec.senior_grade, rec.senior_notes,
-                'ملاحظات كبير المهندسين')
-
-            if rec.senior_grade == 'd':
-                rec.write({
-                    'state':         'rejected',
-                    'reject_reason': rec.senior_notes,
-                    'senior_by':     self.env.user.id,
-                    'senior_date':   fields.Date.today(),
-                })
-                rec.message_post(
-                    body=_('❌ كبير المهندسين رفض — تقييم D: %s')
-                    % rec.senior_notes)
-            else:
-                rec.write({
-                    'state':       'senior_done',
-                    'senior_by':   self.env.user.id,
-                    'senior_date': fields.Date.today(),
-                })
-                rec.message_post(
-                    body=_('✅ كبير المهندسين — تقييم %s%s')
-                    % (rec.senior_grade.upper(),
-                       ': ' + rec.senior_notes if rec.senior_notes else ''))
+            rec.write({
+                'state':       'senior_done',
+                'senior_by':   self.env.user.id,
+                'senior_date': fields.Date.today(),
+            })
+            rec.message_post(
+                body=_('✅ كبير المهندسين — تقييم %s%s')
+                % (rec.senior_grade.upper(),
+                   ': ' + rec.senior_notes if rec.senior_notes else ''))
 
     # ── الوقف يعتمد نهائياً ──────────────────────────────
     def action_waqf_approve(self):
         for rec in self:
-            rec._validate_grade(
-                rec.waqf_grade, rec.waqf_notes,
-                'ملاحظات الوقف')
-
-            if rec.waqf_grade == 'd':
-                rec.write({
-                    'state':         'rejected',
-                    'reject_reason': rec.waqf_notes,
-                    'waqf_by':       self.env.user.id,
-                    'waqf_date':     fields.Date.today(),
-                })
-                rec.message_post(
-                    body=_('❌ الوقف رفض — تقييم D: %s') % rec.waqf_notes)
-            else:
-                rec.write({
-                    'state':     'approved',
-                    'waqf_by':   self.env.user.id,
-                    'waqf_date': fields.Date.today(),
-                })
-                rec.message_post(
-                    body=_('✅ الوقف اعتمد نهائياً — تقييم %s%s')
-                    % (rec.waqf_grade.upper(),
-                       ': ' + rec.waqf_notes if rec.waqf_notes else ''))
+            rec.write({
+                'state':     'approved',
+                'waqf_by':   self.env.user.id,
+                'waqf_date': fields.Date.today(),
+            })
+            rec.message_post(
+                body=_('✅ الوقف اعتمد نهائياً — تقييم %s%s')
+                % (rec.waqf_grade.upper(),
+                   ': ' + rec.waqf_notes if rec.waqf_notes else ''))
 
     # ── رفض من أي مرحلة (زر عام) ────────────────────────
     def action_reject(self):

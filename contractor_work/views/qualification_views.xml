@@ -137,7 +137,6 @@
                             <group>
 
                                 <group>
-                                    <field name="senior_grade"/>
                                     <field name="senior_notes"/>
                                 </group>
 
@@ -156,7 +155,6 @@
                             <group>
 
                                 <group>
-                                    <field name="waqf_grade"/>
                                     <field name="waqf_notes"/>
                                 </group>
 
