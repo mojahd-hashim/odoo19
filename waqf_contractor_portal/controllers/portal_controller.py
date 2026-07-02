@@ -110,7 +110,7 @@ class ContractorPortal(http.Controller):
         ], limit=5, order='write_date desc')
 
         rejected_subs = request.env['contractor.material.submittal'].sudo().search([
-            ('mosque_id', 'in', mosque_ids), ('state', '=', 'rejected')
+            ('mosque_id', 'in', mosque_ids), ('state', '=', 'revision')
         ], limit=5, order='write_date desc')
 
         # وثائق مرفوضة تتطلب إجراء
