@@ -11,7 +11,7 @@ class MosqueSupervision(models.Model):
 
     name = fields.Char(string='Reference', readonly=True, copy=False,
                        default=lambda self: _('New'))
-    mosque_id   = fields.Many2one('mosque.mosque', string='Mosque',
+    mosque_id   = fields.Many2one('mosque.mosque', string='Mosque',tracking=True,
                                   required=True, index=True)
     engineer_id = fields.Many2one(
         'res.users',
@@ -28,7 +28,7 @@ class MosqueSupervision(models.Model):
         ('itp',     'ITP Inspection'),
         ('hse',     'HSE Safety Report'),
         ('handover','Handover Inspection'),
-    ], string='Report Type', required=True, default='daily')
+    ], string='Report Type',tracking=True, required=True, default='daily')
 
     state = fields.Selection([
         ('draft',    'Draft'),
@@ -41,13 +41,13 @@ class MosqueSupervision(models.Model):
         ('sunny', 'Sunny'), ('cloudy', 'Cloudy'),
         ('windy', 'Windy'), ('rainy', 'Rainy'),
     ], string='Weather', default='sunny')
-    workers_on_site = fields.Integer(string='Workers on Site')
-    equipment_count = fields.Integer(string='Equipment Count')
+    workers_on_site = fields.Integer(tracking=True,string='Workers on Site')
+    equipment_count = fields.Integer(tracking=True,string='Equipment Count')
 
     # ── Activities ────────────────────────────────────────────────
     activities_done = fields.Text(string='Activities Completed')
     activities_planned = fields.Text(string='Activities Planned (Next Period)')
-    issues = fields.Text(string='Issues & Obstacles')
+    issues = fields.Text(tracking=True,string='Issues & Obstacles')
     recommendations = fields.Text(string='Recommendations')
 
     # ── Quality & Safety ──────────────────────────────────────────
@@ -61,7 +61,7 @@ class MosqueSupervision(models.Model):
                                        string='BOQ Progress Update')
 
     # ── Media ─────────────────────────────────────────────────────
-    photo_ids = fields.Many2many('ir.attachment', string='Site Photos',
+    photo_ids = fields.Many2many('ir.attachment',tracking=True, string='Site Photos',
                                  domain=[('mimetype', 'like', 'image')])
     photo_360_url = fields.Char(string='رابط صورة 360°')
     live_stream_url = fields.Char(string='Live Stream URL')

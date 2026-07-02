@@ -27,18 +27,18 @@
                     </div>
                     <group>
                         <group>
-                            <field name="mosque_id"/>
-                            <field name="engineer_id"/>
-                            <field name="report_date"/>
+                            <field name="mosque_id" readonly="1"/>
+                            <field name="engineer_id" readonly="1"/>
+                            <field name="report_date" readonly="1"/>
                             <field name="report_type"/>
                         </group>
                         <group string="Validation">
-                            <field name="gps_validated" widget="boolean_toggle"/>
-                            <field name="qr_validated" widget="boolean_toggle"/>
-                            <field name="distance_to_site"/>
-                            <field name="is_within_geofence" widget="boolean_toggle"/>
-                            <field name="live_stream_url" widget="url"
-                                   placeholder="https://youtube.com/live/..."/>
+                            <field name="gps_validated" widget="boolean_toggle" readonly="1"/>
+                            <field name="qr_validated" widget="boolean_toggle" readonly="1"/>
+                            <field name="distance_to_site" readonly="1"/>
+                            <field name="is_within_geofence" readonly="1" widget="boolean_toggle"/>
+<!--                            <field name="live_stream_url" widget="url"-->
+<!--                                   placeholder="https://youtube.com/live/..."/>-->
                         </group>
                     </group>
                     <group string="Site Conditions">
