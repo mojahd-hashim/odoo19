@@ -15,6 +15,9 @@
         <record id="group_contractor_admin" model="res.groups">
             <field name="name">مقاول: مشرف عام</field>
         </record>
+        <record id="group_waqf_admin" model="res.groups">
+            <field name="name">تأهيل المقاول :صلاحية الوقف</field>
+        </record>
 
         <!-- استشاري — يطّلع على الكل -->
         <record id="group_consultant_all" model="res.groups">
@@ -99,6 +102,12 @@
             <field name="name">التأهيلات: الاستشاري يرى الكل</field>
             <field name="model_id" ref="model_contractor_qualification"/>
             <field name="groups" eval="[(4, ref('group_consultant_all'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+        <record id="rule_qual_group_waqf_admin" model="ir.rule">
+            <field name="name">الوقف</field>
+            <field name="model_id" ref="model_contractor_qualification"/>
+            <field name="groups" eval="[(4, ref('group_waqf_admin'))]"/>
             <field name="domain_force">[(1, '=', 1)]</field>
         </record>
 
