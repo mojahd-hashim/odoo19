@@ -4,13 +4,11 @@
     <!-- مهندس التقارير -->
     <record id="group_supervision_engineer" model="res.groups">
         <field name="name">مهندس تقارير الإشراف</field>
-        <field name="category_id" ref="base.module_category_hidden"/>
     </record>
 
     <!-- كبير مهندسي التقارير -->
     <record id="group_supervision_senior_engineer" model="res.groups">
         <field name="name">كبير مهندسي تقارير الإشراف</field>
-        <field name="category_id" ref="base.module_category_hidden"/>
     </record>
     <!-- ── Groups ─────────────────────────────────────────────── -->
     <record id="group_mosque_contractor" model="res.groups">
