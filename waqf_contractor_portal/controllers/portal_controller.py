@@ -1252,18 +1252,13 @@ class ContractorPortal(http.Controller):
         if not sub.exists():
             return request.redirect('/contractor/submittals')
 
-        # تحقق الصلاحية
         if portal_user:
             if sub.mosque_id not in portal_user.effective_mosque_ids:
                 return request.redirect('/contractor/submittals')
-        # elif supervisor:
-        #     if sub.mosque_id != supervisor.assigned_mosque_id:
-        #         return request.redirect('/contractor/submittals')
 
-        # BOQ items للتعديل
         boq_items = request.env['mosque.boq'].sudo().search([
             ('mosque_id', '=', sub.mosque_id.id),
-        ]) if sub.state == 'draft' else []
+        ]) if sub.state in ('draft', 'revision') else []
 
         return request.render('waqf_contractor_portal.tmpl_submittal_detail', {
             'portal_user': portal_user,
@@ -1272,6 +1267,81 @@ class ContractorPortal(http.Controller):
             'boq_items': boq_items,
             'mosque': sub.mosque_id,
         })
+
+    # ── إرسال / تعديل + إرسال ────────────────────────────
+    @http.route('/contractor/submittal/<int:sub_id>/submit', type='http',
+                auth='user', website=True, methods=['POST'])
+    def submittal_submit(self, sub_id, **post):
+        sub = request.env['contractor.material.submittal'].sudo().browse(sub_id)
+        if not sub.exists() or sub.state not in ('draft', 'revision'):
+            return request.redirect('/contractor/submittals')
+
+        material_name = post.get('material_name', '').strip()
+        manufacturer = post.get('manufacturer', '').strip()
+        model_number = post.get('model_number', '').strip()
+        specs = post.get('specifications', '').strip()
+        boq_id = int(post.get('boq_id', 0) or 0)
+        changes = post.get('contractor_changes', '').strip()
+
+        vals = {}
+        if material_name: vals['material_name'] = material_name
+        if manufacturer:  vals['manufacturer'] = manufacturer
+        if model_number:  vals['model_number'] = model_number
+        if specs:         vals['specifications'] = specs
+        if boq_id:        vals['boq_id'] = boq_id
+        if vals:
+            sub.write(vals)
+
+        # رفع وثائق إضافية
+        files = request.httprequest.files.getlist('documents')
+        for f in files:
+            if f and f.filename:
+                import base64
+                att = request.env['ir.attachment'].sudo().create({
+                    'name': f.filename,
+                    'datas': base64.b64encode(f.read()),
+                    'res_model': 'contractor.material.submittal',
+                    'res_id': sub.id,
+                    'mimetype': f.content_type,
+                })
+                sub.write({'document_ids': [(4, att.id)]})
+
+        # إذا كانت إعادة إرسال (C) — سجّل التعديلات
+        if sub.state == 'revision':
+            if changes:
+                # سجّل في آخر revision log
+                last_log = request.env['contractor.submittal.revision'].sudo().search([
+                    ('submittal_id', '=', sub.id),
+                ], limit=1, order='date desc')
+                if last_log:
+                    last_log.write({'contractor_changes': changes})
+            try:
+                sub.action_resubmit()
+            except Exception as e:
+                return request.redirect(
+                    '/contractor/submittal/%d?error=%s' % (sub_id, str(e)[:80]))
+            return request.redirect(
+                '/contractor/submittal/%d?resubmitted=1' % sub_id)
+        else:
+            try:
+                sub.action_submit()
+            except Exception as e:
+                return request.redirect(
+                    '/contractor/submittal/%d?error=%s' % (sub_id, str(e)[:80]))
+            return request.redirect(
+                '/contractor/submittal/%d?submitted=1' % sub_id)
+
+    # ── حذف وثيقة ────────────────────────────────────────
+    @http.route('/contractor/submittal/<int:sub_id>/delete-doc/<int:att_id>',
+                type='http', auth='user', website=True, methods=['POST'])
+    def submittal_delete_doc(self, sub_id, att_id, **kwargs):
+        sub = request.env['contractor.material.submittal'].sudo().browse(sub_id)
+        if sub.exists() and sub.state in ('draft', 'revision'):
+            att = request.env['ir.attachment'].sudo().browse(att_id)
+            if att.exists() and att.res_model == 'contractor.material.submittal' \
+                    and att.res_id == sub_id:
+                att.unlink()
+        return request.redirect('/contractor/submittal/%d' % sub_id)
 
     # ══════════════════════════════════════════════════════
     # SUBMITTAL SUBMIT — POST /contractor/submittal/<id>/submit

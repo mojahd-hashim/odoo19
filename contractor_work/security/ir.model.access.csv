@@ -10,3 +10,5 @@ access_qualification_admin,qualification admin,model_contractor_qualification,ba
 access_qualification_user,qualification user,model_contractor_qualification,base.group_user,1,1,1,0
 access_submittal_admin,submittal admin,model_contractor_material_submittal,base.group_system,1,1,1,1
 access_submittal_user,submittal user,model_contractor_material_submittal,base.group_user,1,1,1,0
+access_contractor_submittal_revision,submittal user,model_contractor_submittal_revision,base.group_user,1,1,1,0
+
