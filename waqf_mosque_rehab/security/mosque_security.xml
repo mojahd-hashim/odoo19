@@ -62,7 +62,7 @@
         <field name="domain_force">
             [('engineer_id', '=', user.id)]
         </field>
-        <field name="groups" eval="[(4, ref('group_supervision_engineer'))]"/>
+        <field name="groups" eval="[(4, ref('waqf_mosque_rehab.group_supervision_engineer'))]"/>
     </record>
     <record id="rule_supervision_senior" model="ir.rule">
         <field name="name">Senior Engineer Reports</field>
@@ -70,7 +70,7 @@
         <field name="domain_force">
             [('state', '!=', 'draft')]
         </field>
-        <field name="groups" eval="[(4, ref('group_supervision_senior_engineer'))]"/>
+        <field name="groups" eval="[(4, ref('waqf_mosque_rehab.group_supervision_senior_engineer'))]"/>
     </record>
     <record id="rule_supervision_waqf" model="ir.rule">
         <field name="name">Waqf Approved Reports</field>
@@ -78,6 +78,6 @@
         <field name="domain_force">
             [('state', '=', 'approved')]
         </field>
-        <field name="groups" eval="[(4, ref('group_mosque_waqf_manager'))]"/>
+        <field name="groups" eval="[(4, ref('waqf_mosque_rehab.group_mosque_waqf_manager'))]"/>
     </record>
 </odoo>
