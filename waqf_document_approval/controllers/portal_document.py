@@ -207,8 +207,15 @@ class DocumentApprovalPortal(http.Controller):
         # if not doc.exists() or doc.submitted_by.id != request.env.user.id:
         #     return request.redirect('/contractor/documents')
 
+        messages = request.env['mail.message'].sudo().search([
+            ('model', '=', 'waqf.document.approval'),
+            ('res_id', '=', doc.id),
+            ('message_type', 'in', ['comment', 'notification']),
+        ], order='date asc')
+
         return request.render('waqf_document_approval.tmpl_doc_detail', {
             'doc': doc,
+            'messages': messages,
         })
 
     # ══════════════════════════════════════════════════════
