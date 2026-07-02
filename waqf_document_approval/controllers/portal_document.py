@@ -204,8 +204,8 @@ class DocumentApprovalPortal(http.Controller):
                 auth='user', website=True)
     def document_detail(self, doc_id, **kw):
         doc = request.env['waqf.document.approval'].sudo().browse(doc_id)
-        if not doc.exists() or doc.submitted_by.id != request.env.user.id:
-            return request.redirect('/contractor/documents')
+        # if not doc.exists() or doc.submitted_by.id != request.env.user.id:
+        #     return request.redirect('/contractor/documents')
 
         return request.render('waqf_document_approval.tmpl_doc_detail', {
             'doc': doc,
