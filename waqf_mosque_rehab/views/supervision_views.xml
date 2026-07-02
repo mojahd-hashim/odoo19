@@ -43,8 +43,8 @@
                     </group>
                     <group string="Site Conditions">
                         <field name="weather"/>
-                        <field name="workers_on_site"/>
-                        <field name="equipment_count"/>
+<!--                        <field name="workers_on_site"/>-->
+<!--                        <field name="equipment_count"/>-->
                         <field name="safety_incidents"/>
                         <field name="ncr_count"/>
                         <field name="itp_hold_points_checked"/>
