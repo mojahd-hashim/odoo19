@@ -1,68 +1,190 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+<!-- ══════════════════════════════════════════════════════════
+     FORM VIEW — شاشة الاستشاري مع تقييم ABCD
+══════════════════════════════════════════════════════════ -->
 <record id="view_submittal_form" model="ir.ui.view">
   <field name="name">contractor.material.submittal.form</field>
   <field name="model">contractor.material.submittal</field>
   <field name="arch" type="xml">
     <form string="عينة مادة">
       <header>
-<!--        <button name="action_submit" type="object"-->
-<!--                string="إرسال للمراجعة" class="btn-primary"-->
-<!--                invisible="state != 'draft'"/>-->
-        <button name="action_approve" type="object"
-                string="اعتماد العينة ✅" class="btn-success"
-                invisible="state != 'submitted'"/>
-        <button name="action_reject" type="object"
-                string="رفض" class="btn-danger"
-                invisible="state != 'submitted'"/>
+        <!-- ── أزرار التقييم — تظهر فقط عند "بانتظار المراجعة" ── -->
+        <button name="action_grade" type="object"
+                string="اعتماد التقييم" class="btn-primary"
+                invisible="state != 'submitted'"
+                confirm="هل تريد اعتماد التقييم المحدد؟"/>
+
+        <!-- إعادة لمسودة (مسؤول فقط) -->
+        <button name="action_reset_draft" type="object"
+                string="إعادة لمسودة"
+                invisible="state == 'draft'"
+                groups="base.group_system"/>
+
         <field name="state" widget="statusbar"
                statusbar_visible="draft,submitted,approved"/>
       </header>
+
       <sheet>
+        <!-- ── العنوان + الإصدار ────────────────────────── -->
         <div class="oe_title">
-          <h1><field name="name" readonly="1"/></h1>
+          <h1>
+            <field name="name" readonly="1"/>
+            <span class="badge bg-info ms-2"
+                  invisible="revision == 0"
+                  style="font-size:12px;vertical-align:middle">
+              Rev.<field name="revision" readonly="1" nolabel="1"/>
+            </span>
+          </h1>
         </div>
+
+        <!-- ── بانر التقييم الحالي ────────────────────────── -->
+        <div class="alert alert-success" role="alert"
+             invisible="state not in ('approved',)">
+          <strong>A — معتمد بالكامل</strong> — يمكن استخدام هذه المادة في التنفيذ
+        </div>
+        <div class="alert alert-info" role="alert"
+             invisible="state != 'approved_b'">
+          <strong>B — معتمد مع ملاحظات</strong> — راجع الملاحظات أدناه
+        </div>
+        <div class="alert alert-warning" role="alert"
+             invisible="state != 'revision'">
+          <strong>C — يلزم تعديل</strong> — المقاول يعدّل ويعيد الإرسال
+        </div>
+        <div class="alert alert-danger" role="alert"
+             invisible="state != 'rejected'">
+          <strong>D — مرفوض نهائياً</strong>
+        </div>
+
         <group>
-          <group>
-            <field name="work_order_id"  readonly="1"/>
-            <field name="boq_id"  readonly="1"/>
+          <group string="بيانات العينة">
+            <field name="mosque_id" readonly="1"/>
+            <field name="work_order_id" readonly="1"/>
+            <field name="boq_id" readonly="1"/>
             <field name="material_name" readonly="1"/>
-            <field name="manufacturer"  readonly="1"/>
-            <field name="model_number"  readonly="1"/>
+            <field name="manufacturer" readonly="1"/>
+            <field name="model_number" readonly="1"/>
+            <field name="date_submitted" readonly="1"/>
           </group>
-          <group>
-            <field name="date_submitted"  readonly="1"/>
-            <field name="approved_by" readonly="1"/>
-            <field name="approval_date" readonly="1"/>
+          <group string="التقييم والمراجعة">
+            <!-- ── اختيار التقييم ABCD ── -->
+            <field name="grade" widget="radio"
+                   readonly="state != 'submitted'"
+                   required="state == 'submitted'"/>
+            <field name="review_notes"
+                   placeholder="ملاحظات الاستشاري (مطلوبة لـ B/C/D)..."
+                   readonly="state != 'submitted'"/>
+            <field name="reviewed_by" readonly="1"/>
+            <field name="review_date" readonly="1"/>
+            <field name="revision" readonly="1"/>
           </group>
         </group>
-        <field name="specifications" placeholder="المواصفات الفنية..."/>
-        <separator string="الوثائق والصور"/>
-        <field name="document_ids" widget="many2many_binary"/>
-        <field name="reject_reason" invisible="state != 'rejected'"/>
-        <field name="notes"/>
+
+        <notebook>
+          <!-- ── المواصفات والوثائق ── -->
+          <page string="المواصفات والوثائق" name="specs">
+            <group>
+              <field name="specifications" readonly="1"
+                     placeholder="المواصفات الفنية..."/>
+            </group>
+            <separator string="الوثائق والصور"/>
+            <field name="document_ids" widget="many2many_binary" readonly="1"/>
+          </page>
+
+          <!-- ── سجل المراجعات ── -->
+          <page string="سجل المراجعات" name="revisions">
+            <field name="revision_log_ids" readonly="1">
+              <list decoration-success="grade == 'a'"
+                    decoration-info="grade == 'b'"
+                    decoration-warning="grade == 'c'"
+                    decoration-danger="grade == 'd'"
+                    editable="bottom" create="false" delete="false">
+                <field name="revision" string="الإصدار"/>
+                <field name="grade" string="التقييم"/>
+                <field name="notes" string="ملاحظات الاستشاري"/>
+                <field name="contractor_changes" string="تعديلات المقاول"/>
+                <field name="reviewed_by" string="المراجع"/>
+                <field name="date" string="التاريخ"/>
+              </list>
+            </field>
+          </page>
+
+          <!-- ── ملاحظات عامة ── -->
+          <page string="ملاحظات" name="notes">
+            <group>
+              <field name="notes" placeholder="ملاحظات عامة..."/>
+            </group>
+          </page>
+        </notebook>
       </sheet>
       <chatter/>
     </form>
   </field>
 </record>
 
+<!-- ══════════════════════════════════════════════════════════
+     LIST VIEW
+══════════════════════════════════════════════════════════ -->
 <record id="view_submittal_list" model="ir.ui.view">
   <field name="name">contractor.material.submittal.list</field>
   <field name="model">contractor.material.submittal</field>
   <field name="arch" type="xml">
-    <list decoration-success="state == 'approved'"
-          decoration-danger="state == 'rejected'">
+    <list decoration-success="state in ('approved','approved_b')"
+          decoration-warning="state == 'revision'"
+          decoration-danger="state == 'rejected'"
+          decoration-muted="state == 'draft'">
       <field name="name"/>
+      <field name="revision" string="Rev" optional="show"/>
       <field name="mosque_id"/>
-      <field name="boq_id"/>
+      <field name="boq_id" optional="show"/>
       <field name="material_name"/>
-      <field name="manufacturer"/>
+      <field name="manufacturer" optional="show"/>
+      <field name="grade" widget="badge"
+             decoration-success="grade == 'a'"
+             decoration-info="grade == 'b'"
+             decoration-warning="grade == 'c'"
+             decoration-danger="grade == 'd'"
+             optional="show"/>
+      <field name="reviewed_by" optional="hide"/>
       <field name="date_submitted"/>
-      <field name="state"/>
+      <field name="state" widget="badge"
+             decoration-success="state in ('approved','approved_b')"
+             decoration-warning="state == 'revision'"
+             decoration-danger="state == 'rejected'"/>
     </list>
   </field>
 </record>
+
+<!--&lt;!&ndash; ══════════════════════════════════════════════════════════-->
+<!--     SEARCH VIEW-->
+<!--══════════════════════════════════════════════════════════ &ndash;&gt;-->
+<!--<record id="view_submittal_search" model="ir.ui.view">-->
+<!--  <field name="name">contractor.material.submittal.search</field>-->
+<!--  <field name="model">contractor.material.submittal</field>-->
+<!--  <field name="arch" type="xml">-->
+<!--    <search>-->
+<!--      <field name="name"/>-->
+<!--      <field name="material_name"/>-->
+<!--      <field name="mosque_id"/>-->
+<!--      <field name="manufacturer"/>-->
+<!--      <filter name="f_submitted" string="بانتظار المراجعة"-->
+<!--              domain="[('state','=','submitted')]"/>-->
+<!--      <filter name="f_revision" string="يلزم تعديل (C)"-->
+<!--              domain="[('state','=','revision')]"/>-->
+<!--      <filter name="f_approved" string="معتمد (A+B)"-->
+<!--              domain="[('state','in',('approved','approved_b'))]"/>-->
+<!--      <filter name="f_rejected" string="مرفوض (D)"-->
+<!--              domain="[('state','=','rejected')]"/>-->
+<!--      <separator/>-->
+<!--      <filter name="g_grade" string="التقييم"-->
+<!--              context="{'group_by':'grade'}"/>-->
+<!--      <filter name="g_mosque" string="المسجد"-->
+<!--              context="{'group_by':'mosque_id'}"/>-->
+<!--      <filter name="g_state" string="الحالة"-->
+<!--              context="{'group_by':'state'}"/>-->
+<!--    </search>-->
+<!--  </field>-->
+<!--</record>-->
 
 </odoo>
