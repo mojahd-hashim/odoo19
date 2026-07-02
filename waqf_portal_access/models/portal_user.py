@@ -49,6 +49,11 @@ class WaqfPortalUser(models.Model):
         ('project_manager',   'مدير مشروع'),
     ], string='الدور', required=True, tracking=True)
 
+    work_category_id = fields.Many2one(
+        'mosque.boq.category', string='نوع العمل',
+        required=True,
+        help='نوع العمل الذي يشرف عليه')
+
     company_id = fields.Many2one(
         'res.partner', string='شركة المقاول',
         domain=[('is_company', '=', True)],

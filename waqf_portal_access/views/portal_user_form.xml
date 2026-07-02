@@ -46,6 +46,7 @@
           </h1>
           <h3>
             <field name="role" placeholder="الدور"/>
+            <field name="work_category_id"/>
           </h3>
         </div>
 
