@@ -30,7 +30,7 @@
                             string="اعتماد كبير المستشارين"
                             class="btn-success"
                             groups="contractor_work.group_consultant_all"
-                            invisible="state != 'engineer_done'"/>
+                            invisible="state in ['draft','submitted','senior_done','approved','rejected']"/>
 
                     <!-- رفض كبير المهندسين -->
                     <button name="action_reject"
@@ -38,7 +38,7 @@
                             string="رفض"
                             class="btn-danger"
                             groups="contractor_work.group_consultant_all"
-                            invisible="state != 'engineer_done'"/>
+                            invisible="state in ['draft','submitted','senior_done','approved','rejected']"/>
 
 
                     <!-- اعتماد الوقف -->
@@ -47,7 +47,7 @@
                             string="اعتماد الوقف"
                             class="btn-success"
                             groups="contractor_work.group_waqf_admin"
-                            invisible="state != 'senior_done'"/>
+                             invisible="state in ['draft','submitted','engineer_done','approved','rejected']"/>
 
                     <!-- رفض الوقف -->
                     <button name="action_reject"
@@ -55,7 +55,7 @@
                             string="رفض"
                             class="btn-danger"
                             groups="contractor_work.group_waqf_admin"
-                            invisible="state != 'senior_done'"/>
+                             invisible="state in ['draft','submitted','engineer_done','approved','rejected']"/>
 
 
                     <field name="state"
