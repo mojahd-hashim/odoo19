@@ -132,7 +132,7 @@ class WaqfAuthController(http.Controller):
                 ('user_id', '=', user.id),
             ])
             if portal_user:
-                portal_user.write({'is_active': False})
+                portal_user.action_toggle_active()
         except Exception:
             pass
 
