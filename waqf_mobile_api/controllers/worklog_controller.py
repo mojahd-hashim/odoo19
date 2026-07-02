@@ -268,6 +268,28 @@ class WaqfWorkLogController(http.Controller):
             'viewers': stream.viewers,
         })
 
+    @http.route('/api/livestream/<int:mosque_id>', type='json', auth='user')
+    def get_livestream_url(self, mosque_id, **kw):
+        stream = request.env['mosque.livestream'].sudo().search([
+            ('mosque_id', '=', mosque_id),
+        ], limit=1, order='start_time desc')
+
+        if not stream:
+            return {'has_stream': False}
+
+        # ── بناء رابط العرض (iframe) من معرّف Cloudflare Stream ──
+
+
+        return {
+            'has_stream': True,
+            'stream_id': stream.id,
+            'stream_url': stream.stream_live_url or '',  # رابط HLS/RTMP الأصلي
+            'embed_url': stream.stream_url,  # ← رابط iframe للعرض
+            'stream_name': stream.name or '',
+            'start_time': str(stream.start_time or ''),
+            'viewers': stream.viewer_count or 0,
+        }
+
     # ── POST /api/waqf/livestream/start ──────────────────────────
     @http.route('/api/waqf/livestream/start',
                 type='http', auth='none', methods=['POST'], csrf=False)
