@@ -1246,6 +1246,19 @@
                     <div class="cp-mini-stat-lbl">معتمد</div>
                 </div>
                 <div class="cp-mini-stat" style="flex:1;min-width:70px">
+                    <div class="cp-mini-stat-val" style="color:#3498DB">
+                        <t t-esc="counts['approved_b']"/>
+                    </div>
+                    <div class="cp-mini-stat-lbl">معتمد B</div>
+                </div>
+
+                <div class="cp-mini-stat" style="flex:1;min-width:70px">
+                    <div class="cp-mini-stat-val" style="color:#F0A030">
+                        <t t-esc="counts['revision']"/>
+                    </div>
+                    <div class="cp-mini-stat-lbl">يلزم تعديل</div>
+                </div>
+                <div class="cp-mini-stat" style="flex:1;min-width:70px">
                     <div class="cp-mini-stat-val" style="color:var(--red)">
                         <t t-esc="counts['rejected']"/>
                     </div>
@@ -1264,6 +1277,15 @@
                     </a>
                     <a href="/contractor/submittals?state=approved"
                        t-attf-class="cp-filter-tab #{active_state == 'approved' and 'active' or ''}">معتمد
+                    </a>
+                    <a href="/contractor/submittals?state=approved_b"
+                       t-attf-class="cp-filter-tab #{active_state == 'approved_b' and 'active' or ''}">
+                        معتمد B
+                    </a>
+
+                    <a href="/contractor/submittals?state=revision"
+                       t-attf-class="cp-filter-tab #{active_state == 'revision' and 'active' or ''}">
+                        يلزم تعديل
                     </a>
                     <a href="/contractor/submittals?state=rejected"
                        t-attf-class="cp-filter-tab #{active_state == 'rejected' and 'active' or ''}">مرفوض
@@ -1309,7 +1331,16 @@
                               border:1px solid var(--border);border-radius:var(--r-lg);
                               overflow:hidden;transition:box-shadow .15s">
 
-                        <div t-attf-style="height:3px;background:#{s.state == 'approved' and 'var(--green)' or s.state == 'rejected' and 'var(--red)' or s.state == 'submitted' and 'var(--gold)' or 'var(--border2)'}"/>
+                        <div t-attf-style="
+height:3px;
+background:#{
+    s.state == 'approved' and 'var(--green)'
+    or s.state == 'approved_b' and '#3498DB'
+    or s.state == 'revision' and '#F0A030'
+    or s.state == 'submitted' and 'var(--gold)'
+    or s.state == 'rejected' and 'var(--red)'
+    or 'var(--border2)'
+}"/>
 
                         <div style="padding:14px 16px">
                             <div style="display:flex;align-items:flex-start;
@@ -1348,11 +1379,21 @@
                                     </t>
                                 </div>
                                 <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-                                    <span t-attf-class="cp-status-pill #{s.state == 'approved' and 'approved' or s.state == 'submitted' and 'pending' or s.state == 'rejected' and 'rejected' or 'draft'}">
+                                    <span t-attf-class="
+cp-status-pill
+#{
+    (s.state in ('approved', 'approved_b')) and 'approved'
+    or s.state == 'submitted' and 'pending'
+    or s.state == 'revision' and 'warning'
+    or s.state == 'rejected' and 'rejected'
+    or 'draft'
+}">
                                         <t t-if="s.state == 'draft'">مسودة</t>
                                         <t t-elif="s.state == 'submitted'">بانتظار</t>
-                                        <t t-elif="s.state == 'approved'">✓ معتمد</t>
-                                        <t t-elif="s.state == 'rejected'">مرفوض</t>
+                                        <t t-elif="s.state == 'approved'">✓ معتمد A</t>
+                                        <t t-elif="s.state == 'approved_b'">✓ معتمد B</t>
+                                        <t t-elif="s.state == 'revision'">↻ يلزم تعديل</t>
+                                        <t t-elif="s.state == 'rejected'">✕ مرفوض</t>
                                     </span>
                                     <span style="color:var(--border2);font-size:16px">›</span>
                                 </div>
@@ -1384,6 +1425,27 @@
                                             background:var(--green-bg);border-radius:var(--r-sm);
                                             font-size:11px;color:#1A7A55">
                                     ✅ معتمد — يمكن استخدام هذه المادة في التنفيذ
+                                </div>
+                            </t>
+                            <t t-if="s.state == 'approved_b'">
+                                <div style="margin-top:8px;
+                padding:8px 12px;
+                background:rgba(91,192,222,.08);
+                border-radius:var(--r-sm);
+                font-size:11px;
+                color:#2980B9">
+                                    ℹ️ معتمد مع ملاحظات — راجع ملاحظات الاستشاري.
+                                </div>
+                            </t>
+
+                            <t t-if="s.state == 'revision'">
+                                <div style="margin-top:8px;
+                padding:8px 12px;
+                background:rgba(240,160,48,.08);
+                border-radius:var(--r-sm);
+                font-size:11px;
+                color:#D35400">
+                                    ↻ يلزم تعديل وإعادة إرسال العينة.
                                 </div>
                             </t>
                         </div>

@@ -347,6 +347,8 @@ class ContractorPortal(http.Controller):
             'draft': sum(1 for s in subs if s.state == 'draft'),
             'submitted': sum(1 for s in subs if s.state == 'submitted'),
             'approved': sum(1 for s in subs if s.state == 'approved'),
+            'approved_b': sum(1 for s in subs if s.state == 'approved_b'),
+            'revision': sum(1 for s in subs if s.state == 'revision'),
             'rejected': sum(1 for s in subs if s.state == 'rejected'),
         }
 
