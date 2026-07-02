@@ -195,11 +195,11 @@
                                         <t t-esc="s.material_name"/>
                                     </span>
                                     <span class="cp-alert-reason">
-                                        عينة مرفوضة:
+                                        عينة مرفوضة يلزم تعديل:
                                         <t t-esc="(s.reject_reason or 'راجع التفاصيل')[:50]"/>
                                     </span>
                                 </div>
-                                <a href="/contractor/submittals?state=rejected"
+                                <a href="/contractor/submittals?state=revision"
                                    class="cp-btn-sm cp-btn-danger">عرض
                                 </a>
                             </div>
