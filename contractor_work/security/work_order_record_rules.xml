@@ -91,7 +91,7 @@
             <field name="model_id" ref="model_contractor_qualification"/>
             <field name="groups" eval="[(4, ref('group_site_consultant'))]"/>
             <field name="domain_force">
-                [('supervisor_id', '=', user.partner_id.id)]
+                [('work_category_id', '=',  user.waqf_portal_user_id.work_category_id.id)]
             </field>
         </record>
 

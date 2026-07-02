@@ -2,60 +2,166 @@
 <odoo>
 
 <record id="view_qualification_form" model="ir.ui.view">
-  <field name="name">contractor.qualification.form</field>
-  <field name="model">contractor.qualification</field>
-  <field name="arch" type="xml">
-    <form string="تأهيل المقاول">
-      <header>
-<!--        <button name="action_submit" type="object"-->
-<!--                string="إرسال للمستشار" class="btn-primary"-->
-<!--                invisible="state != 'draft'"/>-->
-        <button name="action_consultant_approve" type="object"
-                string="اعتماد المستشار ✅" class="btn-success"
-                invisible="state != 'submitted'"/>
-        <button name="action_submit_waqf" type="object"
-                string="إرسال للوقف" class="btn-primary"
-                invisible="state != 'consultant_ok'"/>
-        <button name="action_waqf_approve" type="object"
-                string="اعتماد الوقف ✅" class="btn-success"
-                invisible="state != 'submitted_waqf'"/>
-        <button name="action_reject" type="object"
-                string="رفض" class="btn-danger"
-                invisible="state in ['draft','approved','rejected']"/>
-        <field name="state" widget="statusbar"
-               statusbar_visible="draft,submitted,consultant_ok,submitted_waqf,approved"/>
-      </header>
-      <sheet>
-        <div class="oe_title">
-          <h1><field name="name" readonly="1"/></h1>
-        </div>
-        <group>
-          <group>
-            <field name="supervisor_id"/>
-            <field name="work_category_id"  readonly="1"/>
-            <field name="scope" widget="radio"  readonly="1"/>
-            <field name="mosque_ids" widget="many2many_tags"
-                    readonly="1"
-                   invisible="scope != 'specific'"
-                   required="scope == 'specific'"/>
-          </group>
-          <group>
-            <field name="date_requested"  readonly="1"/>
-            <field name="consultant_approved_by" readonly="1"/>
-            <field name="consultant_approval_date" readonly="1"/>
-            <field name="waqf_approved_by" readonly="1"/>
-            <field name="waqf_approval_date" readonly="1"/>
-          </group>
-        </group>
-        <field name="description"  readonly="1" placeholder="وصف الكفاءة والخبرة..."/>
-        <separator string="الوثائق والشهادات"/>
-        <field name="document_ids" widget="many2many_binary"  readonly="1"/>
-        <field name="reject_reason" invisible="state != 'rejected'"/>
-        <field name="notes"/>
-      </sheet>
-      <chatter/>
-    </form>
-  </field>
+    <field name="name">contractor.qualification.form</field>
+    <field name="model">contractor.qualification</field>
+    <field name="arch" type="xml">
+        <form string="تأهيل المقاول">
+
+            <header>
+                <!-- اعتماد المهندس -->
+                <button name="action_engineer_approve"
+                        type="object"
+                        string="اعتماد المهندس"
+                        class="btn-success"
+                        invisible="state != 'submitted'"/>
+
+                <!-- اعتماد كبير المهندسين -->
+                <button name="action_senior_approve"
+                        type="object"
+                        string="اعتماد كبير المهندسين"
+                        class="btn-success"
+                        invisible="state != 'engineer_done'"/>
+
+                <!-- اعتماد الوقف -->
+                <button name="action_waqf_approve"
+                        type="object"
+                        string="اعتماد الوقف"
+                        class="btn-success"
+                        invisible="state != 'senior_done'"/>
+
+                <!-- رفض -->
+                <button name="action_reject"
+                        type="object"
+                        string="رفض"
+                        class="btn-danger"
+                        invisible="state in ['draft','approved','rejected']"/>
+
+                <!-- إعادة للمسودة -->
+                <button name="action_reset_draft"
+                        type="object"
+                        string="إعادة للمسودة"
+                        class="btn-secondary"
+                        invisible="state == 'draft'"/>
+
+                <field name="state"
+                       widget="statusbar"
+                       statusbar_visible="draft,submitted,engineer_done,senior_done,approved"/>
+
+            </header>
+
+            <sheet>
+
+                <div class="oe_title">
+                    <h1>
+                        <field name="name" readonly="1"/>
+                    </h1>
+                </div>
+
+                <group>
+
+                    <group>
+                        <field name="supervisor_id" readonly="1"/>
+                        <field name="work_category_id" readonly="1"/>
+
+                        <field name="scope" widget="radio" readonly="1"/>
+
+                        <field name="mosque_ids"
+                               readonly="1"
+                               widget="many2many_tags"
+                               invisible="scope != 'specific'"
+                               required="scope == 'specific'"/>
+
+                        <field name="date_requested" readonly="1"/>
+                    </group>
+
+                    <group>
+                        <field name="final_grade" readonly="1"/>
+
+                        <field name="reject_reason"
+                               invisible="state != 'rejected'"/>
+
+                        <field name="notes" />
+                    </group>
+
+                </group>
+
+                <group>
+                    <field name="description" readonly="1"/>
+                </group>
+
+                <separator string="الوثائق والشهادات"/>
+
+                <field name="document_ids"
+                       readonly="1"
+                       widget="many2many_binary"/>
+
+                <notebook>
+
+                    <!-- المهندس -->
+                    <page string="تقييم المهندس">
+
+                        <group>
+
+                            <group>
+                                <field name="engineer_grade"/>
+                                <field name="engineer_notes"/>
+                            </group>
+
+                            <group>
+                                <field name="engineer_by" readonly="1"/>
+                                <field name="engineer_date" readonly="1"/>
+                            </group>
+
+                        </group>
+
+                    </page>
+
+                    <!-- كبير المهندسين -->
+                    <page string="تقييم كبير المهندسين">
+
+                        <group>
+
+                            <group>
+                                <field name="senior_grade"/>
+                                <field name="senior_notes"/>
+                            </group>
+
+                            <group>
+                                <field name="senior_by" readonly="1"/>
+                                <field name="senior_date" readonly="1"/>
+                            </group>
+
+                        </group>
+
+                    </page>
+
+                    <!-- الوقف -->
+                    <page string="اعتماد الوقف">
+
+                        <group>
+
+                            <group>
+                                <field name="waqf_grade"/>
+                                <field name="waqf_notes"/>
+                            </group>
+
+                            <group>
+                                <field name="waqf_by" readonly="1"/>
+                                <field name="waqf_date" readonly="1"/>
+                            </group>
+
+                        </group>
+
+                    </page>
+
+                </notebook>
+
+            </sheet>
+
+            <chatter/>
+
+        </form>
+    </field>
 </record>
 
 <record id="view_qualification_list" model="ir.ui.view">
