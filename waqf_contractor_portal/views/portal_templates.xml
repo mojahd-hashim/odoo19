@@ -162,7 +162,7 @@
                                   stroke-width="1.4" stroke-linecap="round"/>
                         </svg>
                         يتطلب إجراءً منك (
-                       <t t-esc="len(rework_orders) + len(rejected_subs)"/>
+                        <t t-esc="len(rework_orders) + len(rejected_subs)"/>
 
                         )
                     </div>
@@ -3282,16 +3282,20 @@
     <!-- ══════════════════════════════════════════════════════
          SUBMITTAL DETAIL
     ══════════════════════════════════════════════════════ -->
-   <!-- ══════════════════════════════════════════════════════
-         SUBMITTAL DETAIL — V2 مع تقييم ABCD + سجل المراجعات
-    ══════════════════════════════════════════════════════ -->
+    <!-- ══════════════════════════════════════════════════════
+          SUBMITTAL DETAIL — V2 مع تقييم ABCD + سجل المراجعات
+     ══════════════════════════════════════════════════════ -->
     <template id="tmpl_submittal_detail" name="Submittal Detail">
         <t t-call="waqf_contractor_portal.tmpl_base">
 
             <div class="cp-breadcrumb">
-                <a href="/contractor">الرئيسية</a><span>←</span>
-                <a href="/contractor/submittals">عينات المواد</a><span>←</span>
-                <span><t t-esc="sub.material_name"/></span>
+                <a href="/contractor">الرئيسية</a>
+                <span>←</span>
+                <a href="/contractor/submittals">عينات المواد</a>
+                <span>←</span>
+                <span>
+                    <t t-esc="sub.material_name"/>
+                </span>
             </div>
 
             <!-- Toasts -->
@@ -3310,7 +3314,7 @@
                         <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
                         <path d="M5 8l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                     </svg>
-                    تم إعادة إرسال العينة (إصدار <t t-esc="sub.revision"/>) — بانتظار المراجعة
+                    تم إعادة إرسال العينة (إصدار<t t-esc="sub.revision"/>) — بانتظار المراجعة
                 </div>
             </t>
             <t t-if="request.params.get('error')">
@@ -3335,12 +3339,15 @@
                         </div>
                         <div style="font-size:12px;color:rgba(255,255,255,.55);
                                     display:flex;align-items:center;gap:8px">
-                            <span><t t-esc="sub.name"/></span>
+                            <span>
+                                <t t-esc="sub.name"/>
+                            </span>
                             <t t-if="sub.revision > 0">
                                 <span style="padding:2px 8px;border-radius:999px;
                                              background:rgba(35,114,146,.3);
                                              font-size:10px;font-weight:700;color:#5BC0DE">
-                                    Rev.<t t-esc="sub.revision"/>
+                                    Rev.
+                                    <t t-esc="sub.revision"/>
                                 </span>
                             </t>
                         </div>
@@ -3368,16 +3375,26 @@
                 </div>
                 <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:rgba(255,255,255,.5)">
                     <t t-if="sub.mosque_id">
-                        <span>🕌 <t t-esc="sub.mosque_id.name"/></span>
+                        <span>🕌
+                            <t t-esc="sub.mosque_id.name"/>
+                        </span>
                     </t>
                     <t t-if="sub.manufacturer">
-                        <span>🏭 <t t-esc="sub.manufacturer"/></span>
+                        <span>🏭
+                            <t t-esc="sub.manufacturer"/>
+                        </span>
                     </t>
                     <t t-if="sub.boq_id">
-                        <span>بند: <span style="font-family:monospace;color:rgba(255,255,255,.7)"><t t-esc="sub.boq_id.item_code"/></span></span>
+                        <span>بند:
+                            <span style="font-family:monospace;color:rgba(255,255,255,.7)">
+                                <t t-esc="sub.boq_id.item_code"/>
+                            </span>
+                        </span>
                     </t>
                     <t t-if="sub.reviewed_by">
-                        <span>📝 <t t-esc="sub.reviewed_by.name"/></span>
+                        <span>📝
+                            <t t-esc="sub.reviewed_by.name"/>
+                        </span>
                     </t>
                 </div>
             </div>
@@ -3391,13 +3408,15 @@
                             margin-bottom:12px;display:flex;align-items:center;gap:12px">
                     <div style="width:44px;height:44px;border-radius:50%;background:rgba(46,204,138,.15);
                                 display:flex;align-items:center;justify-content:center;
-                                font-size:22px;font-weight:900;color:#1A7A55;flex-shrink:0">A</div>
+                                font-size:22px;font-weight:900;color:#1A7A55;flex-shrink:0">A
+                    </div>
                     <div>
                         <div style="font-size:13px;font-weight:700;color:#1A7A55;margin-bottom:2px">
                             معتمد بالكامل — يمكن استخدام المادة في التنفيذ
                         </div>
                         <div style="font-size:11px;color:#2A8A65">
-                            اعتمده: <t t-esc="sub.reviewed_by.name or '—'"/>
+                            اعتمده:
+                            <t t-esc="sub.reviewed_by.name or '—'"/>
                         </div>
                     </div>
                 </div>
@@ -3413,13 +3432,15 @@
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
                         <div style="width:44px;height:44px;border-radius:50%;background:rgba(91,192,222,.12);
                                     display:flex;align-items:center;justify-content:center;
-                                    font-size:22px;font-weight:900;color:#3498DB;flex-shrink:0">B</div>
+                                    font-size:22px;font-weight:900;color:#3498DB;flex-shrink:0">B
+                        </div>
                         <div>
                             <div style="font-size:13px;font-weight:700;color:#2980B9">
                                 معتمد مع ملاحظات — يمكن الاستخدام مع مراعاة الملاحظات
                             </div>
                             <div style="font-size:11px;color:#5DADE2">
-                                اعتمده: <t t-esc="sub.reviewed_by.name or '—'"/>
+                                اعتمده:
+                                <t t-esc="sub.reviewed_by.name or '—'"/>
                             </div>
                         </div>
                     </div>
@@ -3427,7 +3448,8 @@
                         <div style="padding:10px 14px;background:rgba(91,192,222,.06);
                                     border-radius:var(--r-sm);border:1px solid rgba(91,192,222,.15);
                                     font-size:12px;color:#2C3E50;line-height:1.7">
-                            <strong style="color:#2980B9">ملاحظات الاستشاري:</strong><br/>
+                            <strong style="color:#2980B9">ملاحظات الاستشاري:</strong>
+                            <br/>
                             <t t-esc="sub.review_notes"/>
                         </div>
                     </t>
@@ -3444,13 +3466,15 @@
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
                         <div style="width:44px;height:44px;border-radius:50%;background:rgba(240,160,48,.12);
                                     display:flex;align-items:center;justify-content:center;
-                                    font-size:22px;font-weight:900;color:#E67E22;flex-shrink:0">C</div>
+                                    font-size:22px;font-weight:900;color:#E67E22;flex-shrink:0">C
+                        </div>
                         <div>
                             <div style="font-size:13px;font-weight:700;color:#D35400">
                                 يلزم تعديل — عدّل العينة وأعد الإرسال
                             </div>
                             <div style="font-size:11px;color:#E67E22">
-                                راجعه: <t t-esc="sub.reviewed_by.name or '—'"/>
+                                راجعه:
+                                <t t-esc="sub.reviewed_by.name or '—'"/>
                             </div>
                         </div>
                     </div>
@@ -3458,7 +3482,8 @@
                         <div style="padding:10px 14px;background:rgba(240,160,48,.06);
                                     border-radius:var(--r-sm);border:1px solid rgba(240,160,48,.15);
                                     font-size:12px;color:#7F5539;line-height:1.7;margin-bottom:10px">
-                            <strong style="color:#D35400">المطلوب تعديله:</strong><br/>
+                            <strong style="color:#D35400">المطلوب تعديله:</strong>
+                            <br/>
                             <t t-esc="sub.review_notes"/>
                         </div>
                     </t>
@@ -3475,20 +3500,23 @@
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
                         <div style="width:44px;height:44px;border-radius:50%;background:rgba(232,85,85,.12);
                                     display:flex;align-items:center;justify-content:center;
-                                    font-size:22px;font-weight:900;color:var(--red);flex-shrink:0">D</div>
+                                    font-size:22px;font-weight:900;color:var(--red);flex-shrink:0">D
+                        </div>
                         <div>
                             <div style="font-size:13px;font-weight:700;color:var(--red)">
                                 مرفوض نهائياً — لا يمكن إعادة الإرسال
                             </div>
                             <div style="font-size:11px;color:#E85555">
-                                راجعه: <t t-esc="sub.reviewed_by.name or '—'"/>
+                                راجعه:
+                                <t t-esc="sub.reviewed_by.name or '—'"/>
                             </div>
                         </div>
                     </div>
                     <t t-if="sub.review_notes">
                         <div style="padding:10px 14px;background:rgba(232,85,85,.06);
                                     border-radius:var(--r-sm);font-size:12px;color:var(--red);line-height:1.7">
-                            <strong>سبب الرفض:</strong><br/>
+                            <strong>سبب الرفض:</strong>
+                            <br/>
                             <t t-esc="sub.review_notes"/>
                         </div>
                     </t>
@@ -3506,7 +3534,7 @@
                     <span style="font-size:16px">⏳</span>
                     العينة قيد المراجعة
                     <t t-if="sub.revision > 0">
-                        (إصدار <t t-esc="sub.revision"/>)
+                        (إصدار<t t-esc="sub.revision"/>)
                     </t>
                     — سيتم إشعارك عند البت فيها
                 </div>
@@ -3522,7 +3550,7 @@
                             font-size:12px;font-weight:600;color:var(--text2)">
                     تفاصيل العينة
                     <t t-if="sub.state == 'revision'">
-                        <span style="color:var(--primary);font-weight:700"> — عدّل وأرسل</span>
+                        <span style="color:var(--primary);font-weight:700">— عدّل وأرسل</span>
                     </t>
                 </div>
 
@@ -3534,7 +3562,10 @@
                         <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
 
                             <div class="cp-form-group" style="margin-bottom:0">
-                                <label class="cp-label"><span>*</span> اسم المادة</label>
+                                <label class="cp-label">
+                                    <span>*</span>
+                                    اسم المادة
+                                </label>
                                 <input type="text" name="material_name" class="cp-input"
                                        t-att-value="sub.material_name" required="required"/>
                             </div>
@@ -3560,7 +3591,9 @@
                                         <t t-foreach="boq_items" t-as="b">
                                             <option t-att-value="b.id"
                                                     t-att-selected="b.id == (sub.boq_id.id or 0)">
-                                                <t t-esc="b.item_code"/> — <t t-esc="(b.description or '')[:50]"/>
+                                                <t t-esc="b.item_code"/>
+                                                —
+                                                <t t-esc="(b.description or '')[:50]"/>
                                             </option>
                                         </t>
                                     </select>
@@ -3570,7 +3603,9 @@
                             <div class="cp-form-group" style="margin-bottom:0">
                                 <label class="cp-label">المواصفات الفنية</label>
                                 <textarea name="specifications" class="cp-input" rows="3"
-                                          style="resize:vertical"><t t-esc="sub.specifications or ''"/></textarea>
+                                          style="resize:vertical">
+                                    <t t-esc="sub.specifications or ''"/>
+                                </textarea>
                             </div>
 
                             <!-- ── ملخص التعديلات (يظهر فقط عند C) ── -->
@@ -3603,11 +3638,14 @@
                                                         <t t-if="'pdf' in (doc.mimetype or '')">📄</t>
                                                         <t t-else="">🖼️</t>
                                                     </span>
-                                                    <span style="font-size:12px;color:var(--text1)"><t t-esc="doc.name"/></span>
+                                                    <span style="font-size:12px;color:var(--text1)">
+                                                        <t t-esc="doc.name"/>
+                                                    </span>
                                                 </div>
                                                 <form t-attf-action="/contractor/submittal/#{sub.id}/delete-doc/#{doc.id}"
                                                       method="post" style="margin:0">
-                                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                                    <input type="hidden" name="csrf_token"
+                                                           t-att-value="request.csrf_token()"/>
                                                     <button type="submit"
                                                             style="background:none;border:none;color:var(--red);
                                                                    cursor:pointer;font-size:12px;padding:2px 6px">
@@ -3648,7 +3686,7 @@
                                           stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
                                 <t t-if="sub.state == 'revision'">
-                                    إعادة إرسال العينة (إصدار <t t-esc="sub.revision + 1"/>)
+                                    إعادة إرسال العينة (إصدار<t t-esc="sub.revision + 1"/>)
                                 </t>
                                 <t t-else="">إرسال العينة للاستشاري</t>
                             </button>
@@ -3662,13 +3700,17 @@
                         <t t-if="sub.manufacturer">
                             <div style="display:flex;padding:10px 0;border-bottom:1px solid var(--border)">
                                 <span style="width:110px;font-size:12px;color:var(--text3);flex-shrink:0">المصنع</span>
-                                <span style="font-size:13px;color:var(--text1);font-weight:500"><t t-esc="sub.manufacturer"/></span>
+                                <span style="font-size:13px;color:var(--text1);font-weight:500">
+                                    <t t-esc="sub.manufacturer"/>
+                                </span>
                             </div>
                         </t>
                         <t t-if="sub.model_number">
                             <div style="display:flex;padding:10px 0;border-bottom:1px solid var(--border)">
                                 <span style="width:110px;font-size:12px;color:var(--text3);flex-shrink:0">الموديل</span>
-                                <span style="font-size:13px;color:var(--text1);font-family:monospace"><t t-esc="sub.model_number"/></span>
+                                <span style="font-size:13px;color:var(--text1);font-family:monospace">
+                                    <t t-esc="sub.model_number"/>
+                                </span>
                             </div>
                         </t>
                         <t t-if="sub.boq_id">
@@ -3718,11 +3760,67 @@
                                     <t t-if="'pdf' in (doc.mimetype or '')">📄</t>
                                     <t t-else="">🖼️</t>
                                 </span>
-                                <span style="flex:1;font-size:12px;font-weight:500"><t t-esc="doc.name"/></span>
+                                <span style="flex:1;font-size:12px;font-weight:500">
+                                    <t t-esc="doc.name"/>
+                                </span>
                                 <span style="font-size:11px;color:var(--primary)">↓ تحميل</span>
                             </a>
                         </t>
                     </div>
+                </div>
+            </t>
+
+
+            <t t-if="notes">
+                <div style="background:white;
+                border:1px solid var(--border);
+                border-radius:var(--r-lg);
+                overflow:hidden;
+                margin-bottom:12px">
+
+                    <div style="padding:10px 16px;
+                    background:var(--surface2);
+                    border-bottom:1px solid var(--border);
+                    font-size:12px;
+                    font-weight:600;
+                    color:var(--text2)">
+                        💬 سجل الملاحظات
+                    </div>
+
+                    <div style="padding:12px 16px">
+
+                        <t t-foreach="notes" t-as="msg">
+
+                            <div style="padding:12px;
+                            margin-bottom:10px;
+                            border:1px solid var(--border);
+                            border-radius:8px;
+                            background:#fafafa;">
+
+                                <div style="display:flex;
+                                justify-content:space-between;
+                                margin-bottom:8px;">
+
+                                    <strong>
+                                        <t t-esc="msg.author_id.name or 'النظام'"/>
+                                    </strong>
+
+                                    <span style="font-size:11px;color:#888;">
+                                        <t t-esc="str(msg.date)[:16]"/>
+                                    </span>
+
+                                </div>
+
+                                <div style="line-height:1.8;">
+                                    <t t-raw="msg.body"/>
+                                </div>
+
+                            </div>
+
+                        </t>
+
+                    </div>
+
                 </div>
             </t>
 
@@ -3749,7 +3847,8 @@
                                         <span style="font-size:10px;font-weight:700;color:var(--text3);
                                                      padding:2px 8px;background:var(--surface2);
                                                      border-radius:999px">
-                                            Rev.<t t-esc="rev.revision"/>
+                                            Rev.
+                                            <t t-esc="rev.revision"/>
                                         </span>
                                         <span t-attf-style="font-size:16px;font-weight:900;
                                             color:#{rev.grade == 'a' and 'var(--green)' or rev.grade == 'b' and '#3498DB' or rev.grade == 'c' and '#E67E22' or 'var(--red)'}">
@@ -3759,7 +3858,8 @@
                                     <div style="font-size:10px;color:var(--text3)">
                                         <t t-esc="str(rev.date or '')[:16]"/>
                                         <t t-if="rev.reviewed_by">
-                                            · <t t-esc="rev.reviewed_by.name"/>
+                                            ·
+                                            <t t-esc="rev.reviewed_by.name"/>
                                         </t>
                                     </div>
                                 </div>
@@ -3768,7 +3868,8 @@
                                     <div style="font-size:12px;color:var(--text2);line-height:1.6;
                                                 padding:8px 10px;background:var(--surface2);
                                                 border-radius:var(--r-sm);margin-bottom:6px">
-                                        <strong style="color:var(--text3);font-size:10px">ملاحظات الاستشاري:</strong><br/>
+                                        <strong style="color:var(--text3);font-size:10px">ملاحظات الاستشاري:</strong>
+                                        <br/>
                                         <t t-esc="rev.notes"/>
                                     </div>
                                 </t>
@@ -3778,7 +3879,8 @@
                                                 padding:8px 10px;background:rgba(35,114,146,.04);
                                                 border-radius:var(--r-sm);
                                                 border:1px solid rgba(35,114,146,.1)">
-                                        <strong style="font-size:10px;color:var(--primary)">تعديلات المقاول:</strong><br/>
+                                        <strong style="font-size:10px;color:var(--primary)">تعديلات المقاول:</strong>
+                                        <br/>
                                         <t t-esc="rev.contractor_changes"/>
                                     </div>
                                 </t>
