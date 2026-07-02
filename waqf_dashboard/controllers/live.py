@@ -14,7 +14,7 @@ class LiveWallController(http.Controller):
             ('stream_url', '!=', False),
         ], limit=9, order='start_time desc')
 
-        return request.render('waqf_live_wall.tmpl_live_wall', {
+        return request.render('waqf_dashboard.tmpl_live_wall', {
             'streams': streams,
         })
 
