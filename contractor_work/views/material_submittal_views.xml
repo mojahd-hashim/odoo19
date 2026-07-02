@@ -16,12 +16,6 @@
                 invisible="state != 'submitted'"
                 confirm="هل تريد اعتماد التقييم المحدد؟"/>
 
-        <!-- إعادة لمسودة (مسؤول فقط) -->
-        <button name="action_reset_draft" type="object"
-                string="إعادة لمسودة"
-                invisible="state == 'draft'"
-                groups="base.group_system"/>
-
         <field name="state" widget="statusbar"
                statusbar_visible="draft,submitted,approved"/>
       </header>
