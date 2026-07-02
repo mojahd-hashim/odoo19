@@ -189,9 +189,8 @@ class ContractorQualification(models.Model):
                 'senior_date': fields.Date.today(),
             })
             rec.message_post(
-                body=_('✅ كبير المهندسين — تقييم %s%s')
-                % (rec.senior_grade.upper(),
-                   ': ' + rec.senior_notes if rec.senior_notes else ''))
+                body=_('✅ كبير المهندسين — تقييم %s')
+                %rec.senior_notes if rec.senior_notes else '')
 
     # ── الوقف يعتمد نهائياً ──────────────────────────────
     def action_waqf_approve(self):
