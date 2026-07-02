@@ -27,7 +27,7 @@
                     </div>
                     <group>
                         <group>
-                            <field name="mosque_id" readonly="1"/>
+                            <field name="mosque_id" readonly="0"/>
                             <field name="engineer_id" readonly="1"/>
                             <field name="report_date" readonly="1"/>
                             <field name="report_type"/>
