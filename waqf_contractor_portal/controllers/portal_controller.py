@@ -957,16 +957,20 @@ class ContractorPortal(http.Controller):
         if not wo.exists():
             return request.redirect('/contractor/work-orders')
 
-        # # تحقق من الصلاحية
-        # if portal_user:
-        #     if wo.portal_user_id != portal_user.user_id:
-        #         return request.redirect('/contractor/work-orders')
+        # ── جلب رسائل الـ chatter ──────────────────────────
+        messages = request.env['mail.message'].sudo().search([
+            ('model', '=', 'contractor.work.order'),
+            ('res_id', '=', wo.id),
+            ('message_type', 'in', ('comment', 'notification')),
+            ('subtype_id', '!=', False),
+        ], order='date desc', limit=30)
 
         return request.render('waqf_contractor_portal.tmpl_wo_detail', {
             'portal_user': portal_user,
             'supervisor': supervisor,
             'mosque': wo.mosque_id,
             'wo': wo,
+            'messages': messages,
         })
 
     # ══════════════════════════════════════════════════════
