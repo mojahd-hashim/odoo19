@@ -202,7 +202,7 @@ class ContractorQualification(models.Model):
             })
             rec.message_post(
                 body=_('✅ الوقف اعتمد نهائياً — تقييم %s%s')
-                % (rec.waqf_grade.upper(),
+                % (rec.final_grade.upper(),
                    ': ' + rec.waqf_notes if rec.waqf_notes else ''))
 
     # ── رفض من أي مرحلة (زر عام) ────────────────────────
