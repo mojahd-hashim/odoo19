@@ -1082,6 +1082,12 @@
                     </div>
                     <div class="cp-mini-stat-lbl">قيد المراجعة</div>
                 </div>
+                 <div class="cp-mini-stat" style="flex:1;min-width:70px">
+                    <div class="cp-mini-stat-val" style="color:var(--gold)">
+                        <t t-esc="counts['senior_done']"/>
+                    </div>
+                    <div class="cp-mini-stat-lbl">إنتظار اعتماد الوقف</div>
+                </div>
                 <div class="cp-mini-stat" style="flex:1;min-width:70px">
                     <div class="cp-mini-stat-val" style="color:var(--green)">
                         <t t-esc="counts['approved']"/>
@@ -1104,6 +1110,9 @@
                     </a>
                     <a href="/contractor/qualifications?state=submitted"
                        t-attf-class="cp-filter-tab #{active_state == 'submitted' and 'active' or ''}">قيد المراجعة
+                    </a>
+                    <a href="/contractor/qualifications?state=submitted"
+                       t-attf-class="cp-filter-tab #{active_state == 'senior_done' and 'active' or ''}">إنتظار اعتماد الوقف
                     </a>
                     <a href="/contractor/qualifications?state=approved"
                        t-attf-class="cp-filter-tab #{active_state == 'approved' and 'active' or ''}">معتمد
@@ -1154,6 +1163,7 @@
                                     <span t-attf-class="cp-status-pill #{q.state == 'approved' and 'approved' or q.state == 'submitted' and 'pending' or q.state == 'rejected' and 'rejected' or 'draft'}">
                                         <t t-if="q.state == 'draft'">مسودة</t>
                                         <t t-elif="q.state == 'submitted'">قيد المراجعة</t>
+                                        <t t-elif="q.state == 'senior_done'">إنتظار اعتماد الوقف</t>
                                         <t t-elif="q.state == 'approved'">✓ معتمد</t>
                                         <t t-elif="q.state == 'rejected'">مرفوض</t>
                                     </span>

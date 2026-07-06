@@ -305,6 +305,7 @@ class ContractorPortal(http.Controller):
             'draft': sum(1 for q in quals if q.state == 'draft'),
             'submitted': sum(1 for q in quals if q.state == 'submitted'),
             'approved': sum(1 for q in quals if q.state == 'approved'),
+            'senior_done': sum(1 for q in quals if q.state == 'senior_done'),
             'rejected': sum(1 for q in quals if q.state == 'rejected'),
         }
 
