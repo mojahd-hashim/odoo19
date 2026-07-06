@@ -2288,7 +2288,7 @@ cp-status-pill
                                 <t t-if="wo.grade">
                                     <span style="color:var(--border2)">·</span>
                                     <span t-attf-style="color:#{wo.grade in ['a','b'] and 'var(--green)' or 'var(--red)'}">
-                                        <t t-esc="(wo.payment_pct or 0)|int"/>% دفع
+                                     <t t-esc="int(wo.payment_pct or 0)"/>
                                     </span>
                                 </t>
                             </div>
@@ -2845,7 +2845,7 @@ cp-status-pill
                                          t-attf-style="color:#{wo.grade in ['a','b'] and '#1A7A55' or 'var(--red)'}">
                                         التقييم:
                                         <t t-esc="(wo.grade or '').upper()"/>
-                                        — نسبة الدفع:<t t-esc="(wo.payment_pct or 0)|int"/>%
+                                        — نسبة الدفع:<t t-esc="int(wo.payment_pct or 0)"/>%
                                     </div>
                                     <t t-if="wo.grade_notes">
                                         <div style="font-size:12px;color:var(--text2)">
@@ -3119,7 +3119,7 @@ cp-status-pill
                                       t-attf-style="color:#{wo.grade in ['a','b'] and 'var(--green)' or 'var(--red)'}">
                                     <t t-esc="(wo.grade or '').upper()"/>
                                     —
-                                    <t t-esc="(wo.payment_pct or 0)|int"/>%
+                                    <t t-esc="int(wo.payment_pct or 0)"/>%
                                 </span>
                             </div>
                         </t>
