@@ -4062,10 +4062,11 @@ cp-status-pill
                         </div>
                         <div style="font-size:11px;color:#2A8A65">
                             يمكنك استخدام هذا التأهيل عند إنشاء أوامر العمل
-                            <t t-if="qual.approved_by">
+                            <t t-if="qual.engineer_by">
                                 · اعتمده:
+                                م.
                                 <strong>
-                                    <t t-esc="qual.approved_by.name"/>
+                                    <t t-esc="qual.engineer_by.name"/>
                                 </strong>
                             </t>
                             <t t-if="qual.approval_date">
