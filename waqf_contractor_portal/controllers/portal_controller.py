@@ -1442,10 +1442,18 @@ class ContractorPortal(http.Controller):
         mosques = portal_user.effective_mosque_ids \
             if portal_user and qual.state == 'draft' else []
 
+        messages = request.env['mail.message'].sudo().search([
+            ('model', '=', 'contractor.qualification'),
+            ('res_id', '=', qual.id),
+            ('message_type', 'in', ('comment', 'notification')),
+            ('subtype_id', '!=', False),
+        ], order='date desc', limit=20)
+
         return request.render('waqf_contractor_portal.tmpl_qual_detail', {
             'portal_user': portal_user,
             'supervisor': supervisor,
             'qual': qual,
+            'messages':messages,
             'categories': categories,
             'mosques': mosques,
         })

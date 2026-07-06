@@ -4346,6 +4346,99 @@ cp-status-pill
                     </div>
                 </div>
             </t>
+            <!-- ══════════════════════════════════════════════
+                 سجل الملاحظات (Chatter)
+                 ضعه قبل زر "العودة لقائمة التأهيلات"
+            ══════════════════════════════════════════════ -->
+            <t t-if="messages">
+                <div style="background:white;border:1px solid var(--border);
+                            border-radius:var(--r-lg);overflow:hidden;margin-bottom:12px">
+                    <div style="padding:10px 16px;background:var(--navy);
+                                font-size:12px;font-weight:700;color:white;
+                                display:flex;align-items:center;justify-content:space-between">
+                        <span style="display:flex;align-items:center;gap:6px">
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                <path d="M2 2h10v7H5L2 12V2z" stroke="currentColor"
+                                      stroke-width="1.3" stroke-linejoin="round"/>
+                            </svg>
+                            سجل الملاحظات
+                        </span>
+                        <span style="padding:2px 10px;border-radius:999px;
+                                     background:rgba(255,255,255,.15);font-size:11px">
+                            <t t-esc="len(messages)"/>
+                        </span>
+                    </div>
+
+                    <div style="padding:0;max-height:400px;overflow-y:auto">
+                        <t t-foreach="messages" t-as="msg">
+                            <div style="padding:12px 16px;border-bottom:1px solid var(--border)">
+                                <!-- هيدر: الاسم + التاريخ -->
+                                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                                    <!-- أيقونة المرسل -->
+                                    <div t-attf-style="width:30px;height:30px;border-radius:50%;
+                                        display:flex;align-items:center;justify-content:center;
+                                        font-size:12px;font-weight:800;flex-shrink:0;
+                                        background:#{msg.author_id.id == (qual.supervisor_id.id or 0) and 'rgba(35,114,146,.12)' or 'rgba(155,89,182,.1)'};
+                                        color:#{msg.author_id.id == (qual.supervisor_id.id or 0) and 'var(--primary)' or '#7D3C98'}">
+                                        <t t-esc="(msg.author_id.name or '?')[0]"/>
+                                    </div>
+                                    <div style="flex:1;min-width:0">
+                                        <div style="font-size:12px;font-weight:700;color:var(--text1)">
+                                            <t t-esc="msg.author_id.name or 'النظام'"/>
+                                            <!-- badge الدور -->
+                                            <t t-if="msg.author_id.id == (qual.supervisor_id.id or 0)">
+                                                <span style="font-size:9px;font-weight:600;
+                                                             padding:1px 6px;border-radius:999px;
+                                                             background:rgba(35,114,146,.1);
+                                                             color:var(--primary);margin-right:4px">
+                                                    مقاول
+                                                </span>
+                                            </t>
+                                            <t t-else="">
+                                                <span style="font-size:9px;font-weight:600;
+                                                             padding:1px 6px;border-radius:999px;
+                                                             background:rgba(155,89,182,.1);
+                                                             color:#7D3C98;margin-right:4px">
+                                                    استشاري
+                                                </span>
+                                            </t>
+                                        </div>
+                                        <div style="font-size:10px;color:var(--text3)">
+                                            <t t-esc="str(msg.date)[:16]"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- المحتوى -->
+                                <div style="font-size:12px;color:var(--text1);line-height:1.7;
+                                            padding:8px 12px;background:var(--surface2);
+                                            border-radius:var(--r-sm)">
+                                    <t t-raw="msg.body"/>
+                                </div>
+
+                                <!-- المرفقات -->
+                                <t t-if="msg.attachment_ids">
+                                    <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">
+                                        <t t-foreach="msg.attachment_ids" t-as="att">
+                                            <a t-attf-href="/web/content/#{att.id}?download=true"
+                                               target="_blank"
+                                               style="display:flex;align-items:center;gap:6px;
+                                                      padding:5px 10px;background:var(--surface2);
+                                                      border-radius:var(--r-sm);border:1px solid var(--border);
+                                                      text-decoration:none;font-size:11px;color:var(--primary)">
+                                                <t t-if="'image' in (att.mimetype or '')">🖼️</t>
+                                                <t t-elif="'pdf' in (att.mimetype or '')">📄</t>
+                                                <t t-else="">📎</t>
+                                                <t t-esc="att.name[:30]"/>
+                                            </a>
+                                        </t>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </t>
 
             <a href="/contractor/qualifications"
                class="cp-btn-ghost cp-btn-block" style="margin-top:8px">
