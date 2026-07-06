@@ -1262,11 +1262,13 @@ class ContractorPortal(http.Controller):
         boq_items = request.env['mosque.boq'].sudo().search([
             ('mosque_id', '=', sub.mosque_id.id),
         ]) if sub.state in ('draft', 'revision') else []
-        notes = request.env['mail.message'].sudo().search([
+        # في submittal_detail controller أضف:
+        messages = request.env['mail.message'].sudo().search([
             ('model', '=', 'contractor.material.submittal'),
             ('res_id', '=', sub.id),
-            ('message_type', '=', 'comment'),
-        ], order='date asc')
+            ('message_type', 'in', ('comment', 'notification')),
+            ('subtype_id', '!=', False),
+        ], order='date desc', limit=20)
 
         return request.render('waqf_contractor_portal.tmpl_submittal_detail', {
             'portal_user': portal_user,
@@ -1274,7 +1276,7 @@ class ContractorPortal(http.Controller):
             'sub': sub,
             'boq_items': boq_items,
             'mosque': sub.mosque_id,
-            'notes': notes,
+            'messages': messages,
         })
 
     # ── إرسال / تعديل + إرسال ────────────────────────────
