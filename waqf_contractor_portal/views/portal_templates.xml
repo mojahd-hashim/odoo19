@@ -4069,9 +4069,9 @@ cp-status-pill
                                     <t t-esc="qual.engineer_by.name"/>
                                 </strong>
                             </t>
-                            <t t-if="qual.approval_date">
+                            <t t-if="qual.waqf_date">
                                 ·
-                                <t t-esc="qual.approval_date"/>
+                                <t t-esc="qual.waqf_date"/>
                             </t>
                         </div>
                     </div>
