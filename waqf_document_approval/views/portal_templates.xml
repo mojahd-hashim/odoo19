@@ -559,6 +559,44 @@
                     </t>
                 </div>
             </div>
+            <!-- كل المرفقات المرتبطة بالطلب -->
+            <t t-if="attachments">
+                <div style="background:white;border:1px solid var(--border);
+                border-radius:var(--r-lg);overflow:hidden;margin-bottom:12px">
+                    <div style="padding:10px 16px;background:var(--surface2);
+                    border-bottom:1px solid var(--border);
+                    font-size:12px;font-weight:600;color:var(--text2)">
+                        📎 جميع المرفقات (<t t-esc="len(attachments)"/>)
+                    </div>
+                    <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px">
+                        <t t-foreach="attachments" t-as="att">
+                            <a t-attf-href="/web/content/#{att.id}?download=true"
+                               target="_blank"
+                               style="display:flex;align-items:center;gap:10px;
+                          padding:10px 12px;background:var(--surface2);
+                          border-radius:var(--r-sm);border:1px solid var(--border);
+                          text-decoration:none;color:var(--text1)">
+                                <span style="font-size:20px">
+                                    <t t-if="'pdf' in (att.mimetype or '')">📄</t>
+                                    <t t-elif="'image' in (att.mimetype or '')">🖼️</t>
+                                    <t t-elif="'zip' in (att.mimetype or '') or 'rar' in (att.mimetype or '')">🗜️</t>
+                                    <t t-else="">📎</t>
+                                </span>
+                                <div style="flex:1;min-width:0">
+                                    <div style="font-size:12px;font-weight:500;white-space:nowrap;
+                                    overflow:hidden;text-overflow:ellipsis">
+                                        <t t-esc="att.name"/>
+                                    </div>
+                                    <div style="font-size:10px;color:var(--text3)">
+                                        <t t-esc="'%.1f MB' % (att.file_size / 1048576) if att.file_size else ''"/>
+                                    </div>
+                                </div>
+                                <span style="font-size:11px;color:var(--primary);flex-shrink:0">↓ تحميل</span>
+                            </a>
+                        </t>
+                    </div>
+                </div>
+            </t>
             <t t-if="messages">
                 <div style="background:white;
                 border:1px solid var(--border);
@@ -606,23 +644,23 @@
                                 </div>
 
                             </div>
-                             <t t-if="msg.attachment_ids">
-                                            <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">
-                                                <t t-foreach="msg.attachment_ids" t-as="att">
-                                                    <a t-attf-href="/web/content/#{att.id}?download=true"
-                                                       target="_blank"
-                                                       style="display:flex;align-items:center;gap:6px;
+                            <t t-if="msg.attachment_ids">
+                                <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">
+                                    <t t-foreach="msg.attachment_ids" t-as="att">
+                                        <a t-attf-href="/web/content/#{att.id}?download=true"
+                                           target="_blank"
+                                           style="display:flex;align-items:center;gap:6px;
                                                               padding:5px 10px;background:var(--surface2);
                                                               border-radius:var(--r-sm);border:1px solid var(--border);
                                                               text-decoration:none;font-size:11px;color:var(--primary)">
-                                                        <t t-if="'image' in (att.mimetype or '')">🖼️</t>
-                                                        <t t-elif="'pdf' in (att.mimetype or '')">📄</t>
-                                                        <t t-else="">📎</t>
-                                                        <t t-esc="att.name[:25]"/>
-                                                    </a>
-                                                </t>
-                                            </div>
-                                        </t>
+                                            <t t-if="'image' in (att.mimetype or '')">🖼️</t>
+                                            <t t-elif="'pdf' in (att.mimetype or '')">📄</t>
+                                            <t t-else="">📎</t>
+                                            <t t-esc="att.name[:25]"/>
+                                        </a>
+                                    </t>
+                                </div>
+                            </t>
 
                         </t>
 

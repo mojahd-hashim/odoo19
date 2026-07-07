@@ -203,19 +203,45 @@ class DocumentApprovalPortal(http.Controller):
     @http.route('/contractor/documents/<int:doc_id>', type='http',
                 auth='user', website=True)
     def document_detail(self, doc_id, **kw):
-        doc = request.env['waqf.document.approval'].sudo().browse(doc_id)
-        # if not doc.exists() or doc.submitted_by.id != request.env.user.id:
-        #     return request.redirect('/contractor/documents')
+        portal_user = self._get_portal_user()
+        supervisor = self._get_supervisor()
+        if not portal_user and not supervisor:
+            return request.redirect('/web')
 
+        doc = request.env['waqf.document.approval'].sudo().browse(doc_id)
+        if not doc.exists():
+            return request.redirect('/contractor/documents')
+
+        # صلاحية عامة — المقدّم أو أي مستخدم في مساجد الطلب
+        allowed = False
+        if doc.submitted_by.id == request.env.user.id:
+            allowed = True
+        elif portal_user and doc.mosque_id in portal_user.effective_mosque_ids:
+            allowed = True
+        elif supervisor:
+            allowed = True
+        if not allowed:
+            return request.redirect('/contractor/documents')
+
+        # ── رسائل الـ chatter ──────────────────────────────
         messages = request.env['mail.message'].sudo().search([
             ('model', '=', 'waqf.document.approval'),
             ('res_id', '=', doc.id),
-            ('message_type', 'in', ['comment', 'notification']),
-        ], order='date asc')
+            ('message_type', 'in', ('comment', 'notification')),
+            ('subtype_id', '!=', False),
+        ], order='date desc', limit=30)
+
+        # ── جميع المرفقات المرتبطة بالطلب ─────────────────
+        attachments = request.env['ir.attachment'].sudo().search([
+            ('res_model', '=', 'waqf.document.approval'),
+            ('res_id', '=', doc.id),
+        ], order='create_date desc')
 
         return request.render('waqf_document_approval.tmpl_doc_detail', {
+            'portal_user': portal_user,
             'doc': doc,
             'messages': messages,
+            'attachments': attachments,
         })
 
     # ══════════════════════════════════════════════════════
