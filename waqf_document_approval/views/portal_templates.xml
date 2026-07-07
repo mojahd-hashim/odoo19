@@ -606,6 +606,23 @@
                                 </div>
 
                             </div>
+                             <t t-if="msg.attachment_ids">
+                                            <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">
+                                                <t t-foreach="msg.attachment_ids" t-as="att">
+                                                    <a t-attf-href="/web/content/#{att.id}?download=true"
+                                                       target="_blank"
+                                                       style="display:flex;align-items:center;gap:6px;
+                                                              padding:5px 10px;background:var(--surface2);
+                                                              border-radius:var(--r-sm);border:1px solid var(--border);
+                                                              text-decoration:none;font-size:11px;color:var(--primary)">
+                                                        <t t-if="'image' in (att.mimetype or '')">🖼️</t>
+                                                        <t t-elif="'pdf' in (att.mimetype or '')">📄</t>
+                                                        <t t-else="">📎</t>
+                                                        <t t-esc="att.name[:25]"/>
+                                                    </a>
+                                                </t>
+                                            </div>
+                                        </t>
 
                         </t>
 
