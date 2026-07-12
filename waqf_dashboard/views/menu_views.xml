@@ -5,10 +5,23 @@
         <field name="url">/dashboard</field>
         <field name="target">self</field>
     </record>
+    <record id="action_live_open" model="ir.actions.act_url">
+        <field name="name">البث المباشر</field>
+        <field name="url">/live/wall</field>
+        <field name="target">self</field>
+    </record>
+
     <menuitem id="menu_waqf_dashboard"
               name="📊 لوحة الإدارة"
               action="action_dashboard_open"
               sequence="1"
+              groups="waqf_mosque_rehab.group_mosque_waqf_manager,waqf_mosque_rehab.group_mosque_admin"/>
+
+    <menuitem id="menu_waqf_dashboard"
+              name="البث المباشر"
+              action="action_live_open"
+              sequence="100"
+               web_icon="waqf_dashboard,static/icon.png"
               groups="waqf_mosque_rehab.group_mosque_waqf_manager,waqf_mosque_rehab.group_mosque_admin"/>
 
     <record id="action_live_streams" model="ir.actions.act_window">
