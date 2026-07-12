@@ -17,7 +17,7 @@
               sequence="1"
               groups="waqf_mosque_rehab.group_mosque_waqf_manager,waqf_mosque_rehab.group_mosque_admin"/>
 
-    <menuitem id="menu_waqf_dashboard"
+    <menuitem id="menu_live_dashboard"
               name="البث المباشر"
               action="action_live_open"
               sequence="100"
