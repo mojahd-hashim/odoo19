@@ -1088,13 +1088,10 @@ class ContractorPortal(http.Controller):
         if mosque_id:
             boq_items = request.env['mosque.boq'].sudo().search([
                 ('mosque_id', '=', mosque_id),
-                # ('requires_sample', '=', True),
             ])
-        # else:
-        #     boq_items = request.env['mosque.boq'].sudo().search([
-        #         ('mosque_id', '=', mosque_id),
-        #         # ('requires_sample', '=', True),
-        #     ])
+        else:
+            boq_items = request.env['mosque.boq'].sudo().search([
+            ])
 
 
         work_order = None
