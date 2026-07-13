@@ -156,6 +156,7 @@
 
                                 <group>
                                     <field name="waqf_notes"/>
+                                    <field name="reject_reason"/>
                                 </group>
 
                                 <group>

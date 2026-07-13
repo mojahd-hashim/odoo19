@@ -20,6 +20,8 @@ class ContractorMaterialSubmittal(models.Model):
 
     mosque_id = fields.Many2one(
         'mosque.mosque', string='المسجد')
+    mosque_ids = fields.Many2many(
+        'mosque.mosque', string='المسجد')
 
     boq_id = fields.Many2one(
         'mosque.boq', string='البند المرتبط',

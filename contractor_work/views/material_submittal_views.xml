@@ -54,6 +54,7 @@
         <group>
           <group string="بيانات العينة">
             <field name="mosque_id" readonly="1"/>
+            <field name="mosque_ids"   widget="many2many_tags"/>
             <field name="work_order_id" readonly="1"/>
             <field name="boq_id" readonly="1"/>
             <field name="material_name" readonly="1"/>
