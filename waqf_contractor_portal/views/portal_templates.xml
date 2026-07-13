@@ -3209,244 +3209,205 @@ cp-status-pill
          SUBMITTAL NEW
     ══════════════════════════════════════════════════════ -->
     <template id="tmpl_submittal_new" name="New Material Submittal">
-    <t t-call="waqf_contractor_portal.tmpl_base">
+        <t t-call="waqf_contractor_portal.tmpl_base">
 
-        <div class="cp-breadcrumb">
-            <a href="/contractor">الرئيسية</a>
-            <span>←</span>
-            <span>رفع عينة مادة</span>
-        </div>
+            <div class="cp-breadcrumb">
+                <a href="/contractor">الرئيسية</a>
+                <span>←</span>
+                <span>رفع عينة مادة</span>
+            </div>
 
-        <form action="/contractor/submittals/create"
-              method="post"
-              enctype="multipart/form-data">
+            <form action="/contractor/submittals/create"
+                  method="post"
+                  enctype="multipart/form-data">
 
-            <input type="hidden"
-                   name="csrf_token"
-                   t-att-value="request.csrf_token()"/>
-
-            <input type="hidden"
-                   name="mosque_id"
-                   t-att-value="mosque_id"/>
-
-            <input type="hidden"
-                   name="all_mosques"
-                   id="all_mosques_flag"
-                   value="0"/>
-
-            <t t-if="work_order">
                 <input type="hidden"
-                       name="work_order_id"
-                       t-att-value="work_order.id"/>
-            </t>
+                       name="csrf_token"
+                       t-att-value="request.csrf_token()"/>
 
-            <div class="cp-form-card">
+                <input type="hidden"
+                       name="mosque_id"
+                       t-att-value="mosque_id"/>
 
-                <!-- اختيار المساجد -->
-                <t t-if="not mosque_id">
+                <input type="hidden"
+                       name="all_mosques"
+                       id="all_mosques_flag"
+                       value="0"/>
 
+                <t t-if="work_order">
+                    <input type="hidden"
+                           name="work_order_id"
+                           t-att-value="work_order.id"/>
+                </t>
+
+                <div class="cp-form-card">
+
+                    <!-- اختيار المساجد -->
+                    <t t-if="not mosque_id">
+                        <div class="cp-form-group">
+                            <label class="cp-label">
+                                <span>*</span> المساجد
+                            </label>
+                            <input type="hidden" name="all_mosques" id="all_mosques_flag" value="0"/> <!-- بحث -->
+                            <input type="text" id="mosque_search" class="cp-input" placeholder="🔍 ابحث عن مسجد..."
+                                   style="margin-bottom:12px;" onkeyup="filterMosques()"/> <!-- تحديد الكل -->
+                            <label style=" display:flex; align-items:center; gap:8px; padding:10px; border:1px solid #ddd; border-radius:8px; margin-bottom:12px; font-weight:600; cursor:pointer;">
+                                <input type="checkbox" id="all_mosques" onchange="toggleAllMosques(this)"/>
+                                جميع المساجد
+                            </label> <!-- قائمة المساجد -->
+                            <div id="mosque_list"
+                                 style=" max-height:320px; overflow-y:auto; border:1px solid #ddd; border-radius:8px; padding:12px; background:#fff;">
+                                <t t-foreach="allowed_mosques" t-as="mosque">
+                                    <label class="mosque-item" t-att-data-name="(mosque.name or '').lower()"
+                                           style=" display:flex; align-items:center; gap:10px; padding:8px 6px; cursor:pointer; border-bottom:1px solid #f2f2f2;">
+                                        <input type="checkbox" class="mosque-checkbox" name="mosque_ids[]"
+                                               t-att-value="mosque.id"/>
+                                        <span>
+                                            <t t-esc="mosque.name"/>
+                                        </span>
+                                    </label>
+                                </t>
+                            </div>
+                            <small style="display:block;margin-top:8px;color:#777;">يمكنك اختيار مسجد واحد أو عدة مساجد
+                                أو الضغط على "جميع المساجد".
+                            </small>
+                        </div>
+                    </t>
+
+                    <!-- البند -->
                     <div class="cp-form-group">
                         <label class="cp-label">
                             <span>*</span>
-                            المساجد
+                            البند المرتبط
                         </label>
 
-                        <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                            <input type="checkbox"
-                                   id="all_mosques"
-                                   onchange="toggleAllMosques(this)"/>
-                            جميع المساجد
-                        </label>
-
-                        <select id="mosque_ids"
-                                name="mosque_ids[]"
+                        <select name="boq_id"
                                 class="cp-select"
-                                multiple="multiple"
-                                size="8"
                                 required="required">
 
-                            <t t-foreach="allowed_mosques" t-as="mosque">
-                                <option t-att-value="mosque.id">
-                                    <t t-esc="mosque.name"/>
+                            <option value="">— اختر البند —</option>
+
+                            <t t-foreach="boq_items" t-as="boq">
+                                <option t-att-value="boq.id">
+                                    <t t-esc="boq.item_code"/>
+                                    —
+                                    <t t-esc="(boq.description or '')[:70]"/>
                                 </option>
                             </t>
 
                         </select>
+                    </div>
 
-                        <small style="display:block;margin-top:6px;color:#777">
-                            استخدم Ctrl أو Shift لاختيار أكثر من مسجد.
-                        </small>
+                    <!-- بيانات المادة -->
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+
+                        <div class="cp-form-group" style="margin-bottom:0">
+                            <label class="cp-label">
+                                <span>*</span>
+                                اسم المادة
+                            </label>
+
+                            <input type="text"
+                                   name="material_name"
+                                   class="cp-input"
+                                   required="required"
+                                   placeholder="مثال: بلاط بورسلان"/>
+                        </div>
+
+                        <div class="cp-form-group" style="margin-bottom:0">
+                            <label class="cp-label">
+                                المصنع / المورد
+                            </label>
+
+                            <input type="text"
+                                   name="manufacturer"
+                                   class="cp-input"
+                                   placeholder="اسم المصنع"/>
+                        </div>
+
+                        <div class="cp-form-group"
+                             style="margin-bottom:0;grid-column:1/-1">
+
+                            <label class="cp-label">
+                                رقم الموديل / الكتالوج
+                            </label>
+
+                            <input type="text"
+                                   name="model_number"
+                                   class="cp-input"/>
+
+                        </div>
 
                     </div>
 
-                </t>
+                    <!-- المواصفات -->
 
-                <!-- البند -->
-                <div class="cp-form-group">
-                    <label class="cp-label">
-                        <span>*</span>
-                        البند المرتبط
-                    </label>
-
-                    <select name="boq_id"
-                            class="cp-select"
-                            required="required">
-
-                        <option value="">— اختر البند —</option>
-
-                        <t t-foreach="boq_items" t-as="boq">
-                            <option t-att-value="boq.id">
-                                <t t-esc="boq.item_code"/>
-                                —
-                                <t t-esc="(boq.description or '')[:70]"/>
-                            </option>
-                        </t>
-
-                    </select>
-                </div>
-
-                <!-- بيانات المادة -->
-
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-
-                    <div class="cp-form-group" style="margin-bottom:0">
-                        <label class="cp-label">
-                            <span>*</span>
-                            اسم المادة
-                        </label>
-
-                        <input type="text"
-                               name="material_name"
-                               class="cp-input"
-                               required="required"
-                               placeholder="مثال: بلاط بورسلان"/>
-                    </div>
-
-                    <div class="cp-form-group" style="margin-bottom:0">
-                        <label class="cp-label">
-                            المصنع / المورد
-                        </label>
-
-                        <input type="text"
-                               name="manufacturer"
-                               class="cp-input"
-                               placeholder="اسم المصنع"/>
-                    </div>
-
-                    <div class="cp-form-group"
-                         style="margin-bottom:0;grid-column:1/-1">
+                    <div class="cp-form-group" style="margin-top:12px">
 
                         <label class="cp-label">
-                            رقم الموديل / الكتالوج
+                            المواصفات الفنية
                         </label>
 
-                        <input type="text"
-                               name="model_number"
-                               class="cp-input"/>
+                        <textarea name="specifications"
+                                  class="cp-input"
+                                  rows="4"
+                                  style="resize:vertical"
+                                  placeholder="أبعاد، مواصفات، معايير الجودة..."/>
+
+                    </div>
+
+                    <!-- المرفقات -->
+
+                    <div class="cp-form-group">
+
+                        <label class="cp-label">
+                            الوثائق والصور
+                        </label>
+
+                        <div class="cp-photo-drop-zone">
+
+                            <label style="cursor:pointer">
+
+                                <span class="cp-action-btn cp-action-ghost"
+                                      style="font-size:12px;padding:6px 14px">
+
+                                    اختر الوثائق والصور
+
+                                </span>
+
+                                <input type="file"
+                                       name="documents"
+                                       multiple="multiple"
+                                       accept="image/*,.pdf"
+                                       style="display:none"
+                                       onchange="previewPhotos(this,'sub-previews')"/>
+
+                            </label>
+
+                        </div>
+
+                        <div id="sub-previews"
+                             class="cp-photo-preview-grid"/>
 
                     </div>
 
                 </div>
 
-                <!-- المواصفات -->
+                <button type="submit"
+                        class="cp-action-btn cp-action-primary"
+                        style="width:100%;justify-content:center">
 
-                <div class="cp-form-group" style="margin-top:12px">
+                    إرسال العينة للمراجعة
 
-                    <label class="cp-label">
-                        المواصفات الفنية
-                    </label>
+                </button>
 
-                    <textarea name="specifications"
-                              class="cp-input"
-                              rows="4"
-                              style="resize:vertical"
-                              placeholder="أبعاد، مواصفات، معايير الجودة..."/>
+            </form>
 
-                </div>
+            <script> function toggleAllMosques(cb){ const flag = document.getElementById("all_mosques_flag"); flag.value = cb.checked ? "1" : "0"; document.querySelectorAll(".mosque-checkbox").forEach(function(item){ item.checked = cb.checked; item.disabled = cb.checked; }); } function filterMosques(){ const search = document.getElementById("mosque_search") .value .toLowerCase() .trim(); document.querySelectorAll(".mosque-item").forEach(function(item){ const text = item.dataset.name || ""; if(text.indexOf(search) >= 0){ item.style.display = ""; }else{ item.style.display = "none"; } }); } document.addEventListener("DOMContentLoaded", function(){ document.querySelectorAll(".mosque-checkbox").forEach(function(box){ box.addEventListener("change", function(){ const checked = document.querySelectorAll(".mosque-checkbox:checked").length; document.getElementById("all_mosques").checked = false; document.getElementById("all_mosques_flag").value = "0"; this.disabled = false; }); }); }); </script>
 
-                <!-- المرفقات -->
-
-                <div class="cp-form-group">
-
-                    <label class="cp-label">
-                        الوثائق والصور
-                    </label>
-
-                    <div class="cp-photo-drop-zone">
-
-                        <label style="cursor:pointer">
-
-                            <span class="cp-action-btn cp-action-ghost"
-                                  style="font-size:12px;padding:6px 14px">
-
-                                اختر الوثائق والصور
-
-                            </span>
-
-                            <input type="file"
-                                   name="documents"
-                                   multiple="multiple"
-                                   accept="image/*,.pdf"
-                                   style="display:none"
-                                   onchange="previewPhotos(this,'sub-previews')"/>
-
-                        </label>
-
-                    </div>
-
-                    <div id="sub-previews"
-                         class="cp-photo-preview-grid"/>
-
-                </div>
-
-            </div>
-
-            <button type="submit"
-                    class="cp-action-btn cp-action-primary"
-                    style="width:100%;justify-content:center">
-
-                إرسال العينة للمراجعة
-
-            </button>
-
-        </form>
-
-        <script>
-            function toggleAllMosques(cb) {
-
-                const select = document.getElementById('mosque_ids');
-                const flag = document.getElementById('all_mosques_flag');
-
-                if (!select) {
-                    return;
-                }
-
-                flag.value = cb.checked ? "1" : "0";
-
-                if (cb.checked) {
-
-                    for (const option of select.options) {
-                        option.selected = true;
-                    }
-
-                    select.disabled = true;
-                    select.removeAttribute('required');
-
-                } else {
-
-                    select.disabled = false;
-                    select.setAttribute('required', 'required');
-
-                    for (const option of select.options) {
-                        option.selected = false;
-                    }
-
-                }
-            }
-        </script>
-
-    </t>
-</template>
+        </t>
+    </template>
 
     <!-- ══════════════════════════════════════════════════════
          QUALIFICATION NEW
