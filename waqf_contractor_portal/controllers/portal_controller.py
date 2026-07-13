@@ -329,11 +329,11 @@ class ContractorPortal(http.Controller):
             return request.redirect('/web')
 
         domain = []
-        if portal_user:
-            domain.append(('mosque_id', 'in',
-                           portal_user.effective_mosque_ids.ids))
-        elif supervisor and supervisor.assigned_mosque_id:
-            domain.append(('mosque_id', '=', supervisor.assigned_mosque_id.id))
+        # if portal_user:
+        #     domain.append(('mosque_id', 'in',
+        #                    portal_user.effective_mosque_ids.ids))
+        # elif supervisor and supervisor.assigned_mosque_id:
+        #     domain.append(('mosque_id', '=', supervisor.assigned_mosque_id.id))
 
         if mosque:
             domain.append(('mosque_id', '=', int(mosque)))
