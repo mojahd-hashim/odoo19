@@ -1081,6 +1081,16 @@ class ContractorPortal(http.Controller):
         if not portal_user and not supervisor:
             return request.redirect('/web')
 
+        portal_user = self._get_portal_user()
+        supervisor = self._get_supervisor()
+
+        allowed_mosques = request.env['mosque.mosque']
+
+        if portal_user:
+            allowed_mosques = portal_user.effective_mosque_ids
+        elif supervisor:
+            allowed_mosques = supervisor.effective_mosque_ids
+
         mosque_id = int(mosque) if mosque else None
         wo_id = int(wo) if wo else None
 
@@ -1104,6 +1114,7 @@ class ContractorPortal(http.Controller):
             'boq_items': boq_items,
             'work_order': work_order,
             'mosque_id': mosque_id,
+            'allowed_mosques': allowed_mosques,
         })
 
     @http.route('/contractor/submittals/create', type='http',
@@ -1132,10 +1143,32 @@ class ContractorPortal(http.Controller):
             'model_number': model_number,
             'specifications': specs,
         }
-        if mosque_id:
-            vals['mosque_id'] = mosque_id
+
         if wo_id:
             vals['work_order_id'] = wo_id
+        if mosque_id:
+            vals['mosque_id'] = mosque_id
+
+        else:
+
+            if post.get('all_mosques') == '1':
+
+                if portal_user:
+                    mosque_ids = portal_user.effective_mosque_ids.ids
+                else:
+                    mosque_ids = supervisor.effective_mosque_ids.ids
+
+            else:
+                mosque_ids = list(
+                    map(int, request.httprequest.form.getlist('mosque_ids[]'))
+                )
+
+            if mosque_ids:
+                vals['mosque_ids'] = [(6, 0, mosque_ids)]
+
+                if len(mosque_ids) == 1:
+                    vals['mosque_id'] = mosque_ids[0]
+
 
         sub = request.env['contractor.material.submittal'].sudo().create(vals)
 

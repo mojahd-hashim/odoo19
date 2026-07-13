@@ -1082,7 +1082,7 @@
                     </div>
                     <div class="cp-mini-stat-lbl">قيد المراجعة</div>
                 </div>
-                 <div class="cp-mini-stat" style="flex:1;min-width:70px">
+                <div class="cp-mini-stat" style="flex:1;min-width:70px">
                     <div class="cp-mini-stat-val" style="color:var(--gold)">
                         <t t-esc="counts['senior_done']"/>
                     </div>
@@ -1112,7 +1112,8 @@
                        t-attf-class="cp-filter-tab #{active_state == 'submitted' and 'active' or ''}">قيد المراجعة
                     </a>
                     <a href="/contractor/qualifications?state=submitted"
-                       t-attf-class="cp-filter-tab #{active_state == 'senior_done' and 'active' or ''}">إنتظار اعتماد الوقف
+                       t-attf-class="cp-filter-tab #{active_state == 'senior_done' and 'active' or ''}">إنتظار اعتماد
+                        الوقف
                     </a>
                     <a href="/contractor/qualifications?state=approved"
                        t-attf-class="cp-filter-tab #{active_state == 'approved' and 'active' or ''}">معتمد
@@ -2288,7 +2289,7 @@ cp-status-pill
                                 <t t-if="wo.grade">
                                     <span style="color:var(--border2)">·</span>
                                     <span t-attf-style="color:#{wo.grade in ['a','b'] and 'var(--green)' or 'var(--red)'}">
-                                     <t t-esc="int(wo.payment_pct or 0)"/>
+                                        <t t-esc="int(wo.payment_pct or 0)"/>
                                     </span>
                                 </t>
                             </div>
@@ -2647,13 +2648,17 @@ cp-status-pill
     <!-- ══════════════════════════════════════════════════════
          WORK ORDER DETAIL
     ══════════════════════════════════════════════════════ -->
-   <template id="tmpl_wo_detail" name="Work Order Detail">
+    <template id="tmpl_wo_detail" name="Work Order Detail">
         <t t-call="waqf_contractor_portal.tmpl_base">
 
             <div class="cp-breadcrumb">
-                <a href="/contractor">الرئيسية</a><span>←</span>
-                <a href="/contractor/work-orders">أوامر العمل</a><span>←</span>
-                <span><t t-esc="wo.name"/></span>
+                <a href="/contractor">الرئيسية</a>
+                <span>←</span>
+                <a href="/contractor/work-orders">أوامر العمل</a>
+                <span>←</span>
+                <span>
+                    <t t-esc="wo.name"/>
+                </span>
             </div>
 
             <!-- Toasts -->
@@ -2671,7 +2676,9 @@ cp-status-pill
             </t>
             <t t-if="request.params.get('error')">
                 <div class="cp-alert-banner" style="background:var(--red-bg);border-color:rgba(232,85,85,.2)">
-                    <div class="cp-alert-banner-hdr" style="color:var(--red)"><t t-esc="request.params.get('error')"/></div>
+                    <div class="cp-alert-banner-hdr" style="color:var(--red)">
+                        <t t-esc="request.params.get('error')"/>
+                    </div>
                 </div>
             </t>
 
@@ -2697,7 +2704,8 @@ cp-status-pill
                                 <span style="padding:2px 8px;border-radius:999px;
                                              background:rgba(232,85,85,.2);font-size:9px;
                                              font-weight:700;color:#FF8A7A">
-                                    <t t-esc="wo.rework_count"/> إعادة
+                                    <t t-esc="wo.rework_count"/>
+                                    إعادة
                                 </span>
                             </t>
                         </div>
@@ -2707,14 +2715,22 @@ cp-status-pill
                         </div>
                         <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px;
                                     color:rgba(255,255,255,.5)">
-                            <span>🕌 <t t-esc="wo.mosque_id.name"/></span>
+                            <span>🕌
+                                <t t-esc="wo.mosque_id.name"/>
+                            </span>
                             <t t-if="wo.task_id">
-                                <span>📋 <t t-esc="wo.task_id.name"/></span>
+                                <span>📋
+                                    <t t-esc="wo.task_id.name"/>
+                                </span>
                             </t>
-                            <span>📅 <t t-esc="wo.date_requested"/></span>
+                            <span>📅
+                                <t t-esc="wo.date_requested"/>
+                            </span>
                             <t t-if="wo.total_value">
                                 <span style="color:rgba(46,204,138,.8);font-weight:700">
-                                    💰 <t t-esc="'{:,.0f}'.format(wo.total_value)"/> ر
+                                    💰
+                                    <t t-esc="'{:,.0f}'.format(wo.total_value)"/>
+                                    ر
                                 </span>
                             </t>
                         </div>
@@ -2727,7 +2743,9 @@ cp-status-pill
                         <t t-elif="wo.state == 'submitted'">● بانتظار الاعتماد</t>
                         <t t-elif="wo.state == 'approved'">▶ قيد التنفيذ</t>
                         <t t-elif="wo.state == 'delivered'">📦 مسلّم</t>
-                        <t t-elif="wo.state == 'graded'">✓ تقييم <t t-esc="(wo.grade or '').upper()"/></t>
+                        <t t-elif="wo.state == 'graded'">✓ تقييم
+                            <t t-esc="(wo.grade or '').upper()"/>
+                        </t>
                         <t t-elif="wo.state == 'rework'">↻ إعادة عمل</t>
                         <t t-elif="wo.state == 'testing'">🔬 اختبار</t>
                         <t t-elif="wo.state == 'warranty'">🛡 ضمان</t>
@@ -2761,7 +2779,9 @@ cp-status-pill
                                     <span style="font-size:12px">✓</span>
                                 </t>
                                 <t t-elif="step[2]">
-                                    <span style="font-size:12px"><t t-esc="step[3]"/></span>
+                                    <span style="font-size:12px">
+                                        <t t-esc="step[3]"/>
+                                    </span>
                                 </t>
                                 <t t-else="">
                                     <span style="font-size:10px;color:rgba(255,255,255,.25)">
@@ -2798,7 +2818,7 @@ cp-status-pill
                             <t t-elif="wo.grade == 'b'">معتمد مع ملاحظات</t>
                             <t t-elif="wo.grade == 'c'">إعادة عمل جزئي</t>
                             <t t-elif="wo.grade == 'd'">مرفوض</t>
-                            — نسبة الدفع: <t t-esc="int(wo.payment_pct or 0)"/>%
+                            — نسبة الدفع:<t t-esc="int(wo.payment_pct or 0)"/>%
                         </div>
                         <t t-if="wo.grade_notes">
                             <div style="font-size:12px;color:var(--text2);line-height:1.6">
@@ -2843,10 +2863,12 @@ cp-status-pill
                                 </div>
                                 <div style="text-align:left;flex-shrink:0">
                                     <div style="font-size:13px;font-weight:700;color:var(--navy)">
-                                        <t t-esc="'%.2f' % line.qty_requested"/> <t t-esc="line.uom or ''"/>
+                                        <t t-esc="'%.2f' % line.qty_requested"/>
+                                        <t t-esc="line.uom or ''"/>
                                     </div>
                                     <div style="font-size:11px;color:var(--primary);font-weight:600">
-                                        <t t-esc="'{:,.0f}'.format(line.line_value)"/> ر
+                                        <t t-esc="'{:,.0f}'.format(line.line_value)"/>
+                                        ر
                                     </div>
                                 </div>
                             </div>
@@ -2854,10 +2876,12 @@ cp-status-pill
                         <div style="padding:10px 16px;background:var(--surface2);
                                     display:flex;justify-content:space-between;align-items:center">
                             <span style="font-size:12px;color:var(--text3)">
-                                <t t-esc="wo.total_qty_lines"/> بند
+                                <t t-esc="wo.total_qty_lines"/>
+                                بند
                             </span>
                             <span style="font-size:14px;font-weight:700;color:var(--primary)">
-                                <t t-esc="'{:,.0f}'.format(wo.total_value)"/> ريال
+                                <t t-esc="'{:,.0f}'.format(wo.total_value)"/>
+                                ريال
                             </span>
                         </div>
                     </div>
@@ -2868,8 +2892,12 @@ cp-status-pill
                                     border:1px solid rgba(46,204,138,.2);border-radius:var(--r-md);
                                     font-size:12px;color:#1A7A55;display:flex;align-items:center;
                                     gap:8px;margin-bottom:12px">
-                            ✅ اعتمد البدء: <strong><t t-esc="wo.commencement_approved_by.name"/></strong>
-                            في <t t-esc="wo.commencement_approval_date"/>
+                            ✅ اعتمد البدء:
+                            <strong>
+                                <t t-esc="wo.commencement_approved_by.name"/>
+                            </strong>
+                            في
+                            <t t-esc="wo.commencement_approval_date"/>
                         </div>
                     </t>
 
@@ -2910,8 +2938,12 @@ cp-status-pill
                                             <t t-esc="(rw.grade or '').upper()"/>
                                         </div>
                                         <div style="flex:1">
-                                            <span style="color:var(--red);font-weight:600"><t t-esc="rw.date"/></span>
-                                            <t t-if="rw.notes"> — <t t-esc="rw.notes"/></t>
+                                            <span style="color:var(--red);font-weight:600">
+                                                <t t-esc="rw.date"/>
+                                            </span>
+                                            <t t-if="rw.notes">—
+                                                <t t-esc="rw.notes"/>
+                                            </t>
                                             <t t-if="rw.resolved">
                                                 <span style="color:var(--green);margin-right:6px">✓</span>
                                             </t>
@@ -2946,11 +2978,15 @@ cp-status-pill
                                                       placeholder="صف ما تم إنجازه..." style="resize:vertical"/>
                                         </div>
                                         <div class="cp-form-group" style="margin-bottom:0">
-                                            <label class="cp-label"><span>*</span> صور إثبات الإنجاز</label>
+                                            <label class="cp-label">
+                                                <span>*</span>
+                                                صور إثبات الإنجاز
+                                            </label>
                                             <div class="cp-photo-drop-zone">
                                                 <label style="cursor:pointer">
                                                     <span class="cp-action-btn cp-action-ghost"
-                                                          style="font-size:12px;padding:6px 14px">اختر صور الإنجاز</span>
+                                                          style="font-size:12px;padding:6px 14px">اختر صور الإنجاز
+                                                    </span>
                                                     <input type="file"
                                                            t-att-name="wo.state == 'rework' and 'rework_photos' or 'delivery_photos'"
                                                            multiple="multiple" accept="image/*" style="display:none"
@@ -3001,7 +3037,10 @@ cp-status-pill
                                             <t t-esc="sub.material_name"/>
                                         </div>
                                         <div style="font-size:11px;color:var(--text3)">
-                                            <t t-if="sub.manufacturer"><t t-esc="sub.manufacturer"/> · </t>
+                                            <t t-if="sub.manufacturer">
+                                                <t t-esc="sub.manufacturer"/>
+                                                ·
+                                            </t>
                                             <t t-esc="sub.boq_id.item_code if sub.boq_id else ''"/>
                                         </div>
                                     </div>
@@ -3093,26 +3132,35 @@ cp-status-pill
                 ══════════════════════════════════════════ -->
                 <div class="cp-sidebar">
                     <div style="font-size:11px;font-weight:600;color:var(--text3);
-                                letter-spacing:.4px;margin-bottom:10px">معلومات الأمر</div>
+                                letter-spacing:.4px;margin-bottom:10px">معلومات الأمر
+                    </div>
                     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
                         <div style="display:flex;justify-content:space-between;font-size:12px">
                             <span style="color:var(--text3)">المسجد</span>
-                            <span style="color:var(--text1);font-weight:500"><t t-esc="wo.mosque_id.code"/></span>
+                            <span style="color:var(--text1);font-weight:500">
+                                <t t-esc="wo.mosque_id.code"/>
+                            </span>
                         </div>
                         <div style="display:flex;justify-content:space-between;font-size:12px">
                             <span style="color:var(--text3)">تاريخ الطلب</span>
-                            <span style="color:var(--text1)"><t t-esc="wo.date_requested"/></span>
+                            <span style="color:var(--text1)">
+                                <t t-esc="wo.date_requested"/>
+                            </span>
                         </div>
                         <t t-if="wo.date_planned_start">
                             <div style="display:flex;justify-content:space-between;font-size:12px">
                                 <span style="color:var(--text3)">البدء المخطط</span>
-                                <span style="color:var(--text1)"><t t-esc="wo.date_planned_start"/></span>
+                                <span style="color:var(--text1)">
+                                    <t t-esc="wo.date_planned_start"/>
+                                </span>
                             </div>
                         </t>
                         <t t-if="wo.date_planned_end">
                             <div style="display:flex;justify-content:space-between;font-size:12px">
                                 <span style="color:var(--text3)">الإنجاز المخطط</span>
-                                <span style="color:var(--text1)"><t t-esc="wo.date_planned_end"/></span>
+                                <span style="color:var(--text1)">
+                                    <t t-esc="wo.date_planned_end"/>
+                                </span>
                             </div>
                         </t>
                         <t t-if="wo.grade">
@@ -3120,7 +3168,8 @@ cp-status-pill
                                 <span style="color:var(--text3)">التقييم</span>
                                 <span style="font-weight:700"
                                       t-attf-style="color:#{wo.grade in ('a','b') and 'var(--green)' or 'var(--red)'}">
-                                    <t t-esc="(wo.grade or '').upper()"/> — <t t-esc="int(wo.payment_pct or 0)"/>%
+                                    <t t-esc="(wo.grade or '').upper()"/>
+                                    —<t t-esc="int(wo.payment_pct or 0)"/>%
                                 </span>
                             </div>
                         </t>
@@ -3128,7 +3177,8 @@ cp-status-pill
                                     display:flex;justify-content:space-between;font-size:13px">
                             <span style="color:var(--text3);font-weight:500">القيمة الإجمالية</span>
                             <span style="color:var(--primary);font-weight:700">
-                                <t t-esc="'{:,.0f}'.format(wo.total_value)"/> ر
+                                <t t-esc="'{:,.0f}'.format(wo.total_value)"/>
+                                ر
                             </span>
                         </div>
                     </div>
@@ -3137,13 +3187,17 @@ cp-status-pill
                         <div style="padding:10px 12px;background:rgba(155,89,182,.06);
                                     border:1px solid rgba(155,89,182,.15);
                                     border-radius:var(--r-md);margin-bottom:10px">
-                            <div style="font-size:10px;font-weight:600;color:#7D3C98;margin-bottom:3px">تأهيل المقاول</div>
-                            <div style="font-size:12px;color:var(--text1)"><t t-esc="wo.qualification_id.name"/></div>
+                            <div style="font-size:10px;font-weight:600;color:#7D3C98;margin-bottom:3px">تأهيل المقاول
+                            </div>
+                            <div style="font-size:12px;color:var(--text1)">
+                                <t t-esc="wo.qualification_id.name"/>
+                            </div>
                         </div>
                     </t>
 
                     <a t-attf-href="/contractor/submittals/new?wo=#{wo.id}&amp;mosque=#{wo.mosque_id.id}"
-                       class="cp-btn-ghost cp-btn-block" style="margin-bottom:6px">إضافة عينة مادة</a>
+                       class="cp-btn-ghost cp-btn-block" style="margin-bottom:6px">إضافة عينة مادة
+                    </a>
                     <a href="/contractor/work-orders" class="cp-btn-ghost cp-btn-block">← قائمة الأوامر</a>
                 </div>
             </div>
@@ -3155,88 +3209,244 @@ cp-status-pill
          SUBMITTAL NEW
     ══════════════════════════════════════════════════════ -->
     <template id="tmpl_submittal_new" name="New Material Submittal">
-        <t t-call="waqf_contractor_portal.tmpl_base">
+    <t t-call="waqf_contractor_portal.tmpl_base">
 
-            <div class="cp-breadcrumb">
-                <a href="/contractor">الرئيسية</a>
-                <span>←</span>
-                <span>رفع عينة مادة</span>
-            </div>
+        <div class="cp-breadcrumb">
+            <a href="/contractor">الرئيسية</a>
+            <span>←</span>
+            <span>رفع عينة مادة</span>
+        </div>
 
-            <form action="/contractor/submittals/create" method="post" enctype="multipart/form-data">
-                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                <input type="hidden" name="mosque_id" t-att-value="mosque_id"/>
-                <t t-if="work_order">
-                    <input type="hidden" name="work_order_id" t-att-value="work_order.id"/>
-                </t>
+        <form action="/contractor/submittals/create"
+              method="post"
+              enctype="multipart/form-data">
 
-                <div class="cp-form-card">
+            <input type="hidden"
+                   name="csrf_token"
+                   t-att-value="request.csrf_token()"/>
+
+            <input type="hidden"
+                   name="mosque_id"
+                   t-att-value="mosque_id"/>
+
+            <input type="hidden"
+                   name="all_mosques"
+                   id="all_mosques_flag"
+                   value="0"/>
+
+            <t t-if="work_order">
+                <input type="hidden"
+                       name="work_order_id"
+                       t-att-value="work_order.id"/>
+            </t>
+
+            <div class="cp-form-card">
+
+                <!-- اختيار المساجد -->
+                <t t-if="not mosque_id">
+
                     <div class="cp-form-group">
                         <label class="cp-label">
                             <span>*</span>
-                            البند المرتبط
+                            المساجد
                         </label>
-                        <select name="boq_id" class="cp-select" required="required">
-                            <option value="">— اختر البند —</option>
-                            <t t-foreach="boq_items" t-as="boq">
-                                <option t-att-value="boq.id">
-                                    <t t-esc="boq.item_code"/>
-                                    —
-                                    <t t-esc="(boq.description or '')[:50]"/>
+
+                        <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                            <input type="checkbox"
+                                   id="all_mosques"
+                                   onchange="toggleAllMosques(this)"/>
+                            جميع المساجد
+                        </label>
+
+                        <select id="mosque_ids"
+                                name="mosque_ids[]"
+                                class="cp-select"
+                                multiple="multiple"
+                                size="8"
+                                required="required">
+
+                            <t t-foreach="allowed_mosques" t-as="mosque">
+                                <option t-att-value="mosque.id">
+                                    <t t-esc="mosque.name"/>
                                 </option>
                             </t>
+
                         </select>
+
+                        <small style="display:block;margin-top:6px;color:#777">
+                            استخدم Ctrl أو Shift لاختيار أكثر من مسجد.
+                        </small>
+
                     </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-                        <div class="cp-form-group" style="margin-bottom:0">
-                            <label class="cp-label">
-                                <span>*</span>
-                                اسم المادة
-                            </label>
-                            <input type="text" name="material_name" class="cp-input"
-                                   placeholder="مثال: بلاط بورسلان" required="required"/>
-                        </div>
-                        <div class="cp-form-group" style="margin-bottom:0">
-                            <label class="cp-label">المصنع / المورد</label>
-                            <input type="text" name="manufacturer" class="cp-input"
-                                   placeholder="اسم المصنع"/>
-                        </div>
-                        <div class="cp-form-group" style="margin-bottom:0;grid-column:1/-1">
-                            <label class="cp-label">رقم الموديل / الكتالوج</label>
-                            <input type="text" name="model_number" class="cp-input"/>
-                        </div>
-                    </div>
-                    <div class="cp-form-group" style="margin-top:12px">
-                        <label class="cp-label">المواصفات الفنية</label>
-                        <textarea name="specifications" class="cp-input" rows="3"
-                                  placeholder="أبعاد، مواصفات، معايير الجودة..."
-                                  style="resize:vertical"/>
-                    </div>
-                    <div class="cp-form-group" style="margin-bottom:0">
-                        <label class="cp-label">الوثائق والصور</label>
-                        <div class="cp-photo-drop-zone">
-                            <label style="cursor:pointer">
-                                <span class="cp-action-btn cp-action-ghost"
-                                      style="font-size:12px;padding:6px 14px">
-                                    اختر الوثائق والصور
-                                </span>
-                                <input type="file" name="documents" multiple="multiple"
-                                       accept="image/*,.pdf" style="display:none"
-                                       onchange="previewPhotos(this,'sub-previews')"/>
-                            </label>
-                        </div>
-                        <div id="sub-previews" class="cp-photo-preview-grid"/>
-                    </div>
+
+                </t>
+
+                <!-- البند -->
+                <div class="cp-form-group">
+                    <label class="cp-label">
+                        <span>*</span>
+                        البند المرتبط
+                    </label>
+
+                    <select name="boq_id"
+                            class="cp-select"
+                            required="required">
+
+                        <option value="">— اختر البند —</option>
+
+                        <t t-foreach="boq_items" t-as="boq">
+                            <option t-att-value="boq.id">
+                                <t t-esc="boq.item_code"/>
+                                —
+                                <t t-esc="(boq.description or '')[:70]"/>
+                            </option>
+                        </t>
+
+                    </select>
                 </div>
 
-                <button type="submit" class="cp-action-btn cp-action-primary"
-                        style="width:100%;justify-content:center">
-                    إرسال العينة للمراجعة
-                </button>
-            </form>
+                <!-- بيانات المادة -->
 
-        </t>
-    </template>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+
+                    <div class="cp-form-group" style="margin-bottom:0">
+                        <label class="cp-label">
+                            <span>*</span>
+                            اسم المادة
+                        </label>
+
+                        <input type="text"
+                               name="material_name"
+                               class="cp-input"
+                               required="required"
+                               placeholder="مثال: بلاط بورسلان"/>
+                    </div>
+
+                    <div class="cp-form-group" style="margin-bottom:0">
+                        <label class="cp-label">
+                            المصنع / المورد
+                        </label>
+
+                        <input type="text"
+                               name="manufacturer"
+                               class="cp-input"
+                               placeholder="اسم المصنع"/>
+                    </div>
+
+                    <div class="cp-form-group"
+                         style="margin-bottom:0;grid-column:1/-1">
+
+                        <label class="cp-label">
+                            رقم الموديل / الكتالوج
+                        </label>
+
+                        <input type="text"
+                               name="model_number"
+                               class="cp-input"/>
+
+                    </div>
+
+                </div>
+
+                <!-- المواصفات -->
+
+                <div class="cp-form-group" style="margin-top:12px">
+
+                    <label class="cp-label">
+                        المواصفات الفنية
+                    </label>
+
+                    <textarea name="specifications"
+                              class="cp-input"
+                              rows="4"
+                              style="resize:vertical"
+                              placeholder="أبعاد، مواصفات، معايير الجودة..."/>
+
+                </div>
+
+                <!-- المرفقات -->
+
+                <div class="cp-form-group">
+
+                    <label class="cp-label">
+                        الوثائق والصور
+                    </label>
+
+                    <div class="cp-photo-drop-zone">
+
+                        <label style="cursor:pointer">
+
+                            <span class="cp-action-btn cp-action-ghost"
+                                  style="font-size:12px;padding:6px 14px">
+
+                                اختر الوثائق والصور
+
+                            </span>
+
+                            <input type="file"
+                                   name="documents"
+                                   multiple="multiple"
+                                   accept="image/*,.pdf"
+                                   style="display:none"
+                                   onchange="previewPhotos(this,'sub-previews')"/>
+
+                        </label>
+
+                    </div>
+
+                    <div id="sub-previews"
+                         class="cp-photo-preview-grid"/>
+
+                </div>
+
+            </div>
+
+            <button type="submit"
+                    class="cp-action-btn cp-action-primary"
+                    style="width:100%;justify-content:center">
+
+                إرسال العينة للمراجعة
+
+            </button>
+
+        </form>
+
+        <script>
+            function toggleAllMosques(cb) {
+
+                const select = document.getElementById('mosque_ids');
+                const flag = document.getElementById('all_mosques_flag');
+
+                if (!select) {
+                    return;
+                }
+
+                flag.value = cb.checked ? "1" : "0";
+
+                if (cb.checked) {
+
+                    for (const option of select.options) {
+                        option.selected = true;
+                    }
+
+                    select.disabled = true;
+                    select.removeAttribute('required');
+
+                } else {
+
+                    select.disabled = false;
+                    select.setAttribute('required', 'required');
+
+                    for (const option of select.options) {
+                        option.selected = false;
+                    }
+
+                }
+            }
+        </script>
+
+    </t>
+</template>
 
     <!-- ══════════════════════════════════════════════════════
          QUALIFICATION NEW
@@ -4405,7 +4615,7 @@ cp-status-pill
                                                              padding:1px 6px;border-radius:999px;
                                                              background:rgba(155,89,182,.1);
                                                              color:#7D3C98;margin-right:4px">
-                                                     الوقف /استشاري
+                                                    الوقف /استشاري
                                                 </span>
                                             </t>
                                         </div>
