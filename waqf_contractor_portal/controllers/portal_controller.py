@@ -1289,9 +1289,9 @@ class ContractorPortal(http.Controller):
         if not sub.exists():
             return request.redirect('/contractor/submittals')
 
-        if portal_user:
-            if sub.mosque_id not in portal_user.effective_mosque_ids:
-                return request.redirect('/contractor/submittals')
+        # if portal_user:
+        #     if sub.mosque_id not in portal_user.effective_mosque_ids:
+        #         return request.redirect('/contractor/submittals')
 
         boq_items = request.env['mosque.boq'].sudo().search([
             ('mosque_id', '=', sub.mosque_id.id),
