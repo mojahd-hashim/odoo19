@@ -129,7 +129,7 @@ class ContractorMaterialSubmittal(models.Model):
             }
             if rec.state in ['submitted']:
                 rec.write({
-                    'state': state_map[rec.grade],
+                    'state':'submitted_waqf',
                     'reviewed_by': self.env.user.id,
                     'review_date': fields.Datetime.now(),
                 })
@@ -155,7 +155,7 @@ class ContractorMaterialSubmittal(models.Model):
                         '\n' + rec.review_notes if rec.review_notes else ''))
             else:
                 rec.write({
-                    'state': 'submitted_waqf',
+                    'state': state_map[rec.grade],
                 })
                 grade_labels = {
                     'a': 'A — معتمد',
