@@ -42,6 +42,7 @@ class ContractorMaterialSubmittal(models.Model):
     state = fields.Selection([
         ('draft', 'مسودة'),
         ('submitted', 'بانتظار المراجعة'),
+        ('submitted_waqf', 'بانتظار اعتماد الوقف'),
         ('approved', 'معتمد — A'),
         ('approved_b', 'معتمد مع ملاحظات — B'),
         ('revision', 'يلزم تعديل — C (إعادة إرسال)'),
@@ -126,32 +127,48 @@ class ContractorMaterialSubmittal(models.Model):
                 'c': 'revision',
                 'd': 'rejected',
             }
-            rec.write({
-                'state': state_map[rec.grade],
-                'reviewed_by': self.env.user.id,
-                'review_date': fields.Datetime.now(),
-            })
+            if rec.state in ['submitted']:
+                rec.write({
+                    'state': state_map[rec.grade],
+                    'reviewed_by': self.env.user.id,
+                    'review_date': fields.Datetime.now(),
+                })
+                # سجّل في log المراجعات
+                self.env['contractor.submittal.revision'].create({
+                    'submittal_id': rec.id,
+                    'revision': rec.revision,
+                    'grade': rec.grade,
+                    'notes': rec.review_notes,
+                    'reviewed_by': self.env.user.id,
+                    'date': fields.Datetime.now(),
+                })
 
-            # سجّل في log المراجعات
-            self.env['contractor.submittal.revision'].create({
-                'submittal_id': rec.id,
-                'revision': rec.revision,
-                'grade': rec.grade,
-                'notes': rec.review_notes,
-                'reviewed_by': self.env.user.id,
-                'date': fields.Datetime.now(),
-            })
+                grade_labels = {
+                    'a': 'A — معتمد',
+                    'b': 'B — معتمد مع ملاحظات',
+                    'c': 'C — يلزم تعديل',
+                    'd': 'D — مرفوض',
+                }
+                rec.message_post(
+                    body=_('📝 التقييم: %s%s') % (
+                        grade_labels[rec.grade],
+                        '\n' + rec.review_notes if rec.review_notes else ''))
+            else:
+                rec.write({
+                    'state': 'submitted_waqf',
+                })
+                grade_labels = {
+                    'a': 'A — معتمد',
+                    'b': 'B — معتمد مع ملاحظات',
+                    'c': 'C — يلزم تعديل',
+                    'd': 'D — مرفوض',
+                }
+                rec.message_post(
+                    body=_('📝 اعتمد الوقف التقييم: %s%s') % (
+                        grade_labels[rec.grade],
+                        '\n' + rec.review_notes if rec.review_notes else ''))
 
-            grade_labels = {
-                'a': 'A — معتمد',
-                'b': 'B — معتمد مع ملاحظات',
-                'c': 'C — يلزم تعديل',
-                'd': 'D — مرفوض',
-            }
-            rec.message_post(
-                body=_('📝 التقييم: %s%s') % (
-                    grade_labels[rec.grade],
-                    '\n' + rec.review_notes if rec.review_notes else ''))
+
 
     def action_resubmit(self):
         """المقاول يعيد الإرسال بعد التعديل (فقط عند C)."""
