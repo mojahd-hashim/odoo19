@@ -180,7 +180,7 @@ class MosqueMosque(models.Model):
                 weeks_elapsed = max(1, (today - rec.planned_start).days // 7)
                 required_visits = weeks_elapsed * 2          # min 2/week per contract
                 actual_visits   = len(rec.attendance_ids.filtered(
-                    lambda a: a.is_validated and a.visit_type == 'field'))
+                    lambda a: a.duration > 8 and a.visit_type == 'field'))
                 rec.visit_compliance = min(100.0, actual_visits / required_visits * 100)
             else:
                 rec.visit_compliance = 100.0
