@@ -2622,6 +2622,28 @@ cp-status-pill
                             <div id="site-previews" class="cp-photo-preview-grid"/>
                         </div>
                     </div>
+                    <!-- ⑥ المرفقات -->
+                    <div class="cp-form-section">
+                        <div class="cp-form-section-title">⑥ المرفقات</div>
+
+                        <div class="cp-form-card">
+                            <div class="cp-form-group" style="margin-bottom:0">
+                                <label class="cp-label">
+                                    مرفقات (PDF - Word - Excel - صور)
+                                </label>
+
+                                <input type="file"
+                                       name="attachments"
+                                       multiple="multiple"
+                                       class="cp-input"
+                                       accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.zip"/>
+
+                                <div style="margin-top:8px;font-size:11px;color:var(--text3)">
+                                    يمكنك رفع أكثر من ملف.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Submit Buttons -->
                     <div style="display:flex;gap:10px;margin-top:8px">
@@ -3246,7 +3268,8 @@ cp-status-pill
                     <t t-if="not mosque_id">
                         <div class="cp-form-group">
                             <label class="cp-label">
-                                <span>*</span> المساجد
+                                <span>*</span>
+                                المساجد
                             </label>
                             <input type="hidden" name="all_mosques" id="all_mosques_flag" value="0"/> <!-- بحث -->
                             <input type="text" id="mosque_search" class="cp-input" placeholder="🔍 ابحث عن مسجد..."
@@ -3404,7 +3427,18 @@ cp-status-pill
 
             </form>
 
-            <script> function toggleAllMosques(cb){ const flag = document.getElementById("all_mosques_flag"); flag.value = cb.checked ? "1" : "0"; document.querySelectorAll(".mosque-checkbox").forEach(function(item){ item.checked = cb.checked; item.disabled = cb.checked; }); } function filterMosques(){ const search = document.getElementById("mosque_search") .value .toLowerCase() .trim(); document.querySelectorAll(".mosque-item").forEach(function(item){ const text = item.dataset.name || ""; if(text.indexOf(search) >= 0){ item.style.display = ""; }else{ item.style.display = "none"; } }); } document.addEventListener("DOMContentLoaded", function(){ document.querySelectorAll(".mosque-checkbox").forEach(function(box){ box.addEventListener("change", function(){ const checked = document.querySelectorAll(".mosque-checkbox:checked").length; document.getElementById("all_mosques").checked = false; document.getElementById("all_mosques_flag").value = "0"; this.disabled = false; }); }); }); </script>
+            <script>function toggleAllMosques(cb){ const flag = document.getElementById("all_mosques_flag"); flag.value
+                = cb.checked ? "1" : "0"; document.querySelectorAll(".mosque-checkbox").forEach(function(item){
+                item.checked = cb.checked; item.disabled = cb.checked; }); } function filterMosques(){ const search =
+                document.getElementById("mosque_search") .value .toLowerCase() .trim();
+                document.querySelectorAll(".mosque-item").forEach(function(item){ const text = item.dataset.name || "";
+                if(text.indexOf(search) >= 0){ item.style.display = ""; }else{ item.style.display = "none"; } }); }
+                document.addEventListener("DOMContentLoaded", function(){
+                document.querySelectorAll(".mosque-checkbox").forEach(function(box){ box.addEventListener("change",
+                function(){ const checked = document.querySelectorAll(".mosque-checkbox:checked").length;
+                document.getElementById("all_mosques").checked = false;
+                document.getElementById("all_mosques_flag").value = "0"; this.disabled = false; }); }); });
+            </script>
 
         </t>
     </template>

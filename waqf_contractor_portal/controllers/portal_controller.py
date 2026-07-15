@@ -926,6 +926,21 @@ class ContractorPortal(http.Controller):
             except Exception:
                 pass
 
+        attachment_files = request.httprequest.files.getlist('attachments')
+
+        for f in attachment_files:
+            if not f or not f.filename:
+                continue
+
+            request.env['ir.attachment'].sudo().create({
+                'name': f.filename,
+                'datas': base64.b64encode(f.read()),
+                'res_model': 'contractor.work.order',
+                'res_id': wo.id,
+                'type': 'binary',
+                'mimetype': f.content_type,
+            })
+
         # رفع صور الموقع
         files = request.httprequest.files.getlist('site_photos')
         for f in files:
