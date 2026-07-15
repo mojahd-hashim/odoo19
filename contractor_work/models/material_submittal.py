@@ -42,6 +42,7 @@ class ContractorMaterialSubmittal(models.Model):
     state = fields.Selection([
         ('draft', 'مسودة'),
         ('submitted', 'بانتظار المراجعة'),
+        ('submitted_chief', 'اعتماد المراجعة'),
         ('submitted_waqf', 'بانتظار اعتماد الوقف'),
         ('approved', 'معتمد — A'),
         ('approved_b', 'معتمد مع ملاحظات — B'),
@@ -129,9 +130,33 @@ class ContractorMaterialSubmittal(models.Model):
             }
             if rec.state in ['submitted']:
                 rec.write({
-                    'state':'submitted_waqf',
+                    'state':'submitted_chief',
                     'reviewed_by': self.env.user.id,
                     'review_date': fields.Datetime.now(),
+                })
+                # سجّل في log المراجعات
+                self.env['contractor.submittal.revision'].create({
+                    'submittal_id': rec.id,
+                    'revision': rec.revision,
+                    'grade': rec.grade,
+                    'notes': rec.review_notes,
+                    'reviewed_by': self.env.user.id,
+                    'date': fields.Datetime.now(),
+                })
+
+                grade_labels = {
+                    'a': 'A — معتمد',
+                    'b': 'B — معتمد مع ملاحظات',
+                    'c': 'C — يلزم تعديل',
+                    'd': 'D — مرفوض',
+                }
+                rec.message_post(
+                    body=_('📝 التقييم: %s%s') % (
+                        grade_labels[rec.grade],
+                        '\n' + rec.review_notes if rec.review_notes else ''))
+            elif rec.state in ['submitted_chief']:
+                rec.write({
+                    'state': 'submitted_waqf',
                 })
                 # سجّل في log المراجعات
                 self.env['contractor.submittal.revision'].create({

@@ -21,8 +21,13 @@
                 invisible="state != 'submitted_waqf'"
                 confirm="هل تريد اعتماد التقييم المحدد؟"/>
 
+        <button name="action_grade" type="object"
+                string="اعتماد التقييم" class="btn-primary"
+                invisible="state != 'submitted_chief'"
+                confirm="هل تريد اعتماد التقييم المحدد؟"/>
+
         <field name="state" widget="statusbar"
-               statusbar_visible="draft,submitted,submitted_waqf,approved"/>
+               statusbar_visible="draft,submitted,submitted_chief,submitted_waqf,approved"/>
       </header>
 
       <sheet>
