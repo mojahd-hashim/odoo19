@@ -115,7 +115,7 @@ class WaqfAiSnapshotRun(models.Model):
         #     ('planned_end', '>=', today),
         # ], order='planned_start desc', limit=1)
         phase = Package.search([
-            ('id', '=', 6)
+            ('id', '=', 1)
         ], order='planned_start desc', limit=1)
         if phase:
             return phase
