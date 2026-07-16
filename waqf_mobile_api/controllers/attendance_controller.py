@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 
 
 class WaqfAttendanceController(http.Controller):
+    APPLE_REVIEW_UID = 110  # user id لحساب الاختبار
+    APPLE_REVIEW_MOSQUE = 1  # mosque id الافتراضي للاختبار
 
     # ── POST /api/waqf/attendance/checkin ─────────────────────────
     @http.route('/api/waqf/attendance/checkin',
@@ -64,11 +66,25 @@ class WaqfAttendanceController(http.Controller):
 
         # Distance
         distance = 0.0
+        distance = 0.0
+        is_review_user = (
+                (user_type == 'employee' and employee and employee.user_id.id == APPLE_REVIEW_UID) or
+                (user_type == 'portal' and portal_user and portal_user.user_id.id == APPLE_REVIEW_UID)
+        )
+
         if mosque.latitude and mosque.longitude:
             distance = haversine_distance(lat, lng, mosque.latitude, mosque.longitude)
 
-        radius       = mosque.geofence_radius or 150
+        radius = mosque.geofence_radius or 150
         within_fence = distance <= radius
+
+        # ── حساب اختبار Apple — دائماً داخل النطاق ──
+        if is_review_user and mosque.id == APPLE_REVIEW_MOSQUE:
+            within_fence = True
+            distance = 0.0
+
+        # radius       = mosque.geofence_radius or 150
+        # within_fence = distance <= radius
         qr_ok        = bool(qr_token and mosque.qr_code == qr_token)
 
         now  = datetime.now()
@@ -249,11 +265,25 @@ class WaqfAttendanceController(http.Controller):
 # ── Helpers ────────────────────────────────────────────────────────
 
 def _resolve_user(employee, portal_user):
+    """حدد نوع المستخدم ومساجده المسموحة."""
     if employee:
-        return ('employee', employee.id, employee.all_mosque_ids)
+        mosque_ids = employee.all_mosque_ids
+        # ── استثناء حساب اختبار Apple ──
+        if employee.user_id.id == APPLE_REVIEW_UID:
+            review_mosque = request.env['mosque.mosque'].sudo().browse(APPLE_REVIEW_MOSQUE)
+            if review_mosque.exists():
+                mosque_ids = mosque_ids | review_mosque
+        return ('employee', employee.id, mosque_ids)
+
     if portal_user:
-        # استخدم res.users.id وليس waqf.portal.user.id
-        return ('portal', portal_user.user_id.id, portal_user.effective_mosque_ids)
+        mosque_ids = portal_user.effective_mosque_ids
+        # ── استثناء حساب اختبار Apple ──
+        if portal_user.user_id.id == APPLE_REVIEW_UID:
+            review_mosque = request.env['mosque.mosque'].sudo().browse(APPLE_REVIEW_MOSQUE)
+            if review_mosque.exists():
+                mosque_ids = mosque_ids | review_mosque
+        return ('portal', portal_user.user_id.id, mosque_ids)
+
     return (None, None, [])
 
 
