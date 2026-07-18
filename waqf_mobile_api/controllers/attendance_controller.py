@@ -67,6 +67,8 @@ class WaqfAttendanceController(http.Controller):
         # Distance
         distance = 0.0
         distance = 0.0
+        APPLE_REVIEW_UID = 110  # user id لحساب الاختبار
+        APPLE_REVIEW_MOSQUE = 1  # mosque id الافتراضي للاختبار
         is_review_user = (
                 (user_type == 'employee' and employee and employee.user_id.id == APPLE_REVIEW_UID) or
                 (user_type == 'portal' and portal_user and portal_user.user_id.id == APPLE_REVIEW_UID)
