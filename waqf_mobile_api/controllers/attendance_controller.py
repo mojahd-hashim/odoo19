@@ -4,12 +4,15 @@ from odoo.http import request
 from .base import api_response, require_token, haversine_distance, get_json_body
 from datetime import datetime, timedelta
 
+# ── Apple Review Test Account ─────────────────────────────────
+# بعد قبول التطبيق غيّر APPLE_REVIEW_UID = None
+APPLE_REVIEW_UID    = 110
+APPLE_REVIEW_MOSQUE = 1
+
 
 class WaqfAttendanceController(http.Controller):
-    APPLE_REVIEW_UID = 110  # user id لحساب الاختبار
-    APPLE_REVIEW_MOSQUE = 1  # mosque id الافتراضي للاختبار
 
-    # ── POST /api/waqf/attendance/checkin ─────────────────────────
+    # ── POST /api/waqf/attendance/checkin ─────────────────────
     @http.route('/api/waqf/attendance/checkin',
                 type='http', auth='none', methods=['POST'], csrf=False)
     @require_token
@@ -64,30 +67,22 @@ class WaqfAttendanceController(http.Controller):
             return api_response(
                 error='Already checked in. Please checkout first.', status=409)
 
-        # Distance
-        distance = 0.0
-        distance = 0.0
-        APPLE_REVIEW_UID = 110  # user id لحساب الاختبار
-        APPLE_REVIEW_MOSQUE = 1  # mosque id الافتراضي للاختبار
-        is_review_user = (
-                (user_type == 'employee' and employee and employee.user_id.id == APPLE_REVIEW_UID) or
-                (user_type == 'portal' and portal_user and portal_user.user_id.id == APPLE_REVIEW_UID)
-        )
+        # ── Distance + Geofence ──────────────────────────────
+        is_review = _is_review_user(user_type, employee, portal_user)
 
+        distance = 0.0
         if mosque.latitude and mosque.longitude:
             distance = haversine_distance(lat, lng, mosque.latitude, mosque.longitude)
 
-        radius = mosque.geofence_radius or 150
+        radius       = mosque.geofence_radius or 150
         within_fence = distance <= radius
 
-        # ── حساب اختبار Apple — دائماً داخل النطاق ──
-        if is_review_user and mosque.id == APPLE_REVIEW_MOSQUE:
+        # حساب اختبار Apple — دائماً داخل النطاق
+        if is_review and mosque.id == APPLE_REVIEW_MOSQUE:
             within_fence = True
-            distance = 0.0
+            distance     = 0.0
 
-        # radius       = mosque.geofence_radius or 150
-        # within_fence = distance <= radius
-        qr_ok        = bool(qr_token and mosque.qr_code == qr_token)
+        qr_ok = bool(qr_token and mosque.qr_code == qr_token)
 
         now  = datetime.now()
         vals = {
@@ -120,7 +115,7 @@ class WaqfAttendanceController(http.Controller):
                                'أنت خارج النطاق الجغرافي للمسجد (%.0f م).' % distance,
         })
 
-    # ── POST /api/waqf/attendance/checkout ───────────────────────
+    # ── POST /api/waqf/attendance/checkout ────────────────────
     @http.route('/api/waqf/attendance/checkout',
                 type='http', auth='none', methods=['POST'], csrf=False)
     @require_token
@@ -173,17 +168,11 @@ class WaqfAttendanceController(http.Controller):
                               if is_short else None,
         })
 
-    # ── GET /api/waqf/attendance/active ──────────────────────────
+    # ── GET /api/waqf/attendance/active ──────────────────────
     @http.route('/api/waqf/attendance/active',
                 type='http', auth='none', methods=['GET'], csrf=False)
     @require_token
     def active_checkin(self, employee=None, **kwargs):
-        portal_user = kwargs.get('portal_user')
-        import logging
-        _logger = logging.getLogger(__name__)
-        _logger.info('ACTIVE_DEBUG employee=%s portal_user=%s', employee, portal_user)
-        user_type, user_id, _ = _resolve_user(employee, portal_user)
-        _logger.info('ACTIVE_DEBUG user_type=%s user_id=%s', user_type, user_id)
         portal_user = kwargs.get('portal_user')
         user_type, user_id, _ = _resolve_user(employee, portal_user)
 
@@ -220,7 +209,7 @@ class WaqfAttendanceController(http.Controller):
             'long_stay_alert': elapsed > max_hours,
         })
 
-    # ── GET /api/waqf/attendance/history ─────────────────────────
+    # ── GET /api/waqf/attendance/history ─────────────────────
     @http.route('/api/waqf/attendance/history',
                 type='http', auth='none', methods=['GET'], csrf=False)
     @require_token
@@ -264,16 +253,26 @@ class WaqfAttendanceController(http.Controller):
         })
 
 
-# ── Helpers ────────────────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════
+# Helpers
+# ══════════════════════════════════════════════════════════════
+
+def _is_review_user(user_type, employee, portal_user):
+    """هل هذا حساب اختبار Apple Review؟"""
+    if not APPLE_REVIEW_UID:
+        return False
+    if user_type == 'employee' and employee:
+        return employee.user_id.id == APPLE_REVIEW_UID
+    if user_type == 'portal' and portal_user:
+        return portal_user.user_id.id == APPLE_REVIEW_UID
+    return False
+
 
 def _resolve_user(employee, portal_user):
-    APPLE_REVIEW_UID = 110  # user id لحساب الاختبار
-    APPLE_REVIEW_MOSQUE = 1  # mosque id الافتراضي للاختبار
     """حدد نوع المستخدم ومساجده المسموحة."""
     if employee:
         mosque_ids = employee.all_mosque_ids
-        # ── استثناء حساب اختبار Apple ──
-        if employee.user_id.id == APPLE_REVIEW_UID:
+        if APPLE_REVIEW_UID and employee.user_id.id == APPLE_REVIEW_UID:
             review_mosque = request.env['mosque.mosque'].sudo().browse(APPLE_REVIEW_MOSQUE)
             if review_mosque.exists():
                 mosque_ids = mosque_ids | review_mosque
@@ -281,8 +280,7 @@ def _resolve_user(employee, portal_user):
 
     if portal_user:
         mosque_ids = portal_user.effective_mosque_ids
-        # ── استثناء حساب اختبار Apple ──
-        if portal_user.user_id.id == APPLE_REVIEW_UID:
+        if APPLE_REVIEW_UID and portal_user.user_id.id == APPLE_REVIEW_UID:
             review_mosque = request.env['mosque.mosque'].sudo().browse(APPLE_REVIEW_MOSQUE)
             if review_mosque.exists():
                 mosque_ids = mosque_ids | review_mosque
@@ -292,6 +290,7 @@ def _resolve_user(employee, portal_user):
 
 
 def _format_duration(hours):
+    """تنسيق المدة بالعربي."""
     if not hours:
         return '0 دقيقة'
     h = int(hours)
