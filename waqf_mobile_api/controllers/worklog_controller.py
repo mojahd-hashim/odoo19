@@ -11,19 +11,33 @@ class WaqfWorkLogController(http.Controller):
                 type='http', auth='none', methods=['GET'], csrf=False)
     @require_token
     def pending_worklogs(self, employee=None, **kwargs):
-        """
-        All submitted work logs across assigned mosques awaiting approval.
-        Query params: mosque_id (optional filter)
-        """
+
+        portal_user = kwargs.get("portal_user")
+
         import logging
         _logger = logging.getLogger(__name__)
 
-        _logger.info("EMPLOYEE = %s", employee)
-        _logger.info("TYPE = %s", type(employee))
-        _logger.info("MODEL = %s", employee._name if employee else None)
-        _logger.info("ID = %s", employee.id if employee else None)
-        mosque_id = request.httprequest.args.get('mosque_id')
-        mosque_ids = employee.all_mosque_ids.ids
+        _logger.info(
+            "employee=%s portal_user=%s",
+            employee,
+            portal_user
+        )
+
+        # مستخدم بوابة
+        if portal_user:
+            mosque_ids = portal_user.effective_mosque_ids.ids
+
+        # موظف داخلي
+        elif employee:
+            mosque_ids = employee.all_mosque_ids.ids
+
+        else:
+            return api_response(
+                error="Unauthorized",
+                status=401
+            )
+        # mosque_id = request.httprequest.args.get('mosque_id')
+        # mosque_ids = employee.all_mosque_ids.ids
 
         domain = [
             ('mosque_id', 'in', mosque_ids),
