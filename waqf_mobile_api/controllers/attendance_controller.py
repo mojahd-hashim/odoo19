@@ -168,7 +168,6 @@ class WaqfAttendanceController(http.Controller):
                               if is_short else None,
         })
 
-    # ── GET /api/waqf/attendance/active ──────────────────────
     @http.route('/api/waqf/attendance/active',
                 type='http', auth='none', methods=['GET'], csrf=False)
     @require_token
@@ -178,6 +177,26 @@ class WaqfAttendanceController(http.Controller):
 
         if not user_id:
             return api_response(data={'active': False})
+
+        # ── حساب اختبار Apple — جلسة نشطة دائماً ────────
+        is_review = _is_review_user(user_type, employee, portal_user)
+        if is_review:
+            mosque = request.env['mosque.mosque'].sudo().browse(APPLE_REVIEW_MOSQUE)
+            if mosque.exists():
+                return api_response(data={
+                    'active': True,
+                    'attendance_id': 0,
+                    'mosque_id': mosque.id,
+                    'mosque_name': mosque.name,
+                    'mosque_code': mosque.code or '',
+                    'mosque_lat': mosque.latitude or 0,
+                    'mosque_lng': mosque.longitude or 0,
+                    'mosque_radius': mosque.geofence_radius or 150,
+                    'check_in': str(datetime.now()),
+                    'elapsed_hrs': 0.0,
+                    'elapsed_label': '0 دقيقة',
+                    'long_stay_alert': False,
+                })
 
         if user_type == 'employee':
             domain = [('engineer_id', '=', user_id), ('check_out', '=', False)]
@@ -190,25 +209,24 @@ class WaqfAttendanceController(http.Controller):
         if not active:
             return api_response(data={'active': False})
 
-        elapsed   = (datetime.now() - active.check_in).total_seconds() / 3600
-        ICP       = request.env['ir.config_parameter'].sudo()
+        elapsed = (datetime.now() - active.check_in).total_seconds() / 3600
+        ICP = request.env['ir.config_parameter'].sudo()
         max_hours = int(ICP.get_param('waqf.mobile.long_stay_hours', 8))
 
         return api_response(data={
-            'active':          True,
-            'attendance_id':   active.id,
-            'mosque_id':       active.mosque_id.id,
-            'mosque_name':     active.mosque_id.name,
-            'mosque_code':     active.mosque_id.code,
-            'mosque_lat':      active.mosque_id.latitude,
-            'mosque_lng':      active.mosque_id.longitude,
-            'mosque_radius':   active.mosque_id.geofence_radius or 150,
-            'check_in':        str(active.check_in),
-            'elapsed_hrs':     round(elapsed, 2),
-            'elapsed_label':   _format_duration(elapsed),
+            'active': True,
+            'attendance_id': active.id,
+            'mosque_id': active.mosque_id.id,
+            'mosque_name': active.mosque_id.name,
+            'mosque_code': active.mosque_id.code,
+            'mosque_lat': active.mosque_id.latitude,
+            'mosque_lng': active.mosque_id.longitude,
+            'mosque_radius': active.mosque_id.geofence_radius or 150,
+            'check_in': str(active.check_in),
+            'elapsed_hrs': round(elapsed, 2),
+            'elapsed_label': _format_duration(elapsed),
             'long_stay_alert': elapsed > max_hours,
         })
-
     # ── GET /api/waqf/attendance/history ─────────────────────
     @http.route('/api/waqf/attendance/history',
                 type='http', auth='none', methods=['GET'], csrf=False)
