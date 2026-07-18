@@ -265,6 +265,8 @@ class WaqfAttendanceController(http.Controller):
 # ── Helpers ────────────────────────────────────────────────────────
 
 def _resolve_user(employee, portal_user):
+    APPLE_REVIEW_UID = 110  # user id لحساب الاختبار
+    APPLE_REVIEW_MOSQUE = 1  # mosque id الافتراضي للاختبار
     """حدد نوع المستخدم ومساجده المسموحة."""
     if employee:
         mosque_ids = employee.all_mosque_ids
