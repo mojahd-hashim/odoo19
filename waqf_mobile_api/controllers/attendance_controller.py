@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 # ── Apple Review Test Account ─────────────────────────────────
 # بعد قبول التطبيق غيّر APPLE_REVIEW_UID = None
 APPLE_REVIEW_UID    = 110
-APPLE_REVIEW_MOSQUE = 1
+APPLE_REVIEW_MOSQUE = 31
 
 
 class WaqfAttendanceController(http.Controller):
