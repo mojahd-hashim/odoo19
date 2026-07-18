@@ -36,15 +36,15 @@ class WaqfWorkLogController(http.Controller):
                 error="Unauthorized",
                 status=401
             )
-        # mosque_id = request.httprequest.args.get('mosque_id')
+        mosque_id = request.httprequest.args.get('mosque_id')
         # mosque_ids = employee.all_mosque_ids.ids
 
         domain = [
             ('mosque_id', 'in', mosque_ids),
             ('state',     '=', 'submitted'),
         ]
-        if mosque_id:
-            domain.append(('mosque_id', '=', int(mosque_id)))
+        # if mosque_id:
+        #     domain.append(('mosque_id', '=', int(mosque_id)))
 
         logs = request.env['contractor.work.log'].sudo().search(
             domain, order='log_date desc')
