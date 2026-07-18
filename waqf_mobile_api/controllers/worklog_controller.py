@@ -15,6 +15,13 @@ class WaqfWorkLogController(http.Controller):
         All submitted work logs across assigned mosques awaiting approval.
         Query params: mosque_id (optional filter)
         """
+        import logging
+        _logger = logging.getLogger(__name__)
+
+        _logger.info("EMPLOYEE = %s", employee)
+        _logger.info("TYPE = %s", type(employee))
+        _logger.info("MODEL = %s", employee._name if employee else None)
+        _logger.info("ID = %s", employee.id if employee else None)
         mosque_id = request.httprequest.args.get('mosque_id')
         mosque_ids = employee.all_mosque_ids.ids
 
