@@ -959,7 +959,6 @@ class ContractorPortal(http.Controller):
 
     # ══════════════════════════════════════════════════════
     # DETAIL — /contractor/work-order/<id>
-    # ══════════════════════════════════════════════════════
     @http.route('/contractor/work-order/<int:wo_id>', type='http',
                 auth='user', website=True)
     def work_order_detail(self, wo_id, **kwargs):
@@ -972,7 +971,7 @@ class ContractorPortal(http.Controller):
         if not wo.exists():
             return request.redirect('/contractor/work-orders')
 
-        # ── جلب رسائل الـ chatter ──────────────────────────
+        # ── رسائل الـ chatter ──────────────────────────────
         messages = request.env['mail.message'].sudo().search([
             ('model', '=', 'contractor.work.order'),
             ('res_id', '=', wo.id),
@@ -980,14 +979,20 @@ class ContractorPortal(http.Controller):
             ('subtype_id', '!=', False),
         ], order='date desc', limit=30)
 
+        # ── جميع المرفقات المرتبطة بأمر العمل ─────────────
+        attachments = request.env['ir.attachment'].sudo().search([
+            ('res_model', '=', 'contractor.work.order'),
+            ('res_id', '=', wo.id),
+        ], order='create_date desc')
+
         return request.render('waqf_contractor_portal.tmpl_wo_detail', {
             'portal_user': portal_user,
             'supervisor': supervisor,
             'mosque': wo.mosque_id,
             'wo': wo,
             'messages': messages,
+            'attachments': attachments,
         })
-
     # ══════════════════════════════════════════════════════
     # SUBMIT COMMENCEMENT
     # ══════════════════════════════════════════════════════
