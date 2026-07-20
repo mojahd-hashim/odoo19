@@ -317,9 +317,6 @@ class ContractorPortal(http.Controller):
             'counts': counts,
         })
 
-    # ══════════════════════════════════════════════════════
-    # SUBMITTALS LIST
-    # ══════════════════════════════════════════════════════
     @http.route('/contractor/submittals', type='http',
                 auth='user', website=True)
     def submittals_list(self, state=None, mosque=None, grade=None,
@@ -332,40 +329,37 @@ class ContractorPortal(http.Controller):
 
         domain = []
 
-        # ── فلتر المسجد ───────────────────────────────────
-        if mosque:
-            domain.append(('mosque_id', '=', int(mosque)))
+        if mosque and mosque not in ('', 'all'):
+            try:
+                domain.append(('mosque_id', '=', int(mosque)))
+            except ValueError:
+                pass
 
-        # ── فلتر الحالة ───────────────────────────────────
-        if state and state != 'all':
+        if state and state not in ('', 'all'):
             domain.append(('state', '=', state))
 
-        # ── فلتر التقييم ──────────────────────────────────
-        if grade and grade != 'all':
+        if grade and grade not in ('', 'all'):
             domain.append(('grade', '=', grade))
 
-        # ── فلتر الفترة الزمنية ───────────────────────────
-        if period and period != 'all':
+        if period and period not in ('', 'all'):
             from datetime import datetime, timedelta
             today = datetime.now().date()
-            if period == 'week':
-                domain.append(('date_submitted', '>=', str(today - timedelta(days=7))))
-            elif period == 'month':
-                domain.append(('date_submitted', '>=', str(today - timedelta(days=30))))
-            elif period == '3months':
-                domain.append(('date_submitted', '>=', str(today - timedelta(days=90))))
+            days_map = {'week': 7, 'month': 30, '3months': 90}
+            if period in days_map:
+                domain.append(('date_submitted', '>=',
+                               str(today - timedelta(days=days_map[period]))))
 
-        # ── فلتر البند ────────────────────────────────────
-        if boq and boq != 'all':
-            domain.append(('boq_id', '=', int(boq)))
+        if boq and boq not in ('', 'all'):
+            try:
+                domain.append(('boq_id', '=', int(boq)))
+            except ValueError:
+                pass
 
-        # ── فلتر الإصدار ──────────────────────────────────
         if revised == '1':
             domain.append(('revision', '>', 0))
         elif revised == '0':
             domain.append(('revision', '=', 0))
 
-        # ── البحث ─────────────────────────────────────────
         if search and search.strip():
             q = search.strip()
             domain += ['|', '|',
@@ -374,58 +368,66 @@ class ContractorPortal(http.Controller):
                        ('manufacturer', 'ilike', q),
                        ]
 
-        # ── الترتيب ───────────────────────────────────────
         sort_map = {
             'date_desc': 'date_submitted desc, id desc',
             'date_asc': 'date_submitted asc, id asc',
             'name': 'material_name asc',
             'state': 'state asc, date_submitted desc',
             'grade': 'grade asc, date_submitted desc',
-            'mosque': 'mosque_id asc, date_submitted desc',
         }
         order = sort_map.get(sort, 'date_submitted desc, id desc')
 
         subs = request.env['contractor.material.submittal'].sudo().search(
             domain, order=order)
 
-        # ── الإحصاءات (على كل السجلات بدون فلاتر الحالة/التقييم) ──
         base_domain = []
-        if mosque:
-            base_domain.append(('mosque_id', '=', int(mosque)))
+        if mosque and mosque not in ('', 'all'):
+            try:
+                base_domain.append(('mosque_id', '=', int(mosque)))
+            except ValueError:
+                pass
+
         all_subs = request.env['contractor.material.submittal'].sudo().search(base_domain)
 
         counts = {
             'all': len(all_subs),
-            'draft': sum(1 for s in all_subs if s.state == 'draft'),
-            'submitted': sum(1 for s in all_subs if s.state == 'submitted'),
-            'approved': sum(1 for s in all_subs if s.state == 'approved'),
-            'approved_b': sum(1 for s in all_subs if s.state == 'approved_b'),
-            'revision': sum(1 for s in all_subs if s.state == 'revision'),
-            'rejected': sum(1 for s in all_subs if s.state == 'rejected'),
+            'draft': len(all_subs.filtered(lambda s: s.state == 'draft')),
+            'submitted': len(all_subs.filtered(lambda s: s.state == 'submitted')),
+            'approved': len(all_subs.filtered(lambda s: s.state == 'approved')),
+            'approved_b': len(all_subs.filtered(lambda s: s.state == 'approved_b')),
+            'revision': len(all_subs.filtered(lambda s: s.state == 'revision')),
+            'rejected': len(all_subs.filtered(lambda s: s.state == 'rejected')),
         }
         grade_counts = {
-            'a': sum(1 for s in all_subs if s.grade == 'a'),
-            'b': sum(1 for s in all_subs if s.grade == 'b'),
-            'c': sum(1 for s in all_subs if s.grade == 'c'),
-            'd': sum(1 for s in all_subs if s.grade == 'd'),
+            'a': len(all_subs.filtered(lambda s: s.grade == 'a')),
+            'b': len(all_subs.filtered(lambda s: s.grade == 'b')),
+            'c': len(all_subs.filtered(lambda s: s.grade == 'c')),
+            'd': len(all_subs.filtered(lambda s: s.grade == 'd')),
         }
 
         mosques = portal_user.effective_mosque_ids if portal_user else []
 
-        # بنود BOQ للفلترة
-        boq_ids = list(set(s.boq_id for s in all_subs if s.boq_id))
-        boq_items = sorted(boq_ids, key=lambda b: b.item_code or '')
+        boq_ids = request.env['mosque.boq'].sudo().browse(
+            list(set(s.boq_id.id for s in all_subs if s.boq_id)))
+        boq_items = boq_ids.sorted(key=lambda b: b.item_code or '')
+
+        active_boq = None
+        if boq and boq not in ('', 'all'):
+            try:
+                active_boq = int(boq)
+            except ValueError:
+                pass
 
         return request.render('waqf_contractor_portal.tmpl_sub_list', {
             'portal_user': portal_user,
             'supervisor': supervisor,
             'submittals': subs,
             'active_state': state or 'all',
-            'active_mosque': int(mosque) if mosque else None,
+            'active_mosque': int(mosque) if mosque and mosque not in ('', 'all') else None,
             'active_grade': grade or 'all',
             'active_period': period or 'all',
-            'active_boq': int(boq) if boq else None,
-            'active_revised': revised,
+            'active_boq': active_boq,
+            'active_revised': revised or '',
             'active_search': search or '',
             'active_sort': sort or 'date_desc',
             'active_view': view_mode or 'card',
@@ -436,7 +438,6 @@ class ContractorPortal(http.Controller):
             'result_count': len(subs),
         })
 
-    # ── تصدير Excel ───────────────────────────────────────
     @http.route('/contractor/submittals/export', type='http',
                 auth='user', website=True)
     def submittals_export(self, **kwargs):
@@ -459,7 +460,6 @@ class ContractorPortal(http.Controller):
         ws.title = 'عينات المواد'
         ws.sheet_view.rightToLeft = True
 
-        # ── الرأس ─────────────────────────────────────────
         headers = [
             'رقم العينة', 'اسم المادة', 'المصنع', 'الموديل',
             'المسجد', 'البند', 'الحالة', 'التقييم', 'الإصدار',
@@ -469,7 +469,7 @@ class ContractorPortal(http.Controller):
         hdr_font = Font(name='Cairo', bold=True, size=11, color='FFFFFF')
         hdr_fill = PatternFill(start_color='237292', end_color='237292', fill_type='solid')
         hdr_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
-        thin_border = Border(
+        thin = Border(
             left=Side(style='thin', color='D9D9D9'),
             right=Side(style='thin', color='D9D9D9'),
             top=Side(style='thin', color='D9D9D9'),
@@ -480,9 +480,8 @@ class ContractorPortal(http.Controller):
             cell.font = hdr_font
             cell.fill = hdr_fill
             cell.alignment = hdr_align
-            cell.border = thin_border
+            cell.border = thin
 
-        # ── ألوان التقييم ──────────────────────────────────
         grade_fills = {
             'a': PatternFill(start_color='D5F5E3', end_color='D5F5E3', fill_type='solid'),
             'b': PatternFill(start_color='D6EAF8', end_color='D6EAF8', fill_type='solid'),
@@ -494,7 +493,6 @@ class ContractorPortal(http.Controller):
             'approved_b': 'معتمد B', 'revision': 'تعديل C', 'rejected': 'مرفوض D',
         }
 
-        # ── البيانات ───────────────────────────────────────
         data_font = Font(name='Cairo', size=10)
         data_align = Alignment(vertical='center', wrap_text=True)
 
@@ -506,34 +504,31 @@ class ContractorPortal(http.Controller):
                 s.model_number or '',
                 s.mosque_id.name if s.mosque_id else '',
                 '%s — %s' % (s.boq_id.item_code or '', (s.boq_id.description or '')[:40]) if s.boq_id else '',
-                state_labels.get(s.state, s.state),
+                state_labels.get(s.state, s.state or ''),
                 (s.grade or '').upper(),
-                s.revision,
+                s.revision or 0,
                 str(s.date_submitted or ''),
                 s.reviewed_by.name if s.reviewed_by else '',
                 str(s.review_date or '')[:16],
                 s.review_notes or '',
-                s.contractor_response if hasattr(s, 'contractor_response') and s.contractor_response else '',
+                getattr(s, 'contractor_response', '') or '',
             ]
             for col, val in enumerate(values, 1):
                 cell = ws.cell(row=row_idx, column=col, value=val)
                 cell.font = data_font
                 cell.alignment = data_align
-                cell.border = thin_border
+                cell.border = thin
 
-            # لون صف التقييم
             if s.grade and s.grade in grade_fills:
-                grade_cell = ws.cell(row=row_idx, column=8)
-                grade_cell.fill = grade_fills[s.grade]
-                grade_cell.font = Font(name='Cairo', size=10, bold=True)
-                grade_cell.alignment = Alignment(horizontal='center', vertical='center')
+                gc = ws.cell(row=row_idx, column=8)
+                gc.fill = grade_fills[s.grade]
+                gc.font = Font(name='Cairo', size=10, bold=True)
+                gc.alignment = Alignment(horizontal='center', vertical='center')
 
-        # ── عرض الأعمدة ────────────────────────────────────
         widths = [14, 22, 16, 14, 18, 28, 14, 8, 8, 14, 16, 18, 35, 35]
         for i, w in enumerate(widths, 1):
             ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = w
 
-        # ── إرجاع الملف ───────────────────────────────────
         output = io.BytesIO()
         wb.save(output)
         output.seek(0)
