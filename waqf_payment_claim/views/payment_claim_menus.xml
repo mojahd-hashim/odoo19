@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_claim_root" name="المستخلصات المالية"
+              web_icon="waqf_payment_claim,static/description/icon.svg" sequence="40"/>
+    <menuitem id="menu_claim_list" name="طلبات المستخلصات"
+              parent="menu_claim_root" action="action_payment_claim" sequence="10"/>
+</odoo>

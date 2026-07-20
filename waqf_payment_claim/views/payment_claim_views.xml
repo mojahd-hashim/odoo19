@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<record id="view_claim_form" model="ir.ui.view">
+  <field name="name">waqf.payment.claim.form</field>
+  <field name="model">waqf.payment.claim</field>
+  <field name="arch" type="xml">
+    <form>
+      <header>
+        <button name="action_submit" type="object" string="تقديم المستخلص"
+                class="btn-primary" invisible="state != 'draft'"
+                groups="waqf_payment_claim.group_claim_consultant"/>
+        <button name="action_review" type="object" string="موافقة المراجعة ✅"
+                class="btn-success" invisible="state != 'submitted'"
+                groups="waqf_payment_claim.group_claim_engineer"/>
+        <button name="action_approve" type="object" string="اعتماد نهائي ✅"
+                class="btn-success" invisible="state != 'reviewed'"
+                groups="waqf_payment_claim.group_claim_manager"/>
+        <button name="action_sync_to_contracts" type="object"
+                string="إرسال لنظام العقود 🔗" class="btn-info"
+                invisible="state != 'approved'"
+                groups="waqf_payment_claim.group_claim_manager"/>
+        <button name="action_reject" type="object" string="رفض"
+                class="btn-danger" invisible="state not in ('submitted','reviewed')"
+                groups="waqf_payment_claim.group_claim_engineer"/>
+        <button name="action_reset_draft" type="object" string="إعادة لمسودة"
+                invisible="state == 'draft'" groups="base.group_system"/>
+        <field name="state" widget="statusbar"
+               statusbar_visible="draft,submitted,reviewed,approved,synced"/>
+      </header>
+      <sheet>
+        <div class="oe_title"><h1><field name="name" readonly="1"/></h1></div>
+
+        <div class="alert alert-success" role="alert" invisible="state != 'synced'">
+          🔗 تم إرسال المستخلص لنظام العقود — فاتورة رقم: <field name="external_invoice_id" readonly="1" nolabel="1"/>
+        </div>
+        <div class="alert alert-danger" role="alert" invisible="not sync_error">
+          ⚠️ خطأ مزامنة: <field name="sync_error" readonly="1" nolabel="1"/>
+        </div>
+
+        <group>
+          <group string="بيانات المستخلص">
+            <field name="mosque_id"/>
+            <field name="contractor_id"/>
+            <field name="claim_type"/>
+            <field name="claim_number"/>
+            <field name="period_from"/>
+            <field name="period_to"/>
+            <field name="contract_value"/>
+          </group>
+          <group string="الملخص المالي">
+            <field name="total_claimed"/>
+            <field name="total_previous"/>
+            <field name="total_current"/>
+            <field name="retention_pct"/>
+            <field name="retention_amount"/>
+            <field name="deductions"/>
+            <field name="net_payable" class="oe_subtotal_footer_separator"/>
+            <field name="completion_pct" widget="progressbar"/>
+          </group>
+        </group>
+
+        <notebook>
+          <page string="بنود المستخلص" name="lines">
+            <field name="line_ids">
+              <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="boq_item_code" optional="show"/>
+                <field name="work_order_id" optional="show"/>
+                <field name="description"/>
+                <field name="uom"/>
+                <field name="contract_qty"/>
+                <field name="unit_price"/>
+                <field name="contract_value" sum="إجمالي العقد"/>
+                <field name="previous_qty"/>
+                <field name="previous_amount" sum="إجمالي سابق"/>
+                <field name="current_qty"/>
+                <field name="current_amount" sum="إجمالي حالي"/>
+                <field name="cumulative_qty"/>
+                <field name="completion_pct" widget="progressbar"/>
+                <field name="notes" optional="hide"/>
+              </list>
+            </field>
+          </page>
+          <page string="المراجعة والاعتماد" name="approval">
+            <group>
+              <group string="تقديم الاستشاري">
+                <field name="submitted_by" readonly="1"/>
+                <field name="submitted_date" readonly="1"/>
+              </group>
+              <group string="مراجعة مهندس الوقف">
+                <field name="reviewed_by" readonly="1"/>
+                <field name="reviewed_date" readonly="1"/>
+                <field name="review_notes" placeholder="ملاحظات المراجعة..."
+                       readonly="state != 'submitted'"/>
+              </group>
+              <group string="اعتماد المدير">
+                <field name="approved_by" readonly="1"/>
+                <field name="approved_date" readonly="1"/>
+                <field name="approval_notes" placeholder="ملاحظات الاعتماد..."
+                       readonly="state != 'reviewed'"/>
+              </group>
+              <group string="الرفض" invisible="state != 'rejected'">
+                <field name="reject_reason"/>
+              </group>
+            </group>
+          </page>
+          <page string="المزامنة" name="sync" groups="waqf_payment_claim.group_claim_manager">
+            <group>
+              <field name="external_invoice_id" readonly="1"/>
+              <field name="sync_date" readonly="1"/>
+              <field name="sync_error" readonly="1"/>
+            </group>
+          </page>
+          <page string="المستندات" name="docs">
+            <field name="attachment_ids" widget="many2many_binary"/>
+            <field name="description" placeholder="ملاحظات عامة..."/>
+          </page>
+        </notebook>
+      </sheet>
+      <chatter/>
+    </form>
+  </field>
+</record>
+
+<record id="view_claim_list" model="ir.ui.view">
+  <field name="name">waqf.payment.claim.list</field>
+  <field name="model">waqf.payment.claim</field>
+  <field name="arch" type="xml">
+    <list decoration-success="state in ('approved','synced')"
+          decoration-warning="state == 'reviewed'"
+          decoration-danger="state == 'rejected'">
+      <field name="name"/>
+      <field name="mosque_id"/>
+      <field name="contractor_id"/>
+      <field name="claim_type"/>
+      <field name="claim_number" string="#"/>
+      <field name="period_to"/>
+      <field name="total_current" sum="إجمالي"/>
+      <field name="net_payable" sum="صافي"/>
+      <field name="completion_pct" widget="progressbar"/>
+      <field name="state" widget="badge"
+             decoration-success="state in ('approved','synced')"
+             decoration-warning="state == 'reviewed'"
+             decoration-danger="state == 'rejected'"/>
+    </list>
+  </field>
+</record>
+
+<record id="view_claim_search" model="ir.ui.view">
+  <field name="name">waqf.payment.claim.search</field>
+  <field name="model">waqf.payment.claim</field>
+  <field name="arch" type="xml">
+    <search>
+      <field name="name"/>
+      <field name="mosque_id"/>
+      <field name="contractor_id"/>
+      <filter name="f_submitted" string="بانتظار المراجعة" domain="[('state','=','submitted')]"/>
+      <filter name="f_reviewed" string="بانتظار الاعتماد" domain="[('state','=','reviewed')]"/>
+      <filter name="f_approved" string="معتمد" domain="[('state','=','approved')]"/>
+      <filter name="f_synced" string="مُرسل" domain="[('state','=','synced')]"/>
+      <separator/>
+      <filter name="g_mosque" string="المسجد" context="{'group_by':'mosque_id'}"/>
+      <filter name="g_type" string="النوع" context="{'group_by':'claim_type'}"/>
+      <filter name="g_state" string="الحالة" context="{'group_by':'state'}"/>
+    </search>
+  </field>
+</record>
+
+<record id="action_payment_claim" model="ir.actions.act_window">
+  <field name="name">المستخلصات المالية</field>
+  <field name="res_model">waqf.payment.claim</field>
+  <field name="view_mode">list,form</field>
+  <field name="context">{'search_default_f_submitted': 1}</field>
+</record>
+
+</odoo>

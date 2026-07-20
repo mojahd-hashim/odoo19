@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data noupdate="1">
+    <record id="seq_payment_claim" model="ir.sequence">
+        <field name="name">مستخلص مالي</field>
+        <field name="code">waqf.payment.claim</field>
+        <field name="prefix">CLM-%(y)s-</field>
+        <field name="padding">4</field>
+    </record>
+</data>
+</odoo>
