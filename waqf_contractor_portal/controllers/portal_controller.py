@@ -1682,12 +1682,20 @@ class ContractorPortal(http.Controller):
             ('message_type', 'in', ('comment', 'notification')),
             ('subtype_id', '!=', False),
         ], order='date desc', limit=20)
+        attachments = request.env['ir.attachment'].sudo().search([
+            ('res_model', '=', 'contractor.qualification'),
+            ('res_id', '=', qual.id),
+        ], order='create_date desc')
+        if attachments:
+            for att in attachments:
+                att.sudo().write({'public': True})
 
         return request.render('waqf_contractor_portal.tmpl_qual_detail', {
             'portal_user': portal_user,
             'supervisor': supervisor,
             'qual': qual,
             'messages':messages,
+            'attachments':attachments,
             'categories': categories,
             'mosques': mosques,
         })
