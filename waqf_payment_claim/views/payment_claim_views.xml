@@ -16,10 +16,11 @@
         <button name="action_approve" type="object" string="اعتماد نهائي ✅"
                 class="btn-success" invisible="state != 'reviewed'"
                 groups="waqf_payment_claim.group_claim_manager"/>
-        <button name="action_sync_to_contracts" type="object"
-                string="إرسال لنظام العقود 🔗" class="btn-info"
+        <button name="action_sync_to_payments" type="object"
+                string="إرسال لنظام الدفعات 🔗" class="btn-info"
                 invisible="state != 'approved'"
-                groups="waqf_payment_claim.group_claim_manager"/>
+                groups="waqf_payment_claim.group_claim_manager"
+                confirm="سيتم إنشاء قسط في نظام الدفعات. متابعة؟"/>
         <button name="action_reject" type="object" string="رفض"
                 class="btn-danger" invisible="state not in ('submitted','reviewed')"
                 groups="waqf_payment_claim.group_claim_engineer"/>
@@ -32,89 +33,66 @@
         <div class="oe_title"><h1><field name="name" readonly="1"/></h1></div>
 
         <div class="alert alert-success" role="alert" invisible="state != 'synced'">
-          🔗 تم إرسال المستخلص لنظام العقود — فاتورة رقم: <field name="external_invoice_id" readonly="1" nolabel="1"/>
+          🔗 تم الإرسال لنظام الدفعات — قسط رقم:
+          <field name="external_installment_id" readonly="1" nolabel="1"/>
         </div>
         <div class="alert alert-danger" role="alert" invisible="not sync_error">
-          ⚠️ خطأ مزامنة: <field name="sync_error" readonly="1" nolabel="1"/>
+          ⚠️ <field name="sync_error" readonly="1" nolabel="1"/>
+        </div>
+        <div class="alert alert-danger" role="alert" invisible="state != 'rejected'">
+          ❌ <field name="reject_reason" readonly="1" nolabel="1"/>
         </div>
 
         <group>
           <group string="بيانات المستخلص">
-            <field name="mosque_id"/>
-            <field name="contractor_id"/>
             <field name="claim_type"/>
-            <field name="claim_number"/>
+            <field name="payment_number"/>
             <field name="period_from"/>
             <field name="period_to"/>
-            <field name="contract_value"/>
           </group>
-          <group string="الملخص المالي">
-            <field name="total_claimed"/>
-            <field name="total_previous"/>
-            <field name="total_current"/>
+          <group string="المبالغ">
+            <field name="amount"/>
             <field name="retention_pct"/>
             <field name="retention_amount"/>
             <field name="deductions"/>
             <field name="net_payable" class="oe_subtotal_footer_separator"/>
-            <field name="completion_pct" widget="progressbar"/>
           </group>
         </group>
 
         <notebook>
-          <page string="بنود المستخلص" name="lines">
-            <field name="line_ids">
-              <list editable="bottom">
-                <field name="sequence" widget="handle"/>
-                <field name="boq_item_code" optional="show"/>
-                <field name="work_order_id" optional="show"/>
-                <field name="description"/>
-                <field name="uom"/>
-                <field name="contract_qty"/>
-                <field name="unit_price"/>
-                <field name="contract_value" sum="إجمالي العقد"/>
-                <field name="previous_qty"/>
-                <field name="previous_amount" sum="إجمالي سابق"/>
-                <field name="current_qty"/>
-                <field name="current_amount" sum="إجمالي حالي"/>
-                <field name="cumulative_qty"/>
-                <field name="completion_pct" widget="progressbar"/>
-                <field name="notes" optional="hide"/>
-              </list>
-            </field>
+          <page string="بيان الاستشاري" name="statement">
+            <field name="description" placeholder="بيان الأعمال المنجزة والمبررات..."
+                   nolabel="1"/>
           </page>
           <page string="المراجعة والاعتماد" name="approval">
             <group>
-              <group string="تقديم الاستشاري">
+              <group string="الاستشاري">
                 <field name="submitted_by" readonly="1"/>
                 <field name="submitted_date" readonly="1"/>
               </group>
-              <group string="مراجعة مهندس الوقف">
+              <group string="مهندس الوقف">
                 <field name="reviewed_by" readonly="1"/>
                 <field name="reviewed_date" readonly="1"/>
                 <field name="review_notes" placeholder="ملاحظات المراجعة..."
                        readonly="state != 'submitted'"/>
               </group>
-              <group string="اعتماد المدير">
+              <group string="المدير">
                 <field name="approved_by" readonly="1"/>
                 <field name="approved_date" readonly="1"/>
                 <field name="approval_notes" placeholder="ملاحظات الاعتماد..."
                        readonly="state != 'reviewed'"/>
               </group>
-              <group string="الرفض" invisible="state != 'rejected'">
-                <field name="reject_reason"/>
-              </group>
-            </group>
-          </page>
-          <page string="المزامنة" name="sync" groups="waqf_payment_claim.group_claim_manager">
-            <group>
-              <field name="external_invoice_id" readonly="1"/>
-              <field name="sync_date" readonly="1"/>
-              <field name="sync_error" readonly="1"/>
             </group>
           </page>
           <page string="المستندات" name="docs">
             <field name="attachment_ids" widget="many2many_binary"/>
-            <field name="description" placeholder="ملاحظات عامة..."/>
+          </page>
+          <page string="المزامنة" name="sync" groups="waqf_payment_claim.group_claim_manager">
+            <group>
+              <field name="external_installment_id" readonly="1"/>
+              <field name="sync_date" readonly="1"/>
+              <field name="sync_error" readonly="1"/>
+            </group>
           </page>
         </notebook>
       </sheet>
@@ -131,14 +109,12 @@
           decoration-warning="state == 'reviewed'"
           decoration-danger="state == 'rejected'">
       <field name="name"/>
-      <field name="mosque_id"/>
-      <field name="contractor_id"/>
       <field name="claim_type"/>
-      <field name="claim_number" string="#"/>
+      <field name="payment_number" string="#"/>
+      <field name="period_from"/>
       <field name="period_to"/>
-      <field name="total_current" sum="إجمالي"/>
+      <field name="amount" sum="إجمالي"/>
       <field name="net_payable" sum="صافي"/>
-      <field name="completion_pct" widget="progressbar"/>
       <field name="state" widget="badge"
              decoration-success="state in ('approved','synced')"
              decoration-warning="state == 'reviewed'"
@@ -153,14 +129,11 @@
   <field name="arch" type="xml">
     <search>
       <field name="name"/>
-      <field name="mosque_id"/>
-      <field name="contractor_id"/>
       <filter name="f_submitted" string="بانتظار المراجعة" domain="[('state','=','submitted')]"/>
       <filter name="f_reviewed" string="بانتظار الاعتماد" domain="[('state','=','reviewed')]"/>
       <filter name="f_approved" string="معتمد" domain="[('state','=','approved')]"/>
       <filter name="f_synced" string="مُرسل" domain="[('state','=','synced')]"/>
       <separator/>
-      <filter name="g_mosque" string="المسجد" context="{'group_by':'mosque_id'}"/>
       <filter name="g_type" string="النوع" context="{'group_by':'claim_type'}"/>
       <filter name="g_state" string="الحالة" context="{'group_by':'state'}"/>
     </search>

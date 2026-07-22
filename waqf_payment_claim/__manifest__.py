@@ -1,15 +1,11 @@
 {
     'name': 'المستخلصات المالية — تأهيل المساجد',
-    'summary': 'دورة اعتماد المستخلصات: استشاري → مهندس الوقف → المدير → API',
+    'summary': 'مستخلصات: استشاري → مهندس الوقف → المدير → Odoo 15',
     'version': '19.0.1.0.0',
     'category': 'Accounting',
     'author': 'makerun.solutions',
     'license': 'LGPL-3',
-    'depends': [
-        'base', 'mail', 'web',
-        'contractor_work',
-        'waqf_contractor_portal',
-    ],
+    'depends': ['base', 'mail', 'web'],
     'data': [
         'security/payment_claim_security.xml',
         'security/ir.model.access.csv',

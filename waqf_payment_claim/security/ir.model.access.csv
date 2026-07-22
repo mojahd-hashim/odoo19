@@ -2,6 +2,3 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_claim_consultant,claim.consultant,model_waqf_payment_claim,group_claim_consultant,1,1,1,0
 access_claim_engineer,claim.engineer,model_waqf_payment_claim,group_claim_engineer,1,1,0,0
 access_claim_manager,claim.manager,model_waqf_payment_claim,group_claim_manager,1,1,1,1
-access_claim_line_consultant,claim.line.consultant,model_waqf_payment_claim_line,group_claim_consultant,1,1,1,1
-access_claim_line_engineer,claim.line.engineer,model_waqf_payment_claim_line,group_claim_engineer,1,1,0,0
-access_claim_line_manager,claim.line.manager,model_waqf_payment_claim_line,group_claim_manager,1,1,1,1
