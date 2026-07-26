@@ -16,15 +16,15 @@
                 invisible="state != 'submitted'"
                 confirm="هل تريد اعتماد التقييم المحدد؟"/>
 
-        <button name="action_grade" type="object"
+        <button name="action_grade_chief_engineer" type="object"
                 string="اعتماد التقييم" class="btn-primary"
-                invisible="state != 'submitted_waqf'"
+                invisible="state != 'submitted_chief'"
                 groups="group_consultant_all"
                 confirm="هل تريد اعتماد التقييم المحدد؟"/>
 
-        <button name="action_grade" type="object"
+        <button name="action_grade_wagf" type="object"
                 string="اعتماد التقييم" class="btn-primary"
-                invisible="state != 'submitted_chief'"
+                invisible="state != 'submitted_waqf'"
                 groups="group_waqf_admin"
                 confirm="هل تريد اعتماد التقييم المحدد؟"/>
 

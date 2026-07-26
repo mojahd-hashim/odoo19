@@ -112,6 +112,10 @@ class ContractorMaterialSubmittal(models.Model):
             rec.message_post(
                 body=_('📋 تم إرسال العينة للمراجعة (إصدار %d)') % rec.revision)
 
+    def action_grade_chief_engineer(self):
+        self.action_grade()
+    def action_grade_wagf(self):
+        self.action_grade()
     def action_grade(self):
         """الاستشاري يقيّم العينة بـ A/B/C/D."""
         for rec in self:
