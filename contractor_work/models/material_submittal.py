@@ -159,9 +159,14 @@ class ContractorMaterialSubmittal(models.Model):
                         grade_labels[rec.grade],
                         '\n' + rec.review_notes if rec.review_notes else ''))
             elif rec.state in ['submitted_chief']:
-                rec.write({
-                    'state': 'submitted_waqf',
-                })
+                if rec.grade in ('c','d'):
+                    rec.write({
+                        'state': state_map[rec.grade],
+                    })
+                else:
+                    rec.write({
+                        'state': 'submitted_waqf',
+                    })
                 # سجّل في log المراجعات
                 self.env['contractor.submittal.revision'].create({
                     'submittal_id': rec.id,
