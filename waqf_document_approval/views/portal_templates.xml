@@ -472,13 +472,14 @@
                             <t t-esc="doc.reviewed_by.name"/>
                         </t>
                     </div>
-                    <t t-if="doc.review_notes">
-                        <div style="font-size:12px;color:#2A8A65;padding:8px 12px;background:rgba(46,204,138,.08);
+
+                </div>
+            </t>
+            <t t-if="doc.review_notes">
+                <div style="font-size:12px;color:#2A8A65;padding:8px 12px;background:rgba(46,204,138,.08);
                       border-radius:var(--r-sm);margin-top:6px">
-                            <strong>ملاحظات:</strong>
-                            <t t-esc="doc.review_notes"/>
-                        </div>
-                    </t>
+                    <strong>ملاحظات:</strong>
+                    <t t-esc="doc.review_notes"/>
                 </div>
             </t>
 
