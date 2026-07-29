@@ -380,20 +380,20 @@
                 </div>
             </form>
 
-            <!-- إرسال بدون ملف إضافي (إذا رُفعت ملفات سابقاً) -->
-            <t t-if="doc.file_ids">
-                <form t-attf-action="/contractor/documents/#{doc.id}/add-file"
-                      method="post" style="margin-top:10px">
-                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                    <input type="hidden" name="is_final" value="1"/>
-                    <button type="submit" class="cp-btn-ghost cp-btn-block"
-                            onclick="return confirm('سيتم إرسال الطلب. متابعة؟')">
-                        ✓ إرسال الطلب الآن (
-                        <t t-esc="doc.file_count"/>
-                        ملف بدون إضافة)
-                    </button>
-                </form>
-            </t>
+<!--            &lt;!&ndash; إرسال بدون ملف إضافي (إذا رُفعت ملفات سابقاً) &ndash;&gt;-->
+<!--            <t t-if="doc.file_ids">-->
+<!--                <form t-attf-action="/contractor/documents/#{doc.id}/add-file"-->
+<!--                      method="post" style="margin-top:10px">-->
+<!--                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>-->
+<!--                    <input type="hidden" name="is_final" value="1"/>-->
+<!--                    <button type="submit" class="cp-btn-ghost cp-btn-block"-->
+<!--                            onclick="return confirm('سيتم إرسال الطلب. متابعة؟')">-->
+<!--                        ✓ إرسال الطلب الآن (-->
+<!--                        <t t-esc="doc.file_count"/>-->
+<!--                        ملف بدون إضافة)-->
+<!--                    </button>-->
+<!--                </form>-->
+<!--            </t>-->
 
         </t>
     </template>
