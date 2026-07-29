@@ -77,11 +77,9 @@
           <group string="التقييم والمراجعة">
             <!-- ── اختيار التقييم ABCD ── -->
             <field name="grade" widget="radio"
-                   readonly="state != 'submitted'"
                    required="state == 'submitted'"/>
             <field name="review_notes"
-                   placeholder="ملاحظات الاستشاري (مطلوبة لـ B/C/D)..."
-                   readonly="state != 'submitted'"/>
+                   placeholder="ملاحظات الاستشاري (مطلوبة لـ B/C/D)..."/>
             <field name="reviewed_by" readonly="1"/>
             <field name="review_date" readonly="1"/>
             <field name="revision" readonly="1"/>
