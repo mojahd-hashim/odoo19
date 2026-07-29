@@ -66,6 +66,18 @@
             <field name="perm_unlink" eval="False"/>
         </record>
 
+          <!-- ② الاستشاري يرى كل أوامر العمل -->
+        <record id="rule_wo_group_site_consultant_all" model="ir.rule">
+            <field name="name">أوامر العمل: الاستشاري يرى الكل</field>
+            <field name="model_id" ref="model_contractor_work_order"/>
+            <field name="groups" eval="[(4, ref('group_site_consultant'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
         <!-- ══════════════════════════════════════════════════
              RECORD RULES — العينات (Submittals)
         ══════════════════════════════════════════════════ -->
@@ -109,6 +121,13 @@
             <field name="name">التأهيلات: الاستشاري يرى الكل</field>
             <field name="model_id" ref="model_contractor_qualification"/>
             <field name="groups" eval="[(4, ref('group_consultant_all'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <record id="rule_qual_group_site_consultant_all" model="ir.rule">
+            <field name="name">التأهيلات: الاستشاري يرى الكل</field>
+            <field name="model_id" ref="model_contractor_qualification"/>
+            <field name="groups" eval="[(4, ref('group_site_consultant'))]"/>
             <field name="domain_force">[(1, '=', 1)]</field>
         </record>
         <record id="rule_qual_group_waqf_admin" model="ir.rule">
