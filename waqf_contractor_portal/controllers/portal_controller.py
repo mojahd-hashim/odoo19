@@ -1527,50 +1527,55 @@ class ContractorPortal(http.Controller):
         if not sub.exists() or sub.state not in ('draft', 'revision'):
             return request.redirect('/contractor/submittals')
 
+        import base64
+
+        # تحديث الحقول
+        vals = {}
         material_name = post.get('material_name', '').strip()
         manufacturer = post.get('manufacturer', '').strip()
         model_number = post.get('model_number', '').strip()
         specs = post.get('specifications', '').strip()
-        boq_id = int(post.get('boq_id', 0) or 0)
-        changes = post.get('contractor_changes', '').strip()
+        boq_id = post.get('boq_id', '')
 
-        vals = {}
         if material_name: vals['material_name'] = material_name
         if manufacturer:  vals['manufacturer'] = manufacturer
         if model_number:  vals['model_number'] = model_number
         if specs:         vals['specifications'] = specs
-        if boq_id:        vals['boq_id'] = boq_id
+        if boq_id and boq_id not in ('', '0'):
+            try:
+                vals['boq_id'] = int(boq_id)
+            except ValueError:
+                pass
+
+        # ردّ المقاول (حالة C)
+        contractor_response = post.get('contractor_response', '').strip()
+        if contractor_response:
+            vals['contractor_response'] = contractor_response
+
         if vals:
             sub.write(vals)
 
-        # رفع وثائق إضافية
+        # رفع وثائق
         files = request.httprequest.files.getlist('documents')
         for f in files:
             if f and f.filename:
-                import base64
                 att = request.env['ir.attachment'].sudo().create({
                     'name': f.filename,
                     'datas': base64.b64encode(f.read()),
                     'res_model': 'contractor.material.submittal',
                     'res_id': sub.id,
                     'mimetype': f.content_type,
+                    'public': True,
                 })
                 sub.write({'document_ids': [(4, att.id)]})
 
-        # إذا كانت إعادة إرسال (C) — سجّل التعديلات
+        # إرسال أو إعادة إرسال
         if sub.state == 'revision':
-            if changes:
-                # سجّل في آخر revision log
-                last_log = request.env['contractor.submittal.revision'].sudo().search([
-                    ('submittal_id', '=', sub.id),
-                ], limit=1, order='date desc')
-                if last_log:
-                    last_log.write({'contractor_changes': changes})
             try:
                 sub.action_resubmit()
             except Exception as e:
                 return request.redirect(
-                    '/contractor/submittal/%d?error=%s' % (sub_id, str(e)[:80]))
+                    '/contractor/submittal/%d?error=%s' % (sub_id, str(e)[:120]))
             return request.redirect(
                 '/contractor/submittal/%d?resubmitted=1' % sub_id)
         else:
@@ -1578,7 +1583,7 @@ class ContractorPortal(http.Controller):
                 sub.action_submit()
             except Exception as e:
                 return request.redirect(
-                    '/contractor/submittal/%d?error=%s' % (sub_id, str(e)[:80]))
+                    '/contractor/submittal/%d?error=%s' % (sub_id, str(e)[:120]))
             return request.redirect(
                 '/contractor/submittal/%d?submitted=1' % sub_id)
 

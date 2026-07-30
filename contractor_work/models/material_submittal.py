@@ -84,6 +84,26 @@ class ContractorMaterialSubmittal(models.Model):
         'contractor.submittal.revision', 'submittal_id',
         string='سجل المراجعات')
 
+    contractor_response = fields.Text(
+        string='ردّ المقاول على الملاحظات', tracking=True)
+
+    # ── دالة إعادة الإرسال ─────────────────────────────────
+    def action_resubmit(self):
+        for rec in self:
+            if rec.state != 'revision':
+                raise UserError('لا يمكن إعادة الإرسال إلا في حالة C.')
+            rec.write({
+                'state': 'submitted',
+                'revision': rec.revision + 1,
+                'grade': False,
+                'review_notes': False,
+                'reviewed_by': False,
+                'review_date': False,
+            })
+            rec.message_post(
+                body='🔄 إعادة إرسال — إصدار %d\n📝 %s'
+                     % (rec.revision, rec.contractor_response or ''))
+
     @api.depends('name', 'revision')
     def _compute_display_name_rev(self):
         for rec in self:
