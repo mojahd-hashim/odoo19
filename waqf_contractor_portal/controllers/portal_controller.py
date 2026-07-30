@@ -1571,13 +1571,14 @@ class ContractorPortal(http.Controller):
 
         # إرسال أو إعادة إرسال
         if sub.state == 'revision':
-            try:
-                sub.action_resubmit()
-            except Exception as e:
-                return request.redirect(
-                    '/contractor/submittal/%d?error=%s' % (sub_id, str(e)[:120]))
-            return request.redirect(
-                '/contractor/submittal/%d?resubmitted=1' % sub_id)
+            sub.action_resubmit()
+            # try:
+            #     sub.action_resubmit()
+            # except Exception as e:
+            #     return request.redirect(
+            #         '/contractor/submittal/%d?error=%s' % (sub_id, str(e)[:120]))
+            # return request.redirect(
+            #     '/contractor/submittal/%d?resubmitted=1' % sub_id)
         else:
             try:
                 sub.action_submit()
