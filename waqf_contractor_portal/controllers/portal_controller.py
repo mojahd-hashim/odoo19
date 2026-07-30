@@ -1571,14 +1571,13 @@ class ContractorPortal(http.Controller):
 
         # إرسال أو إعادة إرسال
         if sub.state == 'revision':
-            sub.action_resubmit()
-            # try:
-            #     sub.action_resubmit()
-            # except Exception as e:
-            #     return request.redirect(
-            #         '/contractor/submittal/%d?error=%s' % (sub_id, str(e)[:120]))
-            # return request.redirect(
-            #     '/contractor/submittal/%d?resubmitted=1' % sub_id)
+            try:
+                sub.action_resubmit()
+            except Exception as e:
+                return request.redirect(
+                    '/contractor/submittal/%d?error=%s' % (sub_id, str(e)[:120]))
+            return request.redirect(
+                '/contractor/submittal/%d?resubmitted=1' % sub_id)
         else:
             try:
                 sub.action_submit()
@@ -1599,58 +1598,6 @@ class ContractorPortal(http.Controller):
                     and att.res_id == sub_id:
                 att.unlink()
         return request.redirect('/contractor/submittal/%d' % sub_id)
-
-    # ══════════════════════════════════════════════════════
-    # SUBMITTAL SUBMIT — POST /contractor/submittal/<id>/submit
-    # ══════════════════════════════════════════════════════
-    @http.route('/contractor/submittal/<int:sub_id>/submit', type='http',
-                auth='user', website=True, methods=['POST'])
-    def submittal_submit(self, sub_id, **post):
-        portal_user = self._get_portal_user()
-        supervisor = self._get_supervisor()
-
-        sub = request.env['contractor.material.submittal'].sudo().browse(sub_id)
-        if not sub.exists() or sub.state != 'draft':
-            return request.redirect('/contractor/submittals')
-
-        # تحديث الحقول إذا أرسلها المستخدم
-        material_name = post.get('material_name', '').strip()
-        manufacturer = post.get('manufacturer', '').strip()
-        model_number = post.get('model_number', '').strip()
-        specs = post.get('specifications', '').strip()
-        boq_id = int(post.get('boq_id', 0) or 0)
-
-        vals = {}
-        if material_name: vals['material_name'] = material_name
-        if manufacturer:  vals['manufacturer'] = manufacturer
-        if model_number:  vals['model_number'] = model_number
-        if specs:         vals['specifications'] = specs
-        if boq_id:        vals['boq_id'] = boq_id
-        if vals:
-            sub.write(vals)
-
-        # رفع وثائق إضافية
-        files = request.httprequest.files.getlist('documents')
-        for f in files:
-            if f and f.filename:
-                att = request.env['ir.attachment'].sudo().create({
-                    'name': f.filename,
-                    'datas': base64.b64encode(f.read()),
-                    'res_model': 'contractor.material.submittal',
-                    'res_id': sub.id,
-                    'mimetype': f.content_type,
-                    'public': True,
-                })
-                sub.write({'document_ids': [(4, att.id)]})
-
-        # إرسال الطلب
-        try:
-            sub.action_submit()
-        except Exception as e:
-            return request.redirect(
-                f'/contractor/submittal/{sub_id}?error={str(e)[:80]}')
-
-        return request.redirect(f'/contractor/submittal/{sub_id}?submitted=1')
 
     # ══════════════════════════════════════════════════════
     # SUBMITTAL DELETE DOC — POST /contractor/submittal/<id>/delete-doc/<att_id>
