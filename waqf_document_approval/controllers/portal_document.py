@@ -32,17 +32,24 @@ class DocumentApprovalPortal(http.Controller):
         if not portal_user and not supervisor:
             return request.redirect('/web')
 
-        domain = [('submitted_by', '=', request.env.user.id)]
-        if portal_user.role in ['contractor_admin']:
-            domain = []
+        if portal_user:
+            domain = ['|',
+                      ('submitted_by', '=', request.env.user.id),
+                      ('mosque_id', 'in', portal_user.effective_mosque_ids.ids)]
+        else:
+            domain = [('submitted_by', '=', request.env.user.id)]
         if state and state != 'all':
             domain.append(('state', '=', state))
 
         docs = request.env['waqf.document.approval'].sudo().search(
             domain, order='create_date desc')
 
-        all_docs = request.env['waqf.document.approval'].sudo().search([
-            ('submitted_by', '=', request.env.user.id)])
+        all_docs = request.env['waqf.document.approval'].sudo().search(
+            ['|',
+             ('submitted_by', '=', request.env.user.id),
+             ('mosque_id', 'in', portal_user.effective_mosque_ids.ids)]
+            if portal_user else
+            [('submitted_by', '=', request.env.user.id)])
 
         if portal_user.role in ['contractor_admin']:
             all_docs = request.env['waqf.document.approval'].sudo().search([])
