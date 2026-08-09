@@ -19,10 +19,17 @@ class OpsHubController(http.Controller):
     @http.route('/ops/hub', type='http', auth='user', website=True)
     def ops_hub(self, tab=None, **kw):
         portal_user = self._get_portal_user()
-        if not portal_user:
+        if portal_user:
+            mosque_ids = portal_user.effective_mosque_ids.ids
+        else:
+            # مشرف الوقف — يرى كل المساجد
+            mosque_ids = request.env['mosque.mosque'].sudo().search([]).ids
+
+        if not mosque_ids:
             return request.redirect('/web')
 
-        mosque_ids = portal_user.effective_mosque_ids.ids
+
+
         now = datetime.now()
 
         # ── وثائق ──────────────────────────────────────────
