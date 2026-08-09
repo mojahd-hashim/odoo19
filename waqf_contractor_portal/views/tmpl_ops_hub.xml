@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 <template id="tmpl_ops_hub" name="Operations Hub">
-<t t-call="waqf_contractor_portal.tmpl_base">
+<t t-call="web.layout">
 
     <!-- ══════════════════════════════════════════════════
          HEADER + KPIs

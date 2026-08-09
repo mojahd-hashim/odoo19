@@ -298,7 +298,15 @@ class OpsHubController(http.Controller):
             return request.redirect('/ops/hub?error=openpyxl')
 
         portal_user = self._get_portal_user()
-        if not portal_user:
+
+        if portal_user:
+            mosque_ids = portal_user.effective_mosque_ids.ids
+            mosques = portal_user.effective_mosque_ids
+        else:
+            mosques = request.env['mosque.mosque'].sudo().search([])
+            mosque_ids = mosques.ids
+
+        if not mosque_ids:
             return request.redirect('/web')
 
         mosque_ids = portal_user.effective_mosque_ids.ids
