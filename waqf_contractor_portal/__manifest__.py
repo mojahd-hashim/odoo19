@@ -31,7 +31,7 @@
         'views/portal_certificate.xml',
         'views/portal_change_order.xml',
         'views/portal_assets.xml',
-        'views/ptmpl_ops_hub.xml',
+        'views/tmpl_ops_hub.xml',
         'views/contractor_boq_access.xml',
         'views/contractor_work_log.xml',
     ],
