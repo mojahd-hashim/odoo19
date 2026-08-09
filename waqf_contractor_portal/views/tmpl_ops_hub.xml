@@ -3,6 +3,11 @@
 <template id="tmpl_ops_hub" name="Operations Hub">
 <t t-call="web.layout">
 
+     <t t-set="head">
+                <link rel="stylesheet" href="/waqf_contractor_portal/static/src/css/portal.css"/>
+                <title>مركز المتابعة</title>
+            </t>
+
     <!-- ══════════════════════════════════════════════════
          HEADER + KPIs
     ══════════════════════════════════════════════════ -->
