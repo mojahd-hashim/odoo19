@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<template id="tmpl_ops_hub" name="Operations Hub">
+<t t-call="waqf_contractor_portal.tmpl_base">
+
+    <!-- ══════════════════════════════════════════════════
+         HEADER + KPIs
+    ══════════════════════════════════════════════════ -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+        <div style="width:46px;height:46px;border-radius:14px;background:rgba(35,114,146,.1);
+                    display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">📊</div>
+        <div>
+            <div style="font-size:20px;font-weight:800;color:var(--navy)">مركز المتابعة</div>
+            <div style="font-size:12px;color:var(--text3)">متابعة شاملة — وثائق، عينات، أوامر عمل، زيارات</div>
+        </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px">
+        <div class="cp-mini-stat" style="padding:14px;text-align:center">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px">إجمالي المعاملات</div>
+            <div style="font-size:24px;font-weight:800;color:var(--text1)"><t t-esc="total_all"/></div>
+        </div>
+        <div class="cp-mini-stat" style="padding:14px;text-align:center">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px">معتمد</div>
+            <div style="font-size:24px;font-weight:800;color:var(--green)"><t t-esc="total_approved"/></div>
+        </div>
+        <div class="cp-mini-stat" style="padding:14px;text-align:center">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px">معلّق الاستشاري</div>
+            <div style="font-size:24px;font-weight:800;color:var(--gold)"><t t-esc="total_pending"/></div>
+        </div>
+        <div class="cp-mini-stat" style="padding:14px;text-align:center">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px">متأخر +7 أيام</div>
+            <div style="font-size:24px;font-weight:800;color:var(--red)"><t t-esc="delayed_7"/></div>
+        </div>
+        <div class="cp-mini-stat" style="padding:14px;text-align:center">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px">حجم الملفات</div>
+            <div style="font-size:24px;font-weight:800;color:var(--primary)"><t t-esc="size_gb"/> <span style="font-size:13px">GB</span></div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         TABS
+    ══════════════════════════════════════════════════ -->
+    <div style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap" id="hub-tabs">
+        <a href="/ops/hub?tab=overview" t-attf-style="padding:8px 16px;border-radius:10px;font-size:13px;font-weight:700;
+            text-decoration:none;border:1px solid #{active_tab == 'overview' and 'var(--primary)' or 'var(--border)'};
+            background:#{active_tab == 'overview' and 'var(--primary)' or 'var(--surface)'};
+            color:#{active_tab == 'overview' and '#fff' or 'var(--text2)'}">📋 نظرة عامة</a>
+        <a href="/ops/hub?tab=files" t-attf-style="padding:8px 16px;border-radius:10px;font-size:13px;font-weight:700;
+            text-decoration:none;border:1px solid #{active_tab == 'files' and 'var(--primary)' or 'var(--border)'};
+            background:#{active_tab == 'files' and 'var(--primary)' or 'var(--surface)'};
+            color:#{active_tab == 'files' and '#fff' or 'var(--text2)'}">📁 شجرة الملفات</a>
+        <a href="/ops/hub?tab=log" t-attf-style="padding:8px 16px;border-radius:10px;font-size:13px;font-weight:700;
+            text-decoration:none;border:1px solid #{active_tab == 'log' and 'var(--primary)' or 'var(--border)'};
+            background:#{active_tab == 'log' and 'var(--primary)' or 'var(--surface)'};
+            color:#{active_tab == 'log' and '#fff' or 'var(--text2)'}">⏱ سجل الأحداث</a>
+        <a href="/ops/hub?tab=reports" t-attf-style="padding:8px 16px;border-radius:10px;font-size:13px;font-weight:700;
+            text-decoration:none;border:1px solid #{active_tab == 'reports' and 'var(--primary)' or 'var(--border)'};
+            background:#{active_tab == 'reports' and 'var(--primary)' or 'var(--surface)'};
+            color:#{active_tab == 'reports' and '#fff' or 'var(--text2)'}">📥 التقارير</a>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         TAB 1: نظرة عامة
+    ══════════════════════════════════════════════════ -->
+    <t t-if="active_tab == 'overview'">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+
+            <!-- توزيع المعاملات -->
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px">
+                <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:14px">📊 توزيع المعاملات</div>
+
+                <div style="margin-bottom:10px">
+                    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+                        <span style="color:var(--text2)">📄 وثائق</span>
+                        <span style="font-weight:700"><t t-esc="doc_stats['total']"/></span>
+                    </div>
+                    <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
+                        <div t-attf-style="width:#{doc_stats['total'] and int(doc_stats['approved'] * 100 / doc_stats['total']) or 0}%;height:100%;background:var(--primary);border-radius:3px"/>
+                    </div>
+                    <div style="display:flex;gap:10px;font-size:10px;color:var(--text3);margin-top:3px">
+                        <span><t t-esc="doc_stats['approved']"/> معتمد</span>
+                        <span><t t-esc="doc_stats['pending']"/> معلّق</span>
+                        <span><t t-esc="doc_stats['rejected']"/> مرفوض</span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:10px">
+                    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+                        <span style="color:var(--text2)">🧪 عينات</span>
+                        <span style="font-weight:700"><t t-esc="sub_stats['total']"/></span>
+                    </div>
+                    <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
+                        <div t-attf-style="width:#{sub_stats['total'] and int((sub_stats['a'] + sub_stats['b']) * 100 / sub_stats['total']) or 0}%;height:100%;background:var(--green);border-radius:3px"/>
+                    </div>
+                    <div style="display:flex;gap:8px;font-size:10px;color:var(--text3);margin-top:3px">
+                        <span>A:<t t-esc="sub_stats['a']"/></span>
+                        <span>B:<t t-esc="sub_stats['b']"/></span>
+                        <span>C:<t t-esc="sub_stats['c']"/></span>
+                        <span>D:<t t-esc="sub_stats['d']"/></span>
+                        <span>معلّق:<t t-esc="sub_stats['pending']"/></span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:10px">
+                    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+                        <span style="color:var(--text2)">🔧 أوامر عمل</span>
+                        <span style="font-weight:700"><t t-esc="wo_stats['total']"/></span>
+                    </div>
+                    <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
+                        <div t-attf-style="width:#{wo_stats['total'] and int(wo_stats['closed'] * 100 / wo_stats['total']) or 0}%;height:100%;background:#E67E22;border-radius:3px"/>
+                    </div>
+                </div>
+
+                <div>
+                    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+                        <span style="color:var(--text2)">🏅 تأهيلات</span>
+                        <span style="font-weight:700"><t t-esc="qual_stats['total']"/></span>
+                    </div>
+                    <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
+                        <div t-attf-style="width:#{qual_stats['total'] and int(qual_stats['approved'] * 100 / qual_stats['total']) or 0}%;height:100%;background:#8B5CF6;border-radius:3px"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- تنبيهات -->
+            <div>
+                <t t-if="delayed_docs or delayed_subs">
+                    <div style="background:rgba(200,164,48,.08);border:1px solid rgba(200,164,48,.25);
+                                border-radius:14px;padding:14px 16px;margin-bottom:12px">
+                        <div style="font-size:13px;font-weight:700;color:#8A6A00;margin-bottom:8px">⏳ متأخرات الاستشاري</div>
+                        <t t-foreach="delayed_docs" t-as="dd">
+                            <div style="display:flex;justify-content:space-between;padding:7px 10px;background:var(--surface);
+                                        border-radius:8px;margin-bottom:5px;font-size:12px">
+                                <a t-attf-href="/contractor/documents/#{dd.id}" style="color:var(--text1);text-decoration:none">
+                                    📄 <t t-esc="dd.name or dd.title"/>
+                                </a>
+                                <span t-attf-style="font-weight:700;color:#{days_since(dd.write_date) > 7 and 'var(--red)' or '#E67E22'}">
+                                    <t t-esc="days_since(dd.write_date)"/> يوم
+                                </span>
+                            </div>
+                        </t>
+                        <t t-foreach="delayed_subs" t-as="ds">
+                            <div style="display:flex;justify-content:space-between;padding:7px 10px;background:var(--surface);
+                                        border-radius:8px;margin-bottom:5px;font-size:12px">
+                                <a t-attf-href="/contractor/submittal/#{ds.id}" style="color:var(--text1);text-decoration:none">
+                                    🧪 <t t-esc="ds.name"/> — <t t-esc="ds.material_name"/>
+                                </a>
+                                <span style="font-weight:700;color:#E67E22">
+                                    <t t-esc="days_since(ds.write_date)"/> يوم
+                                </span>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+
+                <t t-if="pending_waqf_docs or pending_waqf_wos">
+                    <div style="background:rgba(35,114,146,.06);border:1px solid rgba(35,114,146,.2);
+                                border-radius:14px;padding:14px 16px">
+                        <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:8px">🕐 بانتظار الوقف</div>
+                        <t t-foreach="pending_waqf_wos[:5]" t-as="pw">
+                            <div style="display:flex;justify-content:space-between;padding:7px 10px;background:var(--surface);
+                                        border-radius:8px;margin-bottom:5px;font-size:12px">
+                                <a t-attf-href="/contractor/work-order/#{pw.id}" style="color:var(--text1);text-decoration:none">
+                                    🔧 <t t-esc="pw.name"/> — <t t-esc="(pw.work_description or '')[:30]"/>
+                                </a>
+                                <span style="color:var(--text3)"><t t-esc="days_since(pw.write_date)"/> يوم</span>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+            </div>
+        </div>
+
+        <!-- أبرز الأعمال -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px">
+            <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px">🚀 أبرز أعمال المقاول (آخر 7 أيام)</div>
+            <t t-foreach="recent_subs" t-as="rs">
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+                    <t t-if="rs.grade">
+                        <div t-attf-style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+                            font-size:12px;font-weight:900;flex-shrink:0;
+                            background:#{rs.grade == 'a' and 'rgba(46,204,138,.12)' or rs.grade == 'b' and 'rgba(52,152,219,.12)' or rs.grade == 'c' and 'rgba(230,126,34,.12)' or 'rgba(231,76,60,.12)'};
+                            color:#{rs.grade == 'a' and 'var(--green)' or rs.grade == 'b' and '#3498DB' or rs.grade == 'c' and '#E67E22' or 'var(--red)'}">
+                            <t t-esc="rs.grade.upper()"/>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <div style="width:28px;height:28px;border-radius:50%;background:rgba(200,164,48,.1);
+                                    display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">🧪</div>
+                    </t>
+                    <div style="flex:1;font-size:12px">
+                        <a t-attf-href="/contractor/submittal/#{rs.id}" style="color:var(--text1);text-decoration:none">
+                            <t t-esc="rs.name"/> — <t t-esc="rs.material_name"/>
+                        </a>
+                    </div>
+                    <span style="font-size:11px;color:var(--text3)"><t t-esc="str(rs.write_date or '')[:10]"/></span>
+                </div>
+            </t>
+            <t t-foreach="recent_docs[:3]" t-as="rd">
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+                    <div style="width:28px;height:28px;border-radius:50%;background:rgba(35,114,146,.1);
+                                display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">📄</div>
+                    <div style="flex:1;font-size:12px">
+                        <a t-attf-href="/contractor/documents/#{rd.id}" style="color:var(--text1);text-decoration:none">
+                            <t t-esc="rd.name or rd.title"/>
+                        </a>
+                        <t t-if="rd.state in ('approved','approved_comments')">
+                            <span style="color:var(--green);font-weight:700"> — معتمد</span>
+                        </t>
+                        <t t-elif="rd.state == 'submitted'">
+                            <span style="color:var(--gold)"> — بانتظار</span>
+                        </t>
+                    </div>
+                    <span style="font-size:11px;color:var(--text3)"><t t-esc="str(rd.write_date or '')[:10]"/></span>
+                </div>
+            </t>
+            <t t-foreach="recent_wos[:3]" t-as="rw">
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+                    <div style="width:28px;height:28px;border-radius:50%;background:rgba(230,126,34,.1);
+                                display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">🔧</div>
+                    <div style="flex:1;font-size:12px">
+                        <a t-attf-href="/contractor/work-order/#{rw.id}" style="color:var(--text1);text-decoration:none">
+                            <t t-esc="rw.name"/> — <t t-esc="(rw.work_description or '')[:30]"/>
+                        </a>
+                    </div>
+                    <span style="font-size:11px;color:var(--text3)"><t t-esc="str(rw.write_date or '')[:10]"/></span>
+                </div>
+            </t>
+        </div>
+    </t>
+
+    <!-- ══════════════════════════════════════════════════
+         TAB 2: شجرة الملفات
+    ══════════════════════════════════════════════════ -->
+    <t t-if="active_tab == 'files'">
+        <input type="text" id="tree-search" class="cp-input" style="margin-bottom:12px"
+               placeholder="🔍 بحث بالاسم أو الرقم أو النوع..."
+               onkeyup="filterTree(this.value)"/>
+
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+            <t t-foreach="file_tree" t-as="mt">
+                <div class="tree-item" style="display:flex;align-items:center;gap:10px;padding:12px 16px;
+                            cursor:pointer;border-bottom:1px solid var(--border)"
+                     t-attf-onclick="toggle('m#{mt['mosque'].id}')">
+                    <span t-attf-id="m#{mt['mosque'].id}-arrow" style="transition:transform .2s;font-size:12px">▼</span>
+                    <span style="font-size:16px">🕌</span>
+                    <span style="flex:1;font-weight:700;font-size:13px"><t t-esc="mt['mosque'].name"/></span>
+                    <span style="font-size:11px;color:var(--text3)"><t t-esc="mt['total_docs']"/> ملف</span>
+                    <span style="font-size:11px;color:var(--primary);font-weight:700"><t t-esc="format_size(mt['total_size'])"/></span>
+                </div>
+                <div t-attf-id="m#{mt['mosque'].id}">
+                    <t t-foreach="mt['folders']" t-as="fl">
+                        <div class="tree-item" style="display:flex;align-items:center;gap:10px;padding:10px 16px;padding-right:36px;
+                                    cursor:pointer;border-bottom:1px solid var(--border)"
+                             t-attf-onclick="toggle('f#{mt['mosque'].id}_#{fl['type'].id}')">
+                            <span t-attf-id="f#{mt['mosque'].id}_#{fl['type'].id}-arrow" style="font-size:11px">▼</span>
+                            <span style="font-size:14px">📁</span>
+                            <span style="flex:1;font-size:12px"><t t-esc="fl['type'].name"/></span>
+                            <span style="font-size:11px;color:var(--text3)"><t t-esc="fl['count']"/> ملف — <t t-esc="format_size(fl['size'])"/></span>
+                        </div>
+                        <div t-attf-id="f#{mt['mosque'].id}_#{fl['type'].id}">
+                            <t t-foreach="fl['docs']" t-as="fdoc">
+                                <div class="tree-item" style="display:flex;align-items:center;gap:8px;padding:8px 16px;padding-right:56px;
+                                            border-bottom:1px solid var(--border);font-size:12px"
+                                     t-att-data-name="(fdoc.name or '') + ' ' + (fdoc.title or '')">
+                                    <span>📄</span>
+                                    <a t-attf-href="/contractor/documents/#{fdoc.id}"
+                                       style="flex:1;color:var(--text1);text-decoration:none">
+                                        <t t-esc="fdoc.name or ''"/> — <t t-esc="(fdoc.title or '')[:40]"/>
+                                    </a>
+                                    <span t-attf-style="padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;
+                                        background:#{fdoc.state in ('approved','approved_comments') and 'rgba(46,204,138,.15)' or fdoc.state == 'rejected' and 'rgba(231,76,60,.15)' or fdoc.state == 'submitted' and 'rgba(200,164,48,.15)' or 'rgba(148,163,184,.15)'};
+                                        color:#{fdoc.state in ('approved','approved_comments') and '#1A7A55' or fdoc.state == 'rejected' and 'var(--red)' or fdoc.state == 'submitted' and '#8A6A00' or 'var(--text3)'}">
+                                        <t t-if="fdoc.state in ('approved','approved_comments')">✓</t>
+                                        <t t-elif="fdoc.state == 'rejected'">✗</t>
+                                        <t t-elif="fdoc.state == 'submitted'">⏳</t>
+                                        <t t-else="">●</t>
+                                    </span>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </div>
+    </t>
+
+    <!-- ══════════════════════════════════════════════════
+         TAB 3: سجل الأحداث
+    ══════════════════════════════════════════════════ -->
+    <t t-if="active_tab == 'log'">
+        <!-- الزيارات -->
+        <t t-if="visits">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:14px">
+                <div style="padding:10px 16px;background:var(--navy);font-size:12px;font-weight:700;color:white">
+                    📍 آخر الزيارات الميدانية
+                </div>
+                <t t-foreach="visits[:10]" t-as="v">
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border)">
+                        <div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0"></div>
+                        <div style="width:28px;height:28px;border-radius:50%;background:rgba(46,204,138,.1);
+                                    display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px">📍</div>
+                        <div style="flex:1;font-size:12px">
+                            <t t-if="v.engineer_id"><t t-esc="v.engineer_id.name"/></t>
+                            <t t-elif="v.portal_user_id"><t t-esc="v.portal_user_id.name"/></t>
+                            — <b><t t-esc="v.mosque_id.name if v.mosque_id else ''"/></b>
+                            <br/><span style="color:var(--text3)">
+                                <t t-esc="round(v.distance_m or 0)"/> م
+                                <t t-if="v.check_out"> · <t t-esc="round(v.duration or 0, 1)"/> ساعة</t>
+                            </span>
+                        </div>
+                        <span style="font-size:11px;color:var(--text3);flex-shrink:0"><t t-esc="str(v.check_in)[:16]"/></span>
+                    </div>
+                </t>
+            </div>
+        </t>
+
+        <!-- رسائل النظام -->
+        <t t-if="messages">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+                <div style="padding:10px 16px;background:var(--navy);font-size:12px;font-weight:700;color:white;
+                            display:flex;justify-content:space-between">
+                    <span>📝 سجل الأحداث والتحديثات</span>
+                    <span style="padding:2px 10px;border-radius:999px;background:rgba(255,255,255,.15);font-size:11px">
+                        <t t-esc="len(messages)"/>
+                    </span>
+                </div>
+                <t t-foreach="messages" t-as="msg">
+                    <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border)">
+                        <div style="width:28px;height:28px;border-radius:50%;background:rgba(35,114,146,.1);
+                                    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+                                    font-size:11px;font-weight:800;color:var(--primary)">
+                            <t t-esc="(msg.author_id.name or '?')[0]"/>
+                        </div>
+                        <div style="flex:1;min-width:0">
+                            <div style="font-size:12px;font-weight:700;color:var(--text1)">
+                                <t t-esc="msg.author_id.name or 'النظام'"/>
+                                <span style="font-weight:400;color:var(--text3);font-size:11px;margin-right:6px">
+                                    <t t-esc="msg.model or ''"/>
+                                </span>
+                            </div>
+                            <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-top:2px">
+                                <t t-raw="msg.body"/>
+                            </div>
+                        </div>
+                        <span style="font-size:10px;color:var(--text3);flex-shrink:0;white-space:nowrap">
+                            <t t-esc="str(msg.date)[:16]"/>
+                        </span>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </t>
+
+    <!-- ══════════════════════════════════════════════════
+         TAB 4: التقارير
+    ══════════════════════════════════════════════════ -->
+    <t t-if="active_tab == 'reports'">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(46,204,138,.1);
+                                display:flex;align-items:center;justify-content:center;font-size:18px">📊</div>
+                    <div><div style="font-size:14px;font-weight:700">تصدير Excel تفصيلي</div>
+                        <div style="font-size:11px;color:var(--text3)">4 أوراق: وثائق، عينات، أوامر، زيارات</div></div>
+                </div>
+                <div style="font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:12px">
+                    ✅ كل المعاملات مع الحالات والتواريخ<br/>
+                    ✅ الملاحظات والتقييمات<br/>
+                    ✅ زيارات آخر 30 يوم
+                </div>
+                <a href="/ops/hub/export/excel" style="display:block;width:100%;padding:10px;border-radius:10px;
+                   border:1px solid var(--border);background:var(--surface);text-align:center;
+                   font-size:13px;font-weight:700;color:var(--text1);text-decoration:none">📥 تحميل Excel</a>
+            </div>
+
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(231,76,60,.1);
+                                display:flex;align-items:center;justify-content:center;font-size:18px">📄</div>
+                    <div><div style="font-size:14px;font-weight:700">تقرير PDF للإدارة</div>
+                        <div style="font-size:11px;color:var(--text3)">ملخص تنفيذي مع إحصاءات</div></div>
+                </div>
+                <div style="font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:12px">
+                    ✅ KPIs وإحصاءات عامة<br/>
+                    ✅ المتأخرات والمعلّقات<br/>
+                    ✅ ملخص الفترة
+                </div>
+                <a href="/ops/hub/export/excel" style="display:block;width:100%;padding:10px;border-radius:10px;
+                   border:1px solid var(--border);background:var(--surface);text-align:center;
+                   font-size:13px;font-weight:700;color:var(--text1);text-decoration:none">📥 تحميل PDF</a>
+            </div>
+        </div>
+
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px">
+            <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:14px">📈 إحصاءات الفترة (30 يوم)</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+                <div style="text-align:center;padding:14px;background:var(--surface2);border-radius:10px">
+                    <div style="font-size:10px;color:var(--text3);margin-bottom:4px">متوسط وقت المعالجة</div>
+                    <div style="font-size:22px;font-weight:800;color:var(--text1)"><t t-esc="avg_process"/> <span style="font-size:12px">يوم</span></div>
+                </div>
+                <div style="text-align:center;padding:14px;background:var(--surface2);border-radius:10px">
+                    <div style="font-size:10px;color:var(--text3);margin-bottom:4px">نسبة الاعتماد</div>
+                    <div style="font-size:22px;font-weight:800;color:var(--green)"><t t-esc="approval_rate"/><span style="font-size:12px">%</span></div>
+                </div>
+                <div style="text-align:center;padding:14px;background:var(--surface2);border-radius:10px">
+                    <div style="font-size:10px;color:var(--text3);margin-bottom:4px">زيارات هذا الشهر</div>
+                    <div style="font-size:22px;font-weight:800;color:var(--primary)"><t t-esc="month_visits"/></div>
+                </div>
+                <div style="text-align:center;padding:14px;background:var(--surface2);border-radius:10px">
+                    <div style="font-size:10px;color:var(--text3);margin-bottom:4px">متوسط مدة الزيارة</div>
+                    <div style="font-size:22px;font-weight:800;color:var(--text1)"><t t-esc="avg_duration"/> <span style="font-size:12px">ساعة</span></div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- ══════════════════════════════════════════════════
+         SCRIPT — شجرة الملفات
+    ══════════════════════════════════════════════════ -->
+    <script>
+    function toggle(id) {
+        var el = document.getElementById(id);
+        var arrow = document.getElementById(id + '-arrow');
+        if (!el) return;
+        if (el.style.display === 'none') {
+            el.style.display = 'block';
+            if (arrow) arrow.textContent = '\u25BC';
+        } else {
+            el.style.display = 'none';
+            if (arrow) arrow.textContent = '\u25C0';
+        }
+    }
+    function filterTree(q) {
+        q = q.toLowerCase();
+        document.querySelectorAll('.tree-item[data-name]').forEach(function(el) {
+            el.style.display = (!q || (el.dataset.name || '').toLowerCase().indexOf(q) >= 0)
+                ? 'flex' : 'none';
+        });
+    }
+    </script>
+
+</t>
+</template>
+</odoo>
