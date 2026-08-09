@@ -159,7 +159,10 @@ class OpsHubController(http.Controller):
         ], order='write_date desc', limit=5)
 
         # ── شجرة الملفات ───────────────────────────────────
-        mosques = portal_user.effective_mosque_ids
+        if portal_user:
+            mosques = portal_user.effective_mosque_ids
+        else:
+            mosques = request.env['mosque.mosque'].sudo().search([])
         file_tree = []
         doc_types = request.env['waqf.document.type'].sudo().search([])
 
