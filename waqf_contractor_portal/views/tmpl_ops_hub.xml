@@ -2,173 +2,260 @@
 <odoo>
 <template id="tmpl_ops_hub" name="Operations Hub">
 <t t-call="web.layout">
+<t t-set="head">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>مركز المتابعة — مآذن</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --navy:#0F1B2D;--bg:#F1F5F8;--primary:#237292;--green:#2ECC8A;
+            --red:#E74C3C;--gold:#C8A430;--orange:#E67E22;--purple:#8B5CF6;
+            --border:#E2E8ED;--text1:#1E293B;--text2:#64748B;--text3:#94A3B8;
+            --surface:#FFFFFF;--surface2:#F7FAFC;
+            --green-bg:rgba(46,204,138,.08);--red-bg:rgba(231,76,60,.08);
+            --r-lg:16px;--r-md:12px;--r-sm:8px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html, body { height:100%; }
+        body {
+            font-family:'Cairo',sans-serif; background:var(--bg);
+            color:var(--text1); direction:rtl; min-height:100vh;
+        }
 
-     <t t-set="head">
-                <link rel="stylesheet" href="/waqf_contractor_portal/static/src/css/portal.css"/>
-                <title>مركز المتابعة</title>
-            </t>
+        /* ── Header ───────────────────────────────── */
+        .hub-topbar {
+            background:var(--navy); padding:0 28px; height:56px;
+            display:flex; align-items:center; justify-content:space-between;
+            position:sticky; top:0; z-index:50;
+        }
+        .hub-topbar-brand { display:flex; align-items:center; gap:12px; }
+        .hub-topbar-icon {
+            width:34px; height:34px; border-radius:10px;
+            background:rgba(35,114,146,.25); display:flex;
+            align-items:center; justify-content:center; font-size:16px;
+        }
+        .hub-topbar-title { font-size:15px; font-weight:800; color:white; }
+        .hub-topbar-sub { font-size:11px; color:rgba(255,255,255,.45); }
+        .hub-topbar-nav { display:flex; gap:6px; }
+        .hub-topbar-nav a {
+            padding:6px 14px; border-radius:8px; font-size:12px;
+            font-weight:700; text-decoration:none; transition:all .2s;
+        }
+
+        /* ── Wrap ─────────────────────────────────── */
+        .hub-wrap { max-width:1100px; margin:0 auto; padding:24px 28px 40px; }
+
+        /* ── KPI Row ──────────────────────────────── */
+        .hub-kpi-row { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:20px; }
+        .hub-kpi {
+            background:var(--surface); border:1px solid var(--border);
+            border-radius:14px; padding:16px; text-align:center;
+        }
+        .hub-kpi-val { font-size:26px; font-weight:800; }
+        .hub-kpi-lbl { font-size:11px; color:var(--text3); margin-bottom:4px; }
+
+        /* ── Cards ────────────────────────────────── */
+        .hub-card {
+            background:var(--surface); border:1px solid var(--border);
+            border-radius:var(--r-lg); padding:18px; margin-bottom:14px;
+        }
+        .hub-card-title {
+            font-size:14px; font-weight:700; color:var(--navy);
+            margin-bottom:12px; display:flex; align-items:center; gap:8px;
+        }
+
+        /* ── Alert Boxes ──────────────────────────── */
+        .hub-alert {
+            border-radius:14px; padding:14px 16px; margin-bottom:12px;
+        }
+        .hub-alert-title { font-size:13px; font-weight:700; margin-bottom:8px; }
+        .hub-alert-item {
+            display:flex; justify-content:space-between; padding:7px 10px;
+            background:var(--surface); border-radius:8px; margin-bottom:5px;
+            font-size:12px;
+        }
+        .hub-alert-item a { color:var(--text1); text-decoration:none; }
+
+        /* ── Bar Chart ────────────────────────────── */
+        .hub-bar { margin-bottom:12px; }
+        .hub-bar-label { display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px; }
+        .hub-bar-track { height:6px; background:var(--surface2); border-radius:3px; overflow:hidden; }
+        .hub-bar-fill { height:100%; border-radius:3px; }
+        .hub-bar-sub { display:flex; gap:10px; font-size:10px; color:var(--text3); margin-top:3px; }
+
+        /* ── Activity Item ────────────────────────── */
+        .hub-act {
+            display:flex; align-items:center; gap:10px;
+            padding:8px 0; border-bottom:1px solid var(--border);
+        }
+        .hub-act:last-child { border:none; }
+        .hub-act-icon {
+            width:28px; height:28px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            font-size:12px; font-weight:900; flex-shrink:0;
+        }
+
+        /* ── Tree ─────────────────────────────────── */
+        .hub-tree-mosque {
+            display:flex; align-items:center; gap:10px;
+            padding:12px 16px; cursor:pointer; border-bottom:1px solid var(--border);
+        }
+        .hub-tree-folder {
+            display:flex; align-items:center; gap:10px;
+            padding:10px 16px; padding-right:36px; cursor:pointer;
+            border-bottom:1px solid var(--border);
+        }
+        .hub-tree-file {
+            display:flex; align-items:center; gap:8px;
+            padding:8px 16px; padding-right:56px;
+            border-bottom:1px solid var(--border); font-size:12px;
+        }
+        .hub-badge {
+            padding:2px 8px; border-radius:999px; font-size:10px; font-weight:700;
+        }
+
+        /* ── Timeline ─────────────────────────────── */
+        .hub-tl {
+            display:flex; align-items:flex-start; gap:10px;
+            padding:10px 16px; border-bottom:1px solid var(--border);
+        }
+        .hub-tl-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:6px; }
+        .hub-tl-icon {
+            width:28px; height:28px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            flex-shrink:0; font-size:13px;
+        }
+
+        /* ── Stats Grid ───────────────────────────── */
+        .hub-stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+        .hub-stat-box { text-align:center; padding:14px; background:var(--surface2); border-radius:10px; }
+        .hub-stat-val { font-size:22px; font-weight:800; }
+        .hub-stat-lbl { font-size:10px; color:var(--text3); margin-bottom:4px; }
+
+        /* ── Search ───────────────────────────────── */
+        .hub-search {
+            width:100%; padding:10px 14px; border:1px solid var(--border);
+            border-radius:10px; font-size:13px; font-family:'Cairo';
+            margin-bottom:12px; background:var(--surface);
+        }
+
+        /* ── Report Card ──────────────────────────── */
+        .hub-report-btn {
+            display:block; width:100%; padding:10px; border-radius:10px;
+            border:1px solid var(--border); background:var(--surface);
+            text-align:center; font-size:13px; font-weight:700;
+            color:var(--text1); text-decoration:none; font-family:'Cairo';
+            transition:border-color .2s;
+        }
+        .hub-report-btn:hover { border-color:var(--primary); color:var(--primary); }
+
+        /* ── Responsive ───────────────────────────── */
+        @media (max-width:800px) {
+            .hub-kpi-row { grid-template-columns:repeat(3,1fr); }
+            .hub-stat-grid { grid-template-columns:repeat(2,1fr); }
+            .hub-two-col { grid-template-columns:1fr !important; }
+            .hub-wrap { padding:16px; }
+        }
+        @media (max-width:500px) {
+            .hub-kpi-row { grid-template-columns:repeat(2,1fr); }
+            .hub-topbar-nav { display:none; }
+        }
+    </style>
+</t>
+<body>
 
     <!-- ══════════════════════════════════════════════════
-         HEADER + KPIs
+         TOP BAR
     ══════════════════════════════════════════════════ -->
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
-        <div style="width:46px;height:46px;border-radius:14px;background:rgba(35,114,146,.1);
-                    display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">📊</div>
-        <div>
-            <div style="font-size:20px;font-weight:800;color:var(--navy)">مركز المتابعة</div>
-            <div style="font-size:12px;color:var(--text3)">متابعة شاملة — وثائق، عينات، أوامر عمل، زيارات</div>
+    <div class="hub-topbar">
+        <div class="hub-topbar-brand">
+            <div class="hub-topbar-icon">📊</div>
+            <div>
+                <div class="hub-topbar-title">مركز المتابعة</div>
+                <div class="hub-topbar-sub">متابعة شاملة — وثائق، عينات، أوامر عمل، زيارات</div>
+            </div>
+        </div>
+        <div class="hub-topbar-nav">
+            <a href="/ops/hub?tab=overview"
+               t-attf-style="background:#{active_tab == 'overview' and 'var(--primary)' or 'rgba(255,255,255,.08)'};
+                             color:#{active_tab == 'overview' and '#fff' or 'rgba(255,255,255,.6)'}">📋 نظرة عامة</a>
+            <a href="/ops/hub?tab=files"
+               t-attf-style="background:#{active_tab == 'files' and 'var(--primary)' or 'rgba(255,255,255,.08)'};
+                             color:#{active_tab == 'files' and '#fff' or 'rgba(255,255,255,.6)'}">📁 الملفات</a>
+            <a href="/ops/hub?tab=log"
+               t-attf-style="background:#{active_tab == 'log' and 'var(--primary)' or 'rgba(255,255,255,.08)'};
+                             color:#{active_tab == 'log' and '#fff' or 'rgba(255,255,255,.6)'}">⏱ الأحداث</a>
+            <a href="/ops/hub?tab=reports"
+               t-attf-style="background:#{active_tab == 'reports' and 'var(--primary)' or 'rgba(255,255,255,.08)'};
+                             color:#{active_tab == 'reports' and '#fff' or 'rgba(255,255,255,.6)'}">📥 التقارير</a>
         </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px">
-        <div class="cp-mini-stat" style="padding:14px;text-align:center">
-            <div style="font-size:11px;color:var(--text3);margin-bottom:4px">إجمالي المعاملات</div>
-            <div style="font-size:24px;font-weight:800;color:var(--text1)"><t t-esc="total_all"/></div>
-        </div>
-        <div class="cp-mini-stat" style="padding:14px;text-align:center">
-            <div style="font-size:11px;color:var(--text3);margin-bottom:4px">معتمد</div>
-            <div style="font-size:24px;font-weight:800;color:var(--green)"><t t-esc="total_approved"/></div>
-        </div>
-        <div class="cp-mini-stat" style="padding:14px;text-align:center">
-            <div style="font-size:11px;color:var(--text3);margin-bottom:4px">معلّق الاستشاري</div>
-            <div style="font-size:24px;font-weight:800;color:var(--gold)"><t t-esc="total_pending"/></div>
-        </div>
-        <div class="cp-mini-stat" style="padding:14px;text-align:center">
-            <div style="font-size:11px;color:var(--text3);margin-bottom:4px">متأخر +7 أيام</div>
-            <div style="font-size:24px;font-weight:800;color:var(--red)"><t t-esc="delayed_7"/></div>
-        </div>
-        <div class="cp-mini-stat" style="padding:14px;text-align:center">
-            <div style="font-size:11px;color:var(--text3);margin-bottom:4px">حجم الملفات</div>
-            <div style="font-size:24px;font-weight:800;color:var(--primary)"><t t-esc="size_gb"/> <span style="font-size:13px">GB</span></div>
-        </div>
-    </div>
+    <div class="hub-wrap">
 
     <!-- ══════════════════════════════════════════════════
-         TABS
+         KPIs
     ══════════════════════════════════════════════════ -->
-    <div style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap" id="hub-tabs">
-        <a href="/ops/hub?tab=overview" t-attf-style="padding:8px 16px;border-radius:10px;font-size:13px;font-weight:700;
-            text-decoration:none;border:1px solid #{active_tab == 'overview' and 'var(--primary)' or 'var(--border)'};
-            background:#{active_tab == 'overview' and 'var(--primary)' or 'var(--surface)'};
-            color:#{active_tab == 'overview' and '#fff' or 'var(--text2)'}">📋 نظرة عامة</a>
-        <a href="/ops/hub?tab=files" t-attf-style="padding:8px 16px;border-radius:10px;font-size:13px;font-weight:700;
-            text-decoration:none;border:1px solid #{active_tab == 'files' and 'var(--primary)' or 'var(--border)'};
-            background:#{active_tab == 'files' and 'var(--primary)' or 'var(--surface)'};
-            color:#{active_tab == 'files' and '#fff' or 'var(--text2)'}">📁 شجرة الملفات</a>
-        <a href="/ops/hub?tab=log" t-attf-style="padding:8px 16px;border-radius:10px;font-size:13px;font-weight:700;
-            text-decoration:none;border:1px solid #{active_tab == 'log' and 'var(--primary)' or 'var(--border)'};
-            background:#{active_tab == 'log' and 'var(--primary)' or 'var(--surface)'};
-            color:#{active_tab == 'log' and '#fff' or 'var(--text2)'}">⏱ سجل الأحداث</a>
-        <a href="/ops/hub?tab=reports" t-attf-style="padding:8px 16px;border-radius:10px;font-size:13px;font-weight:700;
-            text-decoration:none;border:1px solid #{active_tab == 'reports' and 'var(--primary)' or 'var(--border)'};
-            background:#{active_tab == 'reports' and 'var(--primary)' or 'var(--surface)'};
-            color:#{active_tab == 'reports' and '#fff' or 'var(--text2)'}">📥 التقارير</a>
+    <div class="hub-kpi-row">
+        <div class="hub-kpi"><div class="hub-kpi-lbl">إجمالي المعاملات</div><div class="hub-kpi-val" style="color:var(--text1)"><t t-esc="total_all"/></div></div>
+        <div class="hub-kpi"><div class="hub-kpi-lbl">معتمد</div><div class="hub-kpi-val" style="color:var(--green)"><t t-esc="total_approved"/></div></div>
+        <div class="hub-kpi"><div class="hub-kpi-lbl">معلّق الاستشاري</div><div class="hub-kpi-val" style="color:var(--gold)"><t t-esc="total_pending"/></div></div>
+        <div class="hub-kpi"><div class="hub-kpi-lbl">متأخر +7 أيام</div><div class="hub-kpi-val" style="color:var(--red)"><t t-esc="delayed_7"/></div></div>
+        <div class="hub-kpi"><div class="hub-kpi-lbl">حجم الملفات</div><div class="hub-kpi-val" style="color:var(--primary)"><t t-esc="size_gb"/> <span style="font-size:13px">GB</span></div></div>
     </div>
 
     <!-- ══════════════════════════════════════════════════
          TAB 1: نظرة عامة
     ══════════════════════════════════════════════════ -->
     <t t-if="active_tab == 'overview'">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-
-            <!-- توزيع المعاملات -->
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px">
-                <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:14px">📊 توزيع المعاملات</div>
-
-                <div style="margin-bottom:10px">
-                    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
-                        <span style="color:var(--text2)">📄 وثائق</span>
-                        <span style="font-weight:700"><t t-esc="doc_stats['total']"/></span>
-                    </div>
-                    <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                        <div t-attf-style="width:#{doc_stats['total'] and int(doc_stats['approved'] * 100 / doc_stats['total']) or 0}%;height:100%;background:var(--primary);border-radius:3px"/>
-                    </div>
-                    <div style="display:flex;gap:10px;font-size:10px;color:var(--text3);margin-top:3px">
-                        <span><t t-esc="doc_stats['approved']"/> معتمد</span>
-                        <span><t t-esc="doc_stats['pending']"/> معلّق</span>
-                        <span><t t-esc="doc_stats['rejected']"/> مرفوض</span>
-                    </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px" class="hub-two-col">
+            <div class="hub-card">
+                <div class="hub-card-title">📊 توزيع المعاملات</div>
+                <div class="hub-bar">
+                    <div class="hub-bar-label"><span style="color:var(--text2)">📄 وثائق</span><span style="font-weight:700"><t t-esc="doc_stats['total']"/></span></div>
+                    <div class="hub-bar-track"><div class="hub-bar-fill" t-attf-style="width:#{doc_stats['total'] and int(doc_stats['approved'] * 100 / doc_stats['total']) or 0}%;background:var(--primary)"/></div>
+                    <div class="hub-bar-sub"><span><t t-esc="doc_stats['approved']"/> معتمد</span><span><t t-esc="doc_stats['pending']"/> معلّق</span><span><t t-esc="doc_stats['rejected']"/> مرفوض</span></div>
                 </div>
-
-                <div style="margin-bottom:10px">
-                    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
-                        <span style="color:var(--text2)">🧪 عينات</span>
-                        <span style="font-weight:700"><t t-esc="sub_stats['total']"/></span>
-                    </div>
-                    <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                        <div t-attf-style="width:#{sub_stats['total'] and int((sub_stats['a'] + sub_stats['b']) * 100 / sub_stats['total']) or 0}%;height:100%;background:var(--green);border-radius:3px"/>
-                    </div>
-                    <div style="display:flex;gap:8px;font-size:10px;color:var(--text3);margin-top:3px">
-                        <span>A:<t t-esc="sub_stats['a']"/></span>
-                        <span>B:<t t-esc="sub_stats['b']"/></span>
-                        <span>C:<t t-esc="sub_stats['c']"/></span>
-                        <span>D:<t t-esc="sub_stats['d']"/></span>
-                        <span>معلّق:<t t-esc="sub_stats['pending']"/></span>
-                    </div>
+                <div class="hub-bar">
+                    <div class="hub-bar-label"><span style="color:var(--text2)">🧪 عينات</span><span style="font-weight:700"><t t-esc="sub_stats['total']"/></span></div>
+                    <div class="hub-bar-track"><div class="hub-bar-fill" t-attf-style="width:#{sub_stats['total'] and int((sub_stats['a']+sub_stats['b'])*100/sub_stats['total']) or 0}%;background:var(--green)"/></div>
+                    <div class="hub-bar-sub"><span>A:<t t-esc="sub_stats['a']"/></span><span>B:<t t-esc="sub_stats['b']"/></span><span>C:<t t-esc="sub_stats['c']"/></span><span>D:<t t-esc="sub_stats['d']"/></span></div>
                 </div>
-
-                <div style="margin-bottom:10px">
-                    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
-                        <span style="color:var(--text2)">🔧 أوامر عمل</span>
-                        <span style="font-weight:700"><t t-esc="wo_stats['total']"/></span>
-                    </div>
-                    <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                        <div t-attf-style="width:#{wo_stats['total'] and int(wo_stats['closed'] * 100 / wo_stats['total']) or 0}%;height:100%;background:#E67E22;border-radius:3px"/>
-                    </div>
+                <div class="hub-bar">
+                    <div class="hub-bar-label"><span style="color:var(--text2)">🔧 أوامر عمل</span><span style="font-weight:700"><t t-esc="wo_stats['total']"/></span></div>
+                    <div class="hub-bar-track"><div class="hub-bar-fill" t-attf-style="width:#{wo_stats['total'] and int(wo_stats['closed']*100/wo_stats['total']) or 0}%;background:var(--orange)"/></div>
                 </div>
-
-                <div>
-                    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
-                        <span style="color:var(--text2)">🏅 تأهيلات</span>
-                        <span style="font-weight:700"><t t-esc="qual_stats['total']"/></span>
-                    </div>
-                    <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                        <div t-attf-style="width:#{qual_stats['total'] and int(qual_stats['approved'] * 100 / qual_stats['total']) or 0}%;height:100%;background:#8B5CF6;border-radius:3px"/>
-                    </div>
+                <div class="hub-bar">
+                    <div class="hub-bar-label"><span style="color:var(--text2)">🏅 تأهيلات</span><span style="font-weight:700"><t t-esc="qual_stats['total']"/></span></div>
+                    <div class="hub-bar-track"><div class="hub-bar-fill" t-attf-style="width:#{qual_stats['total'] and int(qual_stats['approved']*100/qual_stats['total']) or 0}%;background:var(--purple)"/></div>
                 </div>
             </div>
 
-            <!-- تنبيهات -->
             <div>
                 <t t-if="delayed_docs or delayed_subs">
-                    <div style="background:rgba(200,164,48,.08);border:1px solid rgba(200,164,48,.25);
-                                border-radius:14px;padding:14px 16px;margin-bottom:12px">
-                        <div style="font-size:13px;font-weight:700;color:#8A6A00;margin-bottom:8px">⏳ متأخرات الاستشاري</div>
+                    <div class="hub-alert" style="background:rgba(200,164,48,.08);border:1px solid rgba(200,164,48,.25)">
+                        <div class="hub-alert-title" style="color:#8A6A00">⏳ متأخرات الاستشاري</div>
                         <t t-foreach="delayed_docs" t-as="dd">
-                            <div style="display:flex;justify-content:space-between;padding:7px 10px;background:var(--surface);
-                                        border-radius:8px;margin-bottom:5px;font-size:12px">
-                                <a t-attf-href="/contractor/documents/#{dd.id}" style="color:var(--text1);text-decoration:none">
-                                    📄 <t t-esc="dd.name or dd.title"/>
-                                </a>
-                                <span t-attf-style="font-weight:700;color:#{days_since(dd.write_date) > 7 and 'var(--red)' or '#E67E22'}">
-                                    <t t-esc="days_since(dd.write_date)"/> يوم
-                                </span>
+                            <div class="hub-alert-item">
+                                <a t-attf-href="/contractor/documents/#{dd.id}">📄 <t t-esc="dd.name or dd.title"/></a>
+                                <span t-attf-style="font-weight:700;color:#{days_since(dd.write_date) > 7 and 'var(--red)' or 'var(--orange)'}"><t t-esc="days_since(dd.write_date)"/> يوم</span>
                             </div>
                         </t>
                         <t t-foreach="delayed_subs" t-as="ds">
-                            <div style="display:flex;justify-content:space-between;padding:7px 10px;background:var(--surface);
-                                        border-radius:8px;margin-bottom:5px;font-size:12px">
-                                <a t-attf-href="/contractor/submittal/#{ds.id}" style="color:var(--text1);text-decoration:none">
-                                    🧪 <t t-esc="ds.name"/> — <t t-esc="ds.material_name"/>
-                                </a>
-                                <span style="font-weight:700;color:#E67E22">
-                                    <t t-esc="days_since(ds.write_date)"/> يوم
-                                </span>
+                            <div class="hub-alert-item">
+                                <a t-attf-href="/contractor/submittal/#{ds.id}">🧪 <t t-esc="ds.name"/> — <t t-esc="ds.material_name"/></a>
+                                <span style="font-weight:700;color:var(--orange)"><t t-esc="days_since(ds.write_date)"/> يوم</span>
                             </div>
                         </t>
                     </div>
                 </t>
-
                 <t t-if="pending_waqf_docs or pending_waqf_wos">
-                    <div style="background:rgba(35,114,146,.06);border:1px solid rgba(35,114,146,.2);
-                                border-radius:14px;padding:14px 16px">
-                        <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:8px">🕐 بانتظار الوقف</div>
+                    <div class="hub-alert" style="background:rgba(35,114,146,.06);border:1px solid rgba(35,114,146,.2)">
+                        <div class="hub-alert-title" style="color:var(--primary)">🕐 بانتظار الوقف</div>
                         <t t-foreach="pending_waqf_wos[:5]" t-as="pw">
-                            <div style="display:flex;justify-content:space-between;padding:7px 10px;background:var(--surface);
-                                        border-radius:8px;margin-bottom:5px;font-size:12px">
-                                <a t-attf-href="/contractor/work-order/#{pw.id}" style="color:var(--text1);text-decoration:none">
-                                    🔧 <t t-esc="pw.name"/> — <t t-esc="(pw.work_description or '')[:30]"/>
-                                </a>
+                            <div class="hub-alert-item">
+                                <a t-attf-href="/contractor/work-order/#{pw.id}">🔧 <t t-esc="pw.name"/> — <t t-esc="(pw.work_description or '')[:30]"/></a>
                                 <span style="color:var(--text3)"><t t-esc="days_since(pw.write_date)"/> يوم</span>
                             </div>
                         </t>
@@ -177,58 +264,32 @@
             </div>
         </div>
 
-        <!-- أبرز الأعمال -->
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px">
-            <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px">🚀 أبرز أعمال المقاول (آخر 7 أيام)</div>
+        <div class="hub-card">
+            <div class="hub-card-title">🚀 أبرز أعمال المقاول (آخر 7 أيام)</div>
             <t t-foreach="recent_subs" t-as="rs">
-                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+                <div class="hub-act">
                     <t t-if="rs.grade">
-                        <div t-attf-style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-                            font-size:12px;font-weight:900;flex-shrink:0;
-                            background:#{rs.grade == 'a' and 'rgba(46,204,138,.12)' or rs.grade == 'b' and 'rgba(52,152,219,.12)' or rs.grade == 'c' and 'rgba(230,126,34,.12)' or 'rgba(231,76,60,.12)'};
-                            color:#{rs.grade == 'a' and 'var(--green)' or rs.grade == 'b' and '#3498DB' or rs.grade == 'c' and '#E67E22' or 'var(--red)'}">
-                            <t t-esc="rs.grade.upper()"/>
-                        </div>
+                        <div class="hub-act-icon" t-attf-style="background:#{rs.grade=='a' and 'rgba(46,204,138,.12)' or rs.grade=='b' and 'rgba(52,152,219,.12)' or rs.grade=='c' and 'rgba(230,126,34,.12)' or 'rgba(231,76,60,.12)'};color:#{rs.grade=='a' and 'var(--green)' or rs.grade=='b' and '#3498DB' or rs.grade=='c' and 'var(--orange)' or 'var(--red)'}"><t t-esc="rs.grade.upper()"/></div>
                     </t>
-                    <t t-else="">
-                        <div style="width:28px;height:28px;border-radius:50%;background:rgba(200,164,48,.1);
-                                    display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">🧪</div>
-                    </t>
-                    <div style="flex:1;font-size:12px">
-                        <a t-attf-href="/contractor/submittal/#{rs.id}" style="color:var(--text1);text-decoration:none">
-                            <t t-esc="rs.name"/> — <t t-esc="rs.material_name"/>
-                        </a>
-                    </div>
+                    <t t-else=""><div class="hub-act-icon" style="background:rgba(200,164,48,.1)">🧪</div></t>
+                    <div style="flex:1;font-size:12px"><a t-attf-href="/contractor/submittal/#{rs.id}" style="color:var(--text1);text-decoration:none"><t t-esc="rs.name"/> — <t t-esc="rs.material_name"/></a></div>
                     <span style="font-size:11px;color:var(--text3)"><t t-esc="str(rs.write_date or '')[:10]"/></span>
                 </div>
             </t>
             <t t-foreach="recent_docs[:3]" t-as="rd">
-                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
-                    <div style="width:28px;height:28px;border-radius:50%;background:rgba(35,114,146,.1);
-                                display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">📄</div>
-                    <div style="flex:1;font-size:12px">
-                        <a t-attf-href="/contractor/documents/#{rd.id}" style="color:var(--text1);text-decoration:none">
-                            <t t-esc="rd.name or rd.title"/>
-                        </a>
-                        <t t-if="rd.state in ('approved','approved_comments')">
-                            <span style="color:var(--green);font-weight:700"> — معتمد</span>
-                        </t>
-                        <t t-elif="rd.state == 'submitted'">
-                            <span style="color:var(--gold)"> — بانتظار</span>
-                        </t>
+                <div class="hub-act">
+                    <div class="hub-act-icon" style="background:rgba(35,114,146,.1);color:var(--primary)">📄</div>
+                    <div style="flex:1;font-size:12px"><a t-attf-href="/contractor/documents/#{rd.id}" style="color:var(--text1);text-decoration:none"><t t-esc="rd.name or rd.title"/></a>
+                        <t t-if="rd.state in ('approved','approved_comments')"><span style="color:var(--green);font-weight:700"> — معتمد</span></t>
+                        <t t-elif="rd.state == 'submitted'"><span style="color:var(--gold)"> — بانتظار</span></t>
                     </div>
                     <span style="font-size:11px;color:var(--text3)"><t t-esc="str(rd.write_date or '')[:10]"/></span>
                 </div>
             </t>
             <t t-foreach="recent_wos[:3]" t-as="rw">
-                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
-                    <div style="width:28px;height:28px;border-radius:50%;background:rgba(230,126,34,.1);
-                                display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">🔧</div>
-                    <div style="flex:1;font-size:12px">
-                        <a t-attf-href="/contractor/work-order/#{rw.id}" style="color:var(--text1);text-decoration:none">
-                            <t t-esc="rw.name"/> — <t t-esc="(rw.work_description or '')[:30]"/>
-                        </a>
-                    </div>
+                <div class="hub-act">
+                    <div class="hub-act-icon" style="background:rgba(230,126,34,.1);color:var(--orange)">🔧</div>
+                    <div style="flex:1;font-size:12px"><a t-attf-href="/contractor/work-order/#{rw.id}" style="color:var(--text1);text-decoration:none"><t t-esc="rw.name"/> — <t t-esc="(rw.work_description or '')[:30]"/></a></div>
                     <span style="font-size:11px;color:var(--text3)"><t t-esc="str(rw.write_date or '')[:10]"/></span>
                 </div>
             </t>
@@ -239,44 +300,32 @@
          TAB 2: شجرة الملفات
     ══════════════════════════════════════════════════ -->
     <t t-if="active_tab == 'files'">
-        <input type="text" id="tree-search" class="cp-input" style="margin-bottom:12px"
-               placeholder="🔍 بحث بالاسم أو الرقم أو النوع..."
-               onkeyup="filterTree(this.value)"/>
-
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+        <input type="text" class="hub-search" placeholder="🔍 بحث بالاسم أو الرقم أو النوع..." onkeyup="filterTree(this.value)"/>
+        <div class="hub-card" style="padding:0;overflow:hidden">
             <t t-foreach="file_tree" t-as="mt">
-                <div class="tree-item" style="display:flex;align-items:center;gap:10px;padding:12px 16px;
-                            cursor:pointer;border-bottom:1px solid var(--border)"
-                     t-attf-onclick="toggle('m#{mt['mosque'].id}')">
-                    <span t-attf-id="m#{mt['mosque'].id}-arrow" style="transition:transform .2s;font-size:12px">▼</span>
-                    <span style="font-size:16px">🕌</span>
+                <div class="hub-tree-mosque" t-attf-onclick="toggle('m#{mt['mosque'].id}')">
+                    <span t-attf-id="m#{mt['mosque'].id}-arrow" style="font-size:12px">▼</span>
+                    <span>🕌</span>
                     <span style="flex:1;font-weight:700;font-size:13px"><t t-esc="mt['mosque'].name"/></span>
                     <span style="font-size:11px;color:var(--text3)"><t t-esc="mt['total_docs']"/> ملف</span>
                     <span style="font-size:11px;color:var(--primary);font-weight:700"><t t-esc="format_size(mt['total_size'])"/></span>
                 </div>
                 <div t-attf-id="m#{mt['mosque'].id}">
                     <t t-foreach="mt['folders']" t-as="fl">
-                        <div class="tree-item" style="display:flex;align-items:center;gap:10px;padding:10px 16px;padding-right:36px;
-                                    cursor:pointer;border-bottom:1px solid var(--border)"
-                             t-attf-onclick="toggle('f#{mt['mosque'].id}_#{fl['type'].id}')">
+                        <div class="hub-tree-folder" t-attf-onclick="toggle('f#{mt['mosque'].id}_#{fl['type'].id}')">
                             <span t-attf-id="f#{mt['mosque'].id}_#{fl['type'].id}-arrow" style="font-size:11px">▼</span>
-                            <span style="font-size:14px">📁</span>
+                            <span>📁</span>
                             <span style="flex:1;font-size:12px"><t t-esc="fl['type'].name"/></span>
-                            <span style="font-size:11px;color:var(--text3)"><t t-esc="fl['count']"/> ملف — <t t-esc="format_size(fl['size'])"/></span>
+                            <span style="font-size:11px;color:var(--text3)"><t t-esc="fl['count']"/> — <t t-esc="format_size(fl['size'])"/></span>
                         </div>
                         <div t-attf-id="f#{mt['mosque'].id}_#{fl['type'].id}">
                             <t t-foreach="fl['docs']" t-as="fdoc">
-                                <div class="tree-item" style="display:flex;align-items:center;gap:8px;padding:8px 16px;padding-right:56px;
-                                            border-bottom:1px solid var(--border);font-size:12px"
-                                     t-att-data-name="(fdoc.name or '') + ' ' + (fdoc.title or '')">
+                                <div class="hub-tree-file tree-searchable" t-att-data-name="(fdoc.name or '') + ' ' + (fdoc.title or '')">
                                     <span>📄</span>
-                                    <a t-attf-href="/contractor/documents/#{fdoc.id}"
-                                       style="flex:1;color:var(--text1);text-decoration:none">
+                                    <a t-attf-href="/contractor/documents/#{fdoc.id}" style="flex:1;color:var(--text1);text-decoration:none">
                                         <t t-esc="fdoc.name or ''"/> — <t t-esc="(fdoc.title or '')[:40]"/>
                                     </a>
-                                    <span t-attf-style="padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;
-                                        background:#{fdoc.state in ('approved','approved_comments') and 'rgba(46,204,138,.15)' or fdoc.state == 'rejected' and 'rgba(231,76,60,.15)' or fdoc.state == 'submitted' and 'rgba(200,164,48,.15)' or 'rgba(148,163,184,.15)'};
-                                        color:#{fdoc.state in ('approved','approved_comments') and '#1A7A55' or fdoc.state == 'rejected' and 'var(--red)' or fdoc.state == 'submitted' and '#8A6A00' or 'var(--text3)'}">
+                                    <span class="hub-badge" t-attf-style="background:#{fdoc.state in ('approved','approved_comments') and 'rgba(46,204,138,.15)' or fdoc.state=='rejected' and 'rgba(231,76,60,.15)' or fdoc.state=='submitted' and 'rgba(200,164,48,.15)' or 'rgba(148,163,184,.15)'};color:#{fdoc.state in ('approved','approved_comments') and '#1A7A55' or fdoc.state=='rejected' and 'var(--red)' or fdoc.state=='submitted' and '#8A6A00' or 'var(--text3)'}">
                                         <t t-if="fdoc.state in ('approved','approved_comments')">✓</t>
                                         <t t-elif="fdoc.state == 'rejected'">✗</t>
                                         <t t-elif="fdoc.state == 'submitted'">⏳</t>
@@ -295,25 +344,19 @@
          TAB 3: سجل الأحداث
     ══════════════════════════════════════════════════ -->
     <t t-if="active_tab == 'log'">
-        <!-- الزيارات -->
         <t t-if="visits">
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:14px">
-                <div style="padding:10px 16px;background:var(--navy);font-size:12px;font-weight:700;color:white">
-                    📍 آخر الزيارات الميدانية
-                </div>
+            <div class="hub-card" style="padding:0;overflow:hidden">
+                <div style="padding:10px 16px;background:var(--navy);font-size:12px;font-weight:700;color:white">📍 آخر الزيارات</div>
                 <t t-foreach="visits[:10]" t-as="v">
-                    <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border)">
-                        <div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0"></div>
-                        <div style="width:28px;height:28px;border-radius:50%;background:rgba(46,204,138,.1);
-                                    display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px">📍</div>
+                    <div class="hub-tl">
+                        <div class="hub-tl-dot" style="background:var(--green)"></div>
+                        <div class="hub-tl-icon" style="background:rgba(46,204,138,.1);color:var(--green)">📍</div>
                         <div style="flex:1;font-size:12px">
                             <t t-if="v.engineer_id"><t t-esc="v.engineer_id.name"/></t>
                             <t t-elif="v.portal_user_id"><t t-esc="v.portal_user_id.name"/></t>
                             — <b><t t-esc="v.mosque_id.name if v.mosque_id else ''"/></b>
-                            <br/><span style="color:var(--text3)">
-                                <t t-esc="round(v.distance_m or 0)"/> م
-                                <t t-if="v.check_out"> · <t t-esc="round(v.duration or 0, 1)"/> ساعة</t>
-                            </span>
+                            <br/><span style="color:var(--text3)"><t t-esc="round(v.distance_m or 0)"/> م
+                            <t t-if="v.check_out"> · <t t-esc="round(v.duration or 0, 1)"/> ساعة</t></span>
                         </div>
                         <span style="font-size:11px;color:var(--text3);flex-shrink:0"><t t-esc="str(v.check_in)[:16]"/></span>
                     </div>
@@ -321,37 +364,24 @@
             </div>
         </t>
 
-        <!-- رسائل النظام -->
         <t t-if="messages">
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+            <div class="hub-card" style="padding:0;overflow:hidden">
                 <div style="padding:10px 16px;background:var(--navy);font-size:12px;font-weight:700;color:white;
                             display:flex;justify-content:space-between">
-                    <span>📝 سجل الأحداث والتحديثات</span>
-                    <span style="padding:2px 10px;border-radius:999px;background:rgba(255,255,255,.15);font-size:11px">
-                        <t t-esc="len(messages)"/>
-                    </span>
+                    <span>📝 سجل التحديثات</span>
+                    <span style="padding:2px 10px;border-radius:999px;background:rgba(255,255,255,.15);font-size:11px"><t t-esc="len(messages)"/></span>
                 </div>
                 <t t-foreach="messages" t-as="msg">
-                    <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border)">
-                        <div style="width:28px;height:28px;border-radius:50%;background:rgba(35,114,146,.1);
-                                    display:flex;align-items:center;justify-content:center;flex-shrink:0;
-                                    font-size:11px;font-weight:800;color:var(--primary)">
+                    <div class="hub-tl">
+                        <div class="hub-tl-dot" style="background:var(--primary)"></div>
+                        <div class="hub-tl-icon" style="background:rgba(35,114,146,.1);color:var(--primary);font-size:11px;font-weight:800">
                             <t t-esc="(msg.author_id.name or '?')[0]"/>
                         </div>
                         <div style="flex:1;min-width:0">
-                            <div style="font-size:12px;font-weight:700;color:var(--text1)">
-                                <t t-esc="msg.author_id.name or 'النظام'"/>
-                                <span style="font-weight:400;color:var(--text3);font-size:11px;margin-right:6px">
-                                    <t t-esc="msg.model or ''"/>
-                                </span>
-                            </div>
-                            <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-top:2px">
-                                <t t-raw="msg.body"/>
-                            </div>
+                            <div style="font-size:12px;font-weight:700;color:var(--text1)"><t t-esc="msg.author_id.name or 'النظام'"/></div>
+                            <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-top:2px"><t t-raw="msg.body"/></div>
                         </div>
-                        <span style="font-size:10px;color:var(--text3);flex-shrink:0;white-space:nowrap">
-                            <t t-esc="str(msg.date)[:16]"/>
-                        </span>
+                        <span style="font-size:10px;color:var(--text3);flex-shrink:0"><t t-esc="str(msg.date)[:16]"/></span>
                     </div>
                 </t>
             </div>
@@ -362,68 +392,46 @@
          TAB 4: التقارير
     ══════════════════════════════════════════════════ -->
     <t t-if="active_tab == 'reports'">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px" class="hub-two-col">
+            <div class="hub-card">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(46,204,138,.1);
-                                display:flex;align-items:center;justify-content:center;font-size:18px">📊</div>
-                    <div><div style="font-size:14px;font-weight:700">تصدير Excel تفصيلي</div>
-                        <div style="font-size:11px;color:var(--text3)">4 أوراق: وثائق، عينات، أوامر، زيارات</div></div>
+                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(46,204,138,.1);display:flex;align-items:center;justify-content:center;font-size:18px">📊</div>
+                    <div><div style="font-size:14px;font-weight:700">تصدير Excel</div><div style="font-size:11px;color:var(--text3)">4 أوراق: وثائق، عينات، أوامر، زيارات</div></div>
                 </div>
                 <div style="font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:12px">
-                    ✅ كل المعاملات مع الحالات والتواريخ<br/>
+                    ✅ كل المعاملات بالحالات والتواريخ<br/>
                     ✅ الملاحظات والتقييمات<br/>
                     ✅ زيارات آخر 30 يوم
                 </div>
-                <a href="/ops/hub/export/excel" style="display:block;width:100%;padding:10px;border-radius:10px;
-                   border:1px solid var(--border);background:var(--surface);text-align:center;
-                   font-size:13px;font-weight:700;color:var(--text1);text-decoration:none">📥 تحميل Excel</a>
+                <a href="/ops/hub/export/excel" class="hub-report-btn">📥 تحميل Excel</a>
             </div>
-
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px">
+            <div class="hub-card">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(231,76,60,.1);
-                                display:flex;align-items:center;justify-content:center;font-size:18px">📄</div>
-                    <div><div style="font-size:14px;font-weight:700">تقرير PDF للإدارة</div>
-                        <div style="font-size:11px;color:var(--text3)">ملخص تنفيذي مع إحصاءات</div></div>
+                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;font-size:18px">📄</div>
+                    <div><div style="font-size:14px;font-weight:700">تقرير PDF للإدارة</div><div style="font-size:11px;color:var(--text3)">ملخص تنفيذي مع إحصاءات</div></div>
                 </div>
                 <div style="font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:12px">
                     ✅ KPIs وإحصاءات عامة<br/>
                     ✅ المتأخرات والمعلّقات<br/>
                     ✅ ملخص الفترة
                 </div>
-                <a href="/ops/hub/export/excel" style="display:block;width:100%;padding:10px;border-radius:10px;
-                   border:1px solid var(--border);background:var(--surface);text-align:center;
-                   font-size:13px;font-weight:700;color:var(--text1);text-decoration:none">📥 تحميل PDF</a>
+                <a href="/ops/hub/export/excel" class="hub-report-btn">📥 تحميل PDF</a>
             </div>
         </div>
 
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px">
-            <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:14px">📈 إحصاءات الفترة (30 يوم)</div>
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
-                <div style="text-align:center;padding:14px;background:var(--surface2);border-radius:10px">
-                    <div style="font-size:10px;color:var(--text3);margin-bottom:4px">متوسط وقت المعالجة</div>
-                    <div style="font-size:22px;font-weight:800;color:var(--text1)"><t t-esc="avg_process"/> <span style="font-size:12px">يوم</span></div>
-                </div>
-                <div style="text-align:center;padding:14px;background:var(--surface2);border-radius:10px">
-                    <div style="font-size:10px;color:var(--text3);margin-bottom:4px">نسبة الاعتماد</div>
-                    <div style="font-size:22px;font-weight:800;color:var(--green)"><t t-esc="approval_rate"/><span style="font-size:12px">%</span></div>
-                </div>
-                <div style="text-align:center;padding:14px;background:var(--surface2);border-radius:10px">
-                    <div style="font-size:10px;color:var(--text3);margin-bottom:4px">زيارات هذا الشهر</div>
-                    <div style="font-size:22px;font-weight:800;color:var(--primary)"><t t-esc="month_visits"/></div>
-                </div>
-                <div style="text-align:center;padding:14px;background:var(--surface2);border-radius:10px">
-                    <div style="font-size:10px;color:var(--text3);margin-bottom:4px">متوسط مدة الزيارة</div>
-                    <div style="font-size:22px;font-weight:800;color:var(--text1)"><t t-esc="avg_duration"/> <span style="font-size:12px">ساعة</span></div>
-                </div>
+        <div class="hub-card">
+            <div class="hub-card-title">📈 إحصاءات الفترة (30 يوم)</div>
+            <div class="hub-stat-grid">
+                <div class="hub-stat-box"><div class="hub-stat-lbl">متوسط وقت المعالجة</div><div class="hub-stat-val" style="color:var(--text1)"><t t-esc="avg_process"/> <span style="font-size:12px">يوم</span></div></div>
+                <div class="hub-stat-box"><div class="hub-stat-lbl">نسبة الاعتماد</div><div class="hub-stat-val" style="color:var(--green)"><t t-esc="approval_rate"/><span style="font-size:12px">%</span></div></div>
+                <div class="hub-stat-box"><div class="hub-stat-lbl">زيارات الشهر</div><div class="hub-stat-val" style="color:var(--primary)"><t t-esc="month_visits"/></div></div>
+                <div class="hub-stat-box"><div class="hub-stat-lbl">متوسط مدة الزيارة</div><div class="hub-stat-val" style="color:var(--text1)"><t t-esc="avg_duration"/> <span style="font-size:12px">ساعة</span></div></div>
             </div>
         </div>
     </t>
 
-    <!-- ══════════════════════════════════════════════════
-         SCRIPT — شجرة الملفات
-    ══════════════════════════════════════════════════ -->
+    </div><!-- hub-wrap -->
+
     <script>
     function toggle(id) {
         var el = document.getElementById(id);
@@ -439,13 +447,13 @@
     }
     function filterTree(q) {
         q = q.toLowerCase();
-        document.querySelectorAll('.tree-item[data-name]').forEach(function(el) {
-            el.style.display = (!q || (el.dataset.name || '').toLowerCase().indexOf(q) >= 0)
-                ? 'flex' : 'none';
+        document.querySelectorAll('.tree-searchable').forEach(function(el) {
+            el.style.display = (!q || (el.dataset.name || '').toLowerCase().indexOf(q) >= 0) ? 'flex' : 'none';
         });
     }
     </script>
 
+</body>
 </t>
 </template>
 </odoo>
