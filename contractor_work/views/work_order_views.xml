@@ -30,9 +30,9 @@
         <button name="action_reject_commencement" type="object"
                 string="رفض البدء" class="btn-danger"
                 invisible="state != 'submitted'"/>
-        <button name="action_submit_delivery" type="object"
-                string="إرسال التسليم" class="btn-primary"
-                invisible="state != 'approved'"/>
+        <button name="action_grade" type="object"
+                string="إعتماد التقييم" class="btn-primary"
+                invisible="state != 'delivered'"/>
         <button name="action_start_testing" type="object"
                 string="بدء الاختبارات" class="btn-secondary"
                 invisible="state not in ['graded']"/>
