@@ -253,7 +253,7 @@ class ContractorWorkOrder(models.Model):
             })
             rec.message_post(body='🏗 تم إرسال التسليم للتقييم')
 
-    def action_grade(self, grade, notes=''):
+    def action_grade(self):
         """الاستشاري يقيّم التسليم."""
         for rec in self:
             next_state = {
@@ -261,28 +261,28 @@ class ContractorWorkOrder(models.Model):
                 'b': 'graded',
                 'c': 'rework',
                 'd': 'rework',
-            }.get(grade, 'graded')
+            }.get(rec.grade, 'graded')
 
             rec.write({
-                'grade':      grade,
-                'grade_notes': notes,
+                'grade':      rec.grade,
+                'grade_notes': rec.grade_notes,
                 'graded_by':  self.env.user.id,
                 'grade_date': date.today(),
                 'state':      next_state,
             })
 
-            if grade in ('c', 'd'):
+            if rec.grade in ('c', 'd'):
                 rec.env['contractor.work.order.rework'].create({
                     'work_order_id': rec.id,
-                    'grade':         grade,
-                    'notes':         notes,
+                    'grade':         rec.grade,
+                    'notes':         rec.grade_notes,
                     'date':          date.today(),
                 })
                 rec.message_post(
-                    body=f'⚠ التقييم {grade.upper()} — مطلوب إعادة عمل')
+                    body=f'⚠ التقييم {rec.grade.upper()} — مطلوب إعادة عمل')
             else:
                 rec.message_post(
-                    body=f'✅ التقييم {grade.upper()} — {notes}')
+                    body=f'✅ التقييم {rec.grade.upper()} — {rec.grade_notes}')
 
     def action_start_testing(self):
         """الانتقال لمرحلة الاختبار."""
