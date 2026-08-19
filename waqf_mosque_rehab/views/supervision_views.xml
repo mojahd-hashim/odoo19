@@ -46,6 +46,7 @@
 <!--                        <field name="workers_on_site"/>-->
 <!--                        <field name="equipment_count"/>-->
                         <field name="safety_incidents"/>
+                        <field name="si_count"/>
                         <field name="ncr_count"/>
                         <field name="itp_hold_points_checked"/>
                         <field name="itp_hold_points_approved"/>
@@ -111,6 +112,7 @@
                 <field name="gps_validated" widget="boolean_toggle"/>
                 <field name="qr_validated" widget="boolean_toggle"/>
                 <field name="ncr_count"/>
+                <field name="si_count"/>
                 <field name="safety_incidents"/>
                 <field name="state" widget="badge"/>
             </list>

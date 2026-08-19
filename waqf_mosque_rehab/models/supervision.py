@@ -51,6 +51,7 @@ class MosqueSupervision(models.Model):
     recommendations = fields.Text(string='Recommendations')
 
     # ── Quality & Safety ──────────────────────────────────────────
+    si_count = fields.Integer(string='تعليمات الموقع   SI')
     ncr_count = fields.Integer(string='Non-Conformance Reports (NCR)')
     safety_incidents = fields.Integer(string='Safety Incidents', default=0)
     itp_hold_points_checked = fields.Integer(string='ITP Hold Points Checked')
