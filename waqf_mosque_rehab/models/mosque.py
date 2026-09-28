@@ -281,9 +281,10 @@ class MosqueMosque(models.Model):
     def _recompute_progress(self):
         """التقدم الزمني والتأخير والمؤشر تعتمد على تاريخ اليوم، لكنها مخزّنة
         ولا تُعاد إلا عند تغيّر البيانات؛ هذه الدالة تُعيد حسابها الآن."""
-        fields_ = [f for f in self._fields.values() if f.compute == '_compute_progress']
-        for f in fields_:
-            self.env.add_to_compute(f, self)
+        if not self:
+            return
+        # كل حقول _compute_progress تعتمد على planned_start، فإعلامها بتغيّره يعيد حسابها
+        self.modified(['planned_start'])
         self.env.flush_all()
 
     @api.model

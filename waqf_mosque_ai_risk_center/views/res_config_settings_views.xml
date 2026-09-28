@@ -110,7 +110,7 @@
         <field name="name">إعدادات مركز المخاطر الذكي</field>
         <field name="res_model">res.config.settings</field>
         <field name="view_mode">form</field>
-        <field name="target">inline</field>
+        <field name="target">current</field>
         <field name="context">{'module': 'waqf_mosque_ai_risk_center', 'bin_size': False}</field>
     </record>
 
