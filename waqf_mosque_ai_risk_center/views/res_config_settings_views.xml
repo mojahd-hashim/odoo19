@@ -72,6 +72,10 @@
                     </block>
 
                     <block title="جدولة التحليل">
+                        <setting string="مرحلة التحليل"
+                                 help="المرحلة التي يحللها التشغيل المجدول وزر «تحليل المرحلة» — فارغ = المرحلة الحالية حسب التواريخ">
+                            <field name="waqf_ai_phase_id" options="{'no_create': True}" placeholder="المرحلة الحالية تلقائياً"/>
+                        </setting>
                         <setting string="التحليل كل" help="يُطبَّق على المهمة المجدولة عند الحفظ">
                             <field name="waqf_ai_run_interval_hours" class="oe_inline"/> ساعة
                         </setting>
@@ -82,9 +86,9 @@
                                  help="تنبيهات وتوقعات الذكاء الاصطناعي الأقل من هذه الثقة (0–1) لا تُحفظ">
                             <field name="waqf_ai_confidence_threshold"/>
                         </setting>
-                        <setting string="تشغيل التحليل الآن" help="يحفظ الإعدادات ثم يحلل المرحلة الحالية">
+                        <setting string="تشغيل التحليل الآن" help="يحفظ الإعدادات ثم يحلل المرحلة المحددة أعلاه (أو الحالية)">
                             <button name="action_waqf_ai_run_now" type="object"
-                                    string="تحليل المرحلة الحالية" icon="fa-play" class="btn-secondary"/>
+                                    string="تحليل المرحلة الآن" icon="fa-play" class="btn-secondary"/>
                         </setting>
                     </block>
 

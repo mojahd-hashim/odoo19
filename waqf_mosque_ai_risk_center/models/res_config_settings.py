@@ -5,7 +5,7 @@ from odoo.exceptions import UserError
 from .ai_client import DEFAULT_API_VERSION
 
 DEFAULT_ANALYSIS_PROMPT = '''أنت وكيل تحليل مخاطر تنفيذي لمشروع تأهيل المساجد (وقف الملك عبدالله).
-حلل بيانات المرحلة الحالية فقط.
+حلل بيانات المرحلة المرسلة فقط.
 اربط بين الإنجاز الفعلي والمخطط، والمستخلصات، والاعتمادات، والحضور اليومي للمهندسين
 (8 ساعات من الأحد إلى الخميس)، وأوامر التغيير، وتنفيذ جدول الكميات.
 لا تنشئ تنبيهًا إلا إذا كان له دليل واضح من الأرقام، ولا تكرر تنبيهات القواعد.
@@ -48,6 +48,9 @@ class ResConfigSettings(models.TransientModel):
     waqf_ai_chat_prompt = fields.Text(string='تعليمات المساعد «مساند»')
 
     # ── Run settings ───────────────────────────────────────────
+    waqf_ai_phase_id = fields.Many2one(
+        'mosque.package', string='مرحلة التحليل', config_parameter='waqf_ai_phase_id',
+        help='اتركه فارغاً لتحليل المرحلة الحالية حسب تواريخها')
     waqf_ai_run_interval_hours = fields.Integer(
         string='التحليل كل (ساعة)', default=2, config_parameter='waqf_ai_run_interval_hours')
     waqf_ai_max_mosques_per_run = fields.Integer(

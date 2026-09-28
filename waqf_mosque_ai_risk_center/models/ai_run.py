@@ -106,6 +106,12 @@ class WaqfAiSnapshotRun(models.Model):
     @api.model
     def _find_current_phase(self):
         Package = self.env['mosque.package'].sudo()
+        # مرحلة محددة من الإعدادات لها الأولوية
+        fixed = self._get_param('waqf_ai_phase_id')
+        if fixed and str(fixed).isdigit():
+            phase = Package.browse(int(fixed)).exists()
+            if phase:
+                return phase
         today = fields.Date.context_today(self)
         phase = Package.search([
             ('planned_start', '<=', today),
