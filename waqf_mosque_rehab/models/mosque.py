@@ -104,6 +104,9 @@ class MosqueMosque(models.Model):
                                        compute='_compute_progress', store=True)
     overall_kpi         = fields.Float(string='Overall KPI (%)',
                                        compute='_compute_progress', store=True)
+    work_progress       = fields.Float(string='الإنجاز (%)', compute='_compute_progress', store=True,
+                                       help='متوسط: المهام المعتمدة ÷ مهام الخطة، وأوامر العمل المقبولة ÷ المرفوعة. '
+                                            'الكميات للمعلومية فقط ولا تدخل في الإنجاز.')
     kpi_color           = fields.Char(compute='_compute_kpi_color')
 
     boq_count           = fields.Integer(compute='_compute_counts')
@@ -155,6 +158,9 @@ class MosqueMosque(models.Model):
             rec.total_boq_value = total_contracted
             rec.financial_progress = (total_executed / total_contracted * 100) if total_contracted else 0.0
 
+            # ── Work progress (الإنجاز): عدد الأعمال المعتمدة — الكميات للمعلومية فقط ──
+            rec.work_progress = rec._work_progress_value()
+
             # ── Certified amount ──────────────────────────────────
             approved_certs = rec.certificate_ids.filtered(lambda c: c.state == 'waqf_approved')
             rec.certified_amount = sum(approved_certs.mapped('certified_amount'))
@@ -169,7 +175,7 @@ class MosqueMosque(models.Model):
                 elapsed_days = (today - rec.planned_start).days
                 rec.time_progress = max(0.0, min(100.0, elapsed_days / total_days * 100))
                 # Delay: if execution not done yet
-                if (today > rec.planned_end and rec.financial_progress < 100
+                if (today > rec.planned_end and rec.work_progress < 100
                         and rec.state not in ('initial_hov', 'final_hov', 'warranty', 'closed')):
                     rec.days_delay = (today - rec.planned_end).days
                 else:
@@ -196,12 +202,12 @@ class MosqueMosque(models.Model):
             # ── Overall KPI (مؤشر الأداء العام) ───────────────────
             # المعادلة السابقة كانت تجمع التقدم الزمني كنقاط، فيرتفع المؤشر
             # بمرور الوقت حتى بدون إنجاز. المعادلة الحالية تقيس الأداء:
-            #   60% الالتزام بالجدول = الإنجاز الفعلي ÷ المخطط (بهامش 5 نقاط لبداية المشروع)
+            #   60% الالتزام بالجدول = الإنجاز (عدد الأعمال المعتمدة) ÷ المخطط الزمني (بهامش 5 نقاط)
             #   25% الالتزام بالحضور اليومي (8 ساعات، الأحد–الخميس)
             #   15% الالتزام بالمدة  = 100 − نقطتان لكل يوم تأخير
             # مشروع لم يبدأ ولا إنجاز فيه = 0 (يظهر «لم يبدأ»).
             done = rec.state in ('initial_hov', 'final_hov', 'warranty', 'closed')
-            actual, planned = rec.financial_progress, rec.time_progress
+            actual, planned = rec.work_progress, rec.time_progress
             if not done and actual == 0 and planned == 0:
                 rec.overall_kpi = 0.0
             else:
@@ -211,6 +217,16 @@ class MosqueMosque(models.Model):
                     schedule * 0.60 +
                     rec.visit_compliance * 0.25 +
                     duration * 0.15, 1)
+
+    def _work_progress_parts(self):
+        """أجزاء الإنجاز — تُعرَّف في contractor_work (أوامر العمل + مهام الخطة)."""
+        self.ensure_one()
+        return {}
+
+    def _work_progress_value(self):
+        parts = self._work_progress_parts()
+        ratios = [p for p in (parts.get('tasks_pct'), parts.get('wo_pct')) if p is not None]
+        return round(sum(ratios) / len(ratios), 1) if ratios else 0.0
 
     # ── Daily attendance helpers ──────────────────────────────────
     DAILY_HOURS = 8.0

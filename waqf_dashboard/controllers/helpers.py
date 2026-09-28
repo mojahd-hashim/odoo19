@@ -61,12 +61,13 @@ def current_package(env, today=None):
 def mosque_perf(m, today=None):
     """Actual vs planned progress for one mosque, computed for today.
 
-    actual   = executed BOQ value / contracted BOQ value (financial_progress)
+    actual   = work_progress: approved plan tasks & accepted work orders (count-based)
+               — BOQ quantities (financial_progress) are informational only
     planned  = share of the planned duration already elapsed
     status   = done | not_started | critical | warning | ok
     """
     today = today or riyadh_today()
-    actual = round(m.financial_progress or 0.0, 1)
+    actual = round((m.work_progress if 'work_progress' in m._fields else m.financial_progress) or 0.0, 1)
 
     planned = 0.0
     delay = 0
@@ -106,7 +107,9 @@ def mosque_perf(m, today=None):
         'spi': spi,
         'contract_value': m.contract_value or contracted,
         'boq_value': contracted,
-        'executed_value': round(contracted * actual / 100.0, 2),
+        # الكميات — للمعلومية فقط
+        'qty_pct': round(m.financial_progress or 0.0, 1),
+        'executed_value': round(contracted * (m.financial_progress or 0.0) / 100.0, 2),
     }
 
 

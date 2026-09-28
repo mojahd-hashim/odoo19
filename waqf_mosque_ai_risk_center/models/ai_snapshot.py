@@ -19,7 +19,8 @@ class WaqfAiMosqueSnapshot(models.Model):
     contract_value = fields.Float()
     planned_start = fields.Date()
     planned_end = fields.Date()
-    financial_progress = fields.Float()
+    financial_progress = fields.Float()     # الكميات المنفذة % — للمعلومية
+    work_progress = fields.Float()          # الإنجاز: المهام المعتمدة وأوامر العمل المقبولة (بالعدد)
     time_progress = fields.Float()
     visit_compliance = fields.Float()
     overall_kpi = fields.Float()
@@ -113,6 +114,7 @@ class WaqfAiMosqueSnapshot(models.Model):
         active_streams = self.env['waqf.live.stream'].sudo().search_count(
             [('mosque_id', '=', mosque.id), ('is_active', '=', True)]) if 'waqf.live.stream' in self.env else 0
         financial_progress = self._safe_num(getattr(mosque, 'financial_progress', 0))
+        work_progress = self._safe_num(getattr(mosque, 'work_progress', financial_progress))
         time_progress = self._safe_num(getattr(mosque, 'time_progress', 0))
         days_delay = int(getattr(mosque, 'days_delay', 0) or 0)
 
@@ -122,6 +124,7 @@ class WaqfAiMosqueSnapshot(models.Model):
         report_quality_score = self._report_quality_score(last_report, boq_lines)
         numeric = {
             'financial_time_variance': financial_progress - time_progress,
+            'progress_time_variance': work_progress - time_progress,
             # المصروف (المستخلصات المعتمدة) مقابل المنفذ فعلياً
             'certified_percent': round(certified_percent, 1),
             'certified_vs_executed': round(certified_percent - boq_execution_percent, 1),
@@ -155,6 +158,7 @@ class WaqfAiMosqueSnapshot(models.Model):
             'planned_start': getattr(mosque, 'planned_start', False),
             'planned_end': getattr(mosque, 'planned_end', False),
             'financial_progress': financial_progress,
+            'work_progress': work_progress,
             'time_progress': time_progress,
             'visit_compliance': self._safe_num(getattr(mosque, 'visit_compliance', 0)),
             'overall_kpi': self._safe_num(getattr(mosque, 'overall_kpi', 0)),

@@ -20,8 +20,6 @@ class WaqfDashboardController(http.Controller):
         for pkg in env['mosque.package'].sudo().search([], order='sequence'):
             mosques = pkg.mosque_ids.filtered_domain(base_domain) if base_domain else pkg.mosque_ids
             perfs = [(m, mosque_perf(m, today)) for m in mosques]
-            boq_total = sum(p['boq_value'] for _m, p in perfs)
-            executed = sum(p['executed_value'] for _m, p in perfs)
             is_current = is_past = is_future = False
             if pkg.planned_start and pkg.planned_end:
                 is_current = pkg.planned_start <= today <= pkg.planned_end
@@ -30,7 +28,7 @@ class WaqfDashboardController(http.Controller):
             packages_data.append({
                 'id': pkg.id, 'code': pkg.code, 'name': pkg.name,
                 'mosque_count': len(mosques),
-                'avg_kpi': round(executed / boq_total * 100, 1) if boq_total else 0,
+                'avg_kpi': round(sum(p['actual_pct'] for _m, p in perfs) / len(perfs), 1) if perfs else 0,
                 'delayed_count': sum(1 for _m, p in perfs if p['status'] == 'critical'),
                 'planned_start': str(pkg.planned_start) if pkg.planned_start else '',
                 'planned_end': str(pkg.planned_end) if pkg.planned_end else '',

@@ -286,7 +286,7 @@ class WaqfDashboardAPI(http.Controller):
 
             # Financial deviation
             over_budget = mosques.filtered(
-                lambda m: m.financial_progress > m.time_progress + 15)
+                lambda m: m.financial_progress > m.work_progress + 15)
             if over_budget:
                 insights.append({
                     'type': 'risk', 'icon': '📊', 'priority': 2,
@@ -395,7 +395,7 @@ class WaqfDashboardAPI(http.Controller):
                 # Impact = inverse of KPI
                 impact = max(0, min(100, 100 - m.overall_kpi))
                 # Probability = based on delay + financial deviation
-                fin_dev = abs(m.financial_progress - m.time_progress)
+                fin_dev = abs(m.work_progress - m.time_progress)
                 prob = max(0, min(100, (m.days_delay / 2) + fin_dev))
                 risk_lvl = ('critical' if impact > 60 and prob > 60 else
                             'high' if impact > 45 or prob > 45 else
@@ -584,9 +584,17 @@ class WaqfDashboardAPI(http.Controller):
                 [('is_active', '=', True), ('mosque_id', '!=', False)]):
             streams.setdefault(st.mosque_id.id, st.stream_url)
 
+        activity = self._mosque_activity(env, mosques.ids)
+
         result = []
         for m in mosques:
             perf = mosque_perf(m, today)
+            act = activity.get(m.id, {})
+            parts = m._work_progress_parts()
+            ratios = [x for x in (parts.get('tasks_pct'), parts.get('wo_pct')) if x is not None]
+            # حصة الأوامر الجارية من نسبة الإنجاز (بنفس وزن مكوّن أوامر العمل)
+            ip_pct = (parts.get('wo_inprogress', 0) / parts['wo_total'] * 100 / len(ratios)
+                      if parts.get('wo_total') and ratios else 0.0)
             result.append({
                 'id': m.id,
                 'code': m.code,
@@ -606,9 +614,48 @@ class WaqfDashboardAPI(http.Controller):
                 'lng': m.longitude,
                 'onsite': onsite.get(m.id, []),
                 'stream_url': streams.get(m.id, ''),
+                # أعمال جارية: أوامر معتمدة البدء أو مسلّمة ولم تُقيَّم بعد (لا تدخل في المنفذ)
+                'inprogress_value': act.get('inprogress_value', 0.0),
+                'inprogress_pct': round(ip_pct, 1),
+                'task_done': parts.get('task_done', 0), 'task_total': parts.get('task_total', 0),
+                'wo_done': parts.get('wo_done', 0), 'wo_total': parts.get('wo_total', 0),
+                'wo_open': act.get('wo_open', 0),
+                'wo_awaiting_grade': act.get('wo_awaiting_grade', 0),
+                'wo_week': act.get('wo_week', 0),
+                'reports_week': act.get('reports_week', 0),
                 **perf,
             })
         return _json(result)
+
+    @staticmethod
+    def _mosque_activity(env, mosque_ids):
+        """نشاط كل مسجد: قيمة الأعمال الجارية، أوامر العمل المفتوحة، ونشاط آخر 7 أيام."""
+        act = {}
+        week_ago = datetime.utcnow() - timedelta(days=7)
+        if 'contractor.work.order' in env:
+            for wo in env['contractor.work.order'].sudo().search([
+                    ('mosque_id', 'in', mosque_ids),
+                    ('state', 'not in', ['draft', 'rejected'])]):
+                a = act.setdefault(wo.mosque_id.id, {})
+                if wo.state in ('approved', 'delivered', 'rework', 'testing') and not wo.boq_executed_posted:
+                    a['inprogress_value'] = a.get('inprogress_value', 0.0) + (wo.total_value or 0.0)
+                if wo.state in ('submitted', 'approved', 'delivered', 'rework', 'testing'):
+                    a['wo_open'] = a.get('wo_open', 0) + 1
+                if wo.state == 'delivered':
+                    a['wo_awaiting_grade'] = a.get('wo_awaiting_grade', 0) + 1
+                if wo.create_date and wo.create_date >= week_ago:
+                    a['wo_week'] = a.get('wo_week', 0) + 1
+        since = (datetime.utcnow() - timedelta(days=7)).date()
+        for rep in env['mosque.supervision'].sudo().search(
+                [('mosque_id', 'in', mosque_ids), ('report_date', '>=', since)]):
+            a = act.setdefault(rep.mosque_id.id, {})
+            a['reports_week'] = a.get('reports_week', 0) + 1
+        if 'contractor.work.log' in env:
+            for log in env['contractor.work.log'].sudo().search(
+                    [('mosque_id', 'in', mosque_ids), ('create_date', '>=', week_ago)]):
+                a = act.setdefault(log.mosque_id.id, {})
+                a['reports_week'] = a.get('reports_week', 0) + 1
+        return act
 
     # ══════════════════════════════════════════════════════
     # PACKAGES (Gantt)
@@ -919,7 +966,7 @@ class WaqfDashboardAPI(http.Controller):
                             snap.overall_kpi or 0))),
                     'risk_probability': latest_alert.probability_score if latest_alert else max(0, min(100, (
                             snap.days_delay or 0) * 2 + abs(
-                        (snap.financial_progress or 0) - (snap.time_progress or 0)))),
+                        (snap.work_progress or 0) - (snap.time_progress or 0)))),
                     'health_score': round(snap.overall_kpi or 0, 1),
                     'forecast_finish': '',
                     'variance_days': latest_prediction.expected_delay_days if latest_prediction else (
@@ -938,7 +985,9 @@ class WaqfDashboardAPI(http.Controller):
                 'district': m.district or '',
                 'state': m.state,
                 'overall_kpi': round(m.overall_kpi, 1),
-                'financial_kpi': round(m.financial_progress, 1),
+                'financial_kpi': perf['actual_pct'],          # الإنجاز (بعدد الأعمال المعتمدة)
+                'qty_pct': perf['qty_pct'],                    # الكميات — للمعلومية
+                'progress_parts': m._work_progress_parts(),
                 'time_kpi': perf['planned_pct'],
                 'visit_compliance': round(m.visit_compliance, 1),
                 'days_delay': perf['days_delay'],

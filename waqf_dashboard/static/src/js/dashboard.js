@@ -94,6 +94,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (mime.includes('zip')) return '🗜';
         return '📁';
     };
+    // مبلغ مالي يُخفى عند تفعيل «إخفاء المالية»
+    const mny = v => `<span class="fin">${fmt(v)} ر</span>`;
     // قيمة مالية مختصرة: مليون / ألف
     const money = v => v >= 1e6
         ? {val: (v / 1e6).toLocaleString('en-US', {maximumFractionDigits: 1}), unit: 'م ر'}
@@ -131,6 +133,7 @@ document.addEventListener('DOMContentLoaded', function () {
        INIT
        ══════════════════════════════════════════════════════════ */
     async function init() {
+        initFinToggle();
         startClock();
         buildSidebar(S.packages);
         renderOnsite(S.onsite);
@@ -233,6 +236,27 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /* ── ساعة الرياض ──────────────────────────────────────────── */
+    function initFinToggle() {
+        const btn = $('fin-toggle');
+        const apply = hidden => {
+            document.body.classList.toggle('hide-fin', hidden);
+            if (btn) {
+                btn.classList.toggle('on', hidden);
+                btn.title = hidden ? 'إظهار التفاصيل المالية' : 'إخفاء التفاصيل المالية';
+                const lbl = btn.querySelector('span');
+                if (lbl) lbl.textContent = hidden ? 'إظهار المالية' : 'إخفاء المالية';
+            }
+        };
+        let hidden = false;
+        try { hidden = localStorage.getItem('waqf_hide_fin') === '1'; } catch (e) { /* ignore */ }
+        apply(hidden);
+        btn?.addEventListener('click', () => {
+            hidden = !document.body.classList.contains('hide-fin');
+            apply(hidden);
+            try { localStorage.setItem('waqf_hide_fin', hidden ? '1' : '0'); } catch (e) { /* ignore */ }
+        });
+    }
+
     function startClock() {
         const el = $('riyadh-clock');
         if (!el) return;
@@ -271,9 +295,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const contract = list.reduce((s, m) => s + (m.contract_value || 0), 0);
         const boq = list.reduce((s, m) => s + (m.boq_value || 0), 0);
         const executed = list.reduce((s, m) => s + (m.executed_value || 0), 0);
-        const actual = boq ? executed / boq * 100 : 0;
-        // المخطط موزون بقيمة جدول الكميات
-        const planned = boq ? list.reduce((s, m) => s + (m.boq_value || 0) * (m.planned_pct || 0), 0) / boq : 0;
+        // الإنجاز = متوسط إنجاز المساجد (بعدد الأعمال المعتمدة) — الكميات للمعلومية
+        const avg = k => n ? list.reduce((s, m) => s + (m[k] || 0), 0) / n : 0;
+        const sum = k => list.reduce((s, m) => s + (m[k] || 0), 0);
+        const actual = avg('actual_pct');
+        const inprogPct = avg('inprogress_pct');
+        const inprog = sum('inprogress_value');
+        const awaiting = sum('wo_awaiting_grade');
+        const planned = avg('planned_pct');
         const by = st => list.filter(m => m.status === st).length;
         const active = n - by('not_started');
 
@@ -283,15 +312,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
         set('kpi-actual', Math.round(actual));
         const bar = $('kpi-actual-bar'); if (bar) bar.style.width = Math.min(100, actual) + '%';
+        const ipb = $('kpi-inprog-bar');
+        if (ipb) { ipb.style.right = Math.min(100, actual) + '%'; ipb.style.width = Math.min(100 - Math.min(100, actual), inprogPct) + '%'; }
         const mark = $('kpi-plan-mark'); if (mark) mark.style.right = Math.min(100, planned) + '%';
         const diff = Math.round(actual - planned);
         set('kpi-actual-sub', `المخطط <b>${Math.round(planned)}%</b> · ` +
             (diff >= 0 ? `<span style="color:var(--green)">متقدم ${diff}%</span>`
-                       : `<span style="color:var(--red)">متأخر ${Math.abs(diff)}%</span>`));
+                       : `<span style="color:var(--red)">متأخر ${Math.abs(diff)}%</span>`) +
+            (inprogPct >= 0.1 ? ` · <span class="ip-txt" title="أوامر عمل معتمدة البدء أو مسلّمة ولم تُقيَّم بعد">جارٍ ${inprogPct.toFixed(1)}%</span>` : '') +
+            `<br/>مهام معتمدة <b>${sum('task_done')}/${sum('task_total')}</b> · أوامر مقبولة <b>${sum('wo_done')}/${sum('wo_total')}</b>`);
 
         const e = money(executed);
         set('kpi-executed', e.val); set('kpi-executed-unit', e.unit);
-        set('kpi-executed-sub', `حسب الكميات المنفذة المعتمدة`);
+        set('kpi-executed-sub', `للمعلومية — لا تدخل في الإنجاز · الكميات ${boq ? (executed / boq * 100).toFixed(1) : 0}%` +
+            (inprog ? ` · جارٍ <span class="fin">${money(inprog).val} ${money(inprog).unit}</span>` : '') +
+            (awaiting ? ` · <b style="color:var(--orange)">${awaiting}</b> بانتظار التقييم` : ''));
 
         set('kpi-ontime', by('ok') + by('done'));
         set('kpi-ontime-of', ` / ${active}`);
@@ -442,6 +477,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <span style="flex:1;font-size:11.5px;font-weight:600;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(m.name)}</span>
             <div style="width:110px;height:7px;background:var(--surface3);border-radius:4px;position:relative;flex-shrink:0" title="الفعلي ${act}% · المخطط ${plan}%">
               <div style="width:${act}%;height:100%;background:${col};border-radius:4px"></div>
+              ${m.inprogress_pct ? `<div class="ip-seg" style="right:${act}%;width:${Math.min(100 - act, m.inprogress_pct)}%"></div>` : ''}
               <div style="position:absolute;top:-3px;right:${plan}%;width:2px;height:13px;background:var(--gold)"></div>
             </div>
             <span style="font-size:11.5px;font-weight:800;color:${col};min-width:38px;text-align:left">${Math.round(act)}%</span>
@@ -488,9 +524,15 @@ document.addEventListener('DOMContentLoaded', function () {
             cell.innerHTML = `
               <span class="hm-code">${esc((m.code || '').replace(/^[A-Z]+-0?/, ''))}</span>
               <span class="hm-val">${m.status === 'not_started' ? '—' : Math.round(m.actual_pct) + '%'}</span>
+              ${m.inprogress_pct >= 0.5 ? `<span class="hm-ip">جارٍ ${Math.round(m.inprogress_pct)}%</span>` : ''}
               <div class="hm-tooltip">
                 <strong>${esc(m.code)}</strong> — ${esc(truncate(m.name, 26))}<br/>
-                الفعلي <b>${m.actual_pct}%</b> · المخطط <b>${m.planned_pct}%</b><br/>
+                الإنجاز <b>${m.actual_pct}%</b> · المخطط <b>${m.planned_pct}%</b><br/>
+                مهام معتمدة ${m.task_done || 0}/${m.task_total || 0} · أوامر مقبولة ${m.wo_done || 0}/${m.wo_total || 0}
+                · الكميات ${m.qty_pct || 0}% (معلومة)<br/>
+                ${m.inprogress_pct ? ` · جارٍ <b>${m.inprogress_pct}%</b>` : ''}<br/>
+                أوامر مفتوحة ${m.wo_open || 0}${m.wo_awaiting_grade ? ` (${m.wo_awaiting_grade} بانتظار التقييم)` : ''}
+                · هذا الأسبوع: ${m.wo_week || 0} أمر، ${m.reports_week || 0} تقرير<br/>
                 ${(STATUS[m.status] || STATUS.not_started).label}
                 ${m.days_delay > 0 ? ` · <span style="color:#FFB4A8">تجاوز المدة ${m.days_delay} يوم</span>` : ''}
                 ${onsiteIds.has(m.id) ? '<br/>👷 مستشار في الموقع الآن' : ''}
@@ -1299,14 +1341,14 @@ document.addEventListener('DOMContentLoaded', function () {
       </div>
       <div style="display:flex;justify-content:space-between;margin-top:8px;
         font-size:10px;color:rgba(255,255,255,0.5)">
-        <span>الكمية الكلية: ${fmt(total_contracted)} ر</span>
-        <span>منفذ: <span style="color:var(--green);font-weight:700">${fmt(total_executed)} ر</span></span>
+        <span>الكمية الكلية: ${mny(total_contracted)}</span>
+        <span>منفذ: <span style="color:var(--green);font-weight:700">${mny(total_executed)}</span></span>
       </div>
     </div>
 
     <!-- Chart -->
     <div style="position:relative;width:100%;height:180px;margin-bottom:16px">
-      <canvas id="boq-chart"></canvas>
+      <canvas id="boq-chart" class="fin-block"></canvas>
     </div>
 
     <!-- Categories -->
@@ -1359,13 +1401,13 @@ document.addEventListener('DOMContentLoaded', function () {
               <div style="text-align:left;min-width:110px">
                 <div style="font-size:10px;color:var(--text3)">منفذ</div>
                 <div style="font-size:13px;font-weight:700;color:var(--primary)">
-                  ${fmt(cat.executed)} ر
+                  ${mny(cat.executed)}
                 </div>
               </div>
               <div style="text-align:left;min-width:110px">
                 <div style="font-size:10px;color:var(--text3)">الكلي</div>
                 <div style="font-size:13px;font-weight:600;color:var(--text2)">
-                  ${fmt(cat.contracted)} ر
+                  ${mny(cat.contracted)}
                 </div>
               </div>
 
@@ -1470,7 +1512,7 @@ document.addEventListener('DOMContentLoaded', function () {
                           font-size:11px;color:var(--primary)">—</td>
                         <td style="padding:9px 14px;text-align:left;
                           font-size:12px;color:var(--primary)">
-                          ${fmt(cat.contracted)} ر
+                          ${mny(cat.contracted)}
                         </td>
                         <td style="padding:9px 14px">
                           <span style="font-size:11px;font-weight:800;
@@ -1545,8 +1587,12 @@ ${ai.forecast_finish ? `
     <div class="card-title">مؤشرات الأداء الرئيسية</div>
     <span style="font-size:11px;background:rgba(200,164,84,.1);
                  color:var(--gold);padding:2px 10px;border-radius:999px;font-weight:600">
-      قيمة العقد: ${fmt(m.contract_value)} ر
+      قيمة العقد: ${mny(m.contract_value)}
     </span>
+    ${m.progress_parts ? `<span class="kpi-parts">
+      مهام معتمدة <b>${m.progress_parts.task_done || 0}/${m.progress_parts.task_total || 0}</b>
+      · أوامر مقبولة <b>${m.progress_parts.wo_done || 0}/${m.progress_parts.wo_total || 0}</b>
+      · الكميات المنفذة <b>${m.qty_pct || 0}%</b> (للمعلومية)</span>` : ''}
   </div>
   <div class="card-body">
     <div class="kpi-rings">
@@ -1615,7 +1661,7 @@ ${ai.forecast_finish ? `
 <div class="tab-panel" data-tab-panel="financial">
   <div class="fin-kpi-row">
     <div class="fin-kpi-card">
-      <div class="fin-kpi-val">${fmt(totalCertVal)} ر</div>
+      <div class="fin-kpi-val">${mny(totalCertVal)}</div>
       <div class="fin-kpi-label">إجمالي المستخلصات</div>
     </div>
     <div class="fin-kpi-card">
@@ -1728,7 +1774,7 @@ ${ai.forecast_finish ? `
       <div class="wx-summary">
         <div><b>${wos.length}</b><span>أمر عمل</span></div>
         <div><b style="color:var(--green)">${accepted.length}</b><span>مقبول ومُرحّل للمنفذ</span></div>
-        <div><b>${fmt(accVal)}</b><span>قيمة الأعمال المقبولة (ر)</span></div>
+        <div><b class="fin">${fmt(accVal)}</b><span>قيمة الأعمال المقبولة (ر)</span></div>
         <div><b style="color:var(--orange)">${openCnt}</b><span>قيد التنفيذ / المراجعة</span></div>
       </div>
       ${wos.map(w => `
@@ -1738,7 +1784,7 @@ ${ai.forecast_finish ? `
             <span class="wx-state" style="background:${WO_COLORS[w.state] || '#8C98A2'}1A;color:${WO_COLORS[w.state] || '#8C98A2'}">${esc(w.state_label)}</span>
             ${w.grade ? `<span class="wx-grade g-${w.grade.toLowerCase()}">${w.grade}</span>` : ''}
             ${w.posted ? '<span class="wx-posted">✓ مُرحّل للمنفذ</span>' : ''}
-            <span class="wx-val">${fmt(w.total_value)} ر</span>
+            <span class="wx-val">${mny(w.total_value)}</span>
           </div>
           <div class="wx-desc">${esc(w.description)}</div>
           <div class="wx-meta">
@@ -1753,7 +1799,7 @@ ${ai.forecast_finish ? `
             <tbody>${w.lines.map(l => `
               <tr><td>${esc(l.code)}</td><td>${esc(l.description)}</td>
                   <td><b>${l.qty}</b></td><td>${esc(l.uom)}</td>
-                  <td>${fmt(l.unit_price)}</td><td>${fmt(l.value)}</td></tr>`).join('')}
+                  <td><span class="fin">${fmt(l.unit_price)}</span></td><td><span class="fin">${fmt(l.value)}</span></td></tr>`).join('')}
             </tbody>
           </table>` : ''}
         </div>`).join('')}`;
@@ -1837,7 +1883,7 @@ ${ai.forecast_finish ? `
            onclick="window.showCertDetailModal(
              ${JSON.stringify(c).replace(/"/g, '&quot;')})">
         <div class="cert-num">مستخلص #${c.number}</div>
-        <div class="cert-amount">${fmt(c.total_value)} ر</div>
+        <div class="cert-amount">${mny(c.total_value)}</div>
         <div class="cert-date">${c.period_from} — ${c.period_to}</div>
         <div class="cert-status">
           <span class="pill ${certPillClass(c.state)}">
@@ -1864,7 +1910,7 @@ ${ai.forecast_finish ? `
            onclick="window.showCODetailModal(
              ${JSON.stringify(co).replace(/"/g, '&quot;')})">
         <div class="cert-num">${co.name}</div>
-        <div class="cert-amount">${fmt(co.amount)} ر</div>
+        <div class="cert-amount">${mny(co.amount)}</div>
         <div class="cert-date">+${co.days_extension} يوم</div>
         <div class="cert-status">
           <span class="pill ${certPillClass(co.state)}">
@@ -2047,8 +2093,8 @@ ${ai.forecast_finish ? `
         $('modal-cert-title').textContent = `مستخلص #${cert.number}`;
         $('modal-cert-body').innerHTML = `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-        ${[['القيمة الإجمالية', `${fmt(cert.total_value)} ر`, 'var(--primary)'],
-            ['القيمة الصافية', `${fmt(cert.net_value || cert.total_value)} ر`, 'var(--navy)'],
+        ${[['القيمة الإجمالية', `${mny(cert.total_value)}`, 'var(--primary)'],
+            ['القيمة الصافية', `${mny(cert.net_value || cert.total_value)}`, 'var(--navy)'],
             ['الفترة من', cert.period_from, ''],
             ['الفترة إلى', cert.period_to, ''],
         ].map(([l, v, c]) => `
@@ -2077,7 +2123,7 @@ ${ai.forecast_finish ? `
               </td>
               <td>${l.desc}</td>
               <td>${l.qty}</td>
-              <td>${fmt(l.value)} ر</td>
+              <td>${mny(l.value)}</td>
             </tr>`).join('')}
         </table>` : ''}
       ${cert.state === 'consultant_approved' ? `
@@ -2100,7 +2146,7 @@ ${ai.forecast_finish ? `
         $('modal-co-title').textContent = co.name;
         $('modal-co-body').innerHTML = `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-        ${[['قيمة التغيير', `${fmt(co.amount)} ر`, 'var(--gold)'],
+        ${[['قيمة التغيير', `${mny(co.amount)}`, 'var(--gold)'],
             ['تمديد زمني', `${co.days_extension} يوم`, 'var(--primary)'],
             ['النوع', co.type || '—', ''],
             ['الحالة', certStateLabel(co.state), ''],

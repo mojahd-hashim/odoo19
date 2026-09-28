@@ -198,7 +198,9 @@ class ContractorWorkOrder(models.Model):
             if vals.get('name', 'جديد') == 'جديد':
                 vals['name'] = self.env['ir.sequence'].next_by_code(
                     'contractor.work.order') or 'جديد'
-        return super().create(vals_list)
+        records = super().create(vals_list)
+        records.mosque_id._refresh_work_progress()
+        return records
 
     # ── المنفذ: ترحيل الكميات المقبولة إلى جدول الكميات ─────────
     ACCEPTED_STATES = ('graded', 'testing', 'warranty', 'closed')
@@ -207,6 +209,13 @@ class ContractorWorkOrder(models.Model):
         res = super().write(vals)
         if 'grade' in vals or 'state' in vals:
             self._post_executed_qty()
+            self.mosque_id._refresh_work_progress()     # الإنجاز يعتمد على عدد الأوامر المقبولة
+        return res
+
+    def unlink(self):
+        mosques = self.mosque_id
+        res = super().unlink()
+        mosques._refresh_work_progress()
         return res
 
     def _post_executed_qty(self):

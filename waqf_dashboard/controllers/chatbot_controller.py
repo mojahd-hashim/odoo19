@@ -18,15 +18,15 @@ class WaqfChatbotController(http.Controller):
             p = mosque_perf(m, today)
             rows.append((m, p))
         by = lambda st: sum(1 for _m, p in rows if p['status'] == st)
-        boq = sum(p['boq_value'] for _m, p in rows)
-        executed = sum(p['executed_value'] for _m, p in rows)
+        avg_progress = round(sum(p['actual_pct'] for _m, p in rows) / len(rows), 1) if rows else 0
+        avg_planned = round(sum(p['planned_pct'] for _m, p in rows) / len(rows), 1) if rows else 0
         worst = sorted([r for r in rows if r[1]['status'] == 'critical'], key=lambda r: r[1]['variance'])[:5]
         lines = [
             f'التاريخ (الرياض): {today}',
             f'عدد المساجد: {len(rows)} · في الموعد {by("ok")} · تأخر بسيط {by("warning")} · '
             f'حرج {by("critical")} · مكتمل {by("done")} · لم يبدأ {by("not_started")}',
-            f'الإنجاز الفعلي الموزون: {round(executed / boq * 100, 1) if boq else 0}% '
-            f'(منفذ {round(executed):,} من {round(boq):,} ريال)',
+            f'متوسط الإنجاز (بعدد المهام المعتمدة وأوامر العمل المقبولة): {avg_progress}% '
+            f'مقابل مخطط زمني {avg_planned}% — الكميات للمعلومية فقط',
             f'مستشارون في المواقع الآن: {len(onsite_list(env))}',
         ]
         if worst:

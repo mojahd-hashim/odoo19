@@ -93,10 +93,11 @@ class WaqfAiAlert(models.Model):
                 created.append(self._create_or_update_alert(run, self._rule_payload(s, 'quality', 'high', 'خطر جودة أو سلامة', 'وجود NCR أو حوادث سلامة خلال آخر 30 يوم.'), 'rule'))
             if s.get('pending_change_orders_count', 0) > 0 or s.get('blocked_tasks_count', 0) > 0:
                 created.append(self._create_or_update_alert(run, self._rule_payload(s, 'change_order', 'high', 'تعطيل بسبب أمر تغيير', 'وجود أوامر تغيير معلقة أو مهام مجمدة بسبب أمر تغيير.'), 'rule'))
-            if s.get('time_progress', 0) - s.get('boq_execution_percent', 0) >= 20:
-                created.append(self._create_or_update_alert(run, self._rule_payload(s, 'boq', 'high', 'تأخر تنفيذ البنود', 'نسبة تنفيذ BOQ أقل من التقدم الزمني بفارق كبير.'), 'rule'))
+            # الإنجاز بعدد الأعمال المعتمدة (الكميات للمعلومية فقط)
+            if s.get('time_progress', 0) - s.get('work_progress', 0) >= 20:
+                created.append(self._create_or_update_alert(run, self._rule_payload(s, 'delay', 'high', 'تأخر الإنجاز عن الخطة', 'نسبة الأعمال المعتمدة (المهام وأوامر العمل) أقل من التقدم الزمني بفارق كبير.'), 'rule'))
             latest_issues = (s.get('text_snapshot_json') or {}).get('latest_issues') or ''
-            if not latest_issues.strip() and (s.get('days_delay', 0) > 0 or s.get('boq_execution_percent', 0) + 20 < s.get('time_progress', 0)):
+            if not latest_issues.strip() and (s.get('days_delay', 0) > 0 or s.get('work_progress', 0) + 20 < s.get('time_progress', 0)):
                 created.append(self._create_or_update_alert(run, self._rule_payload(s, 'data_conflict', 'medium', 'تعارض بين التقرير والمؤشرات', 'التقارير لا تعرض مشاكل واضحة بينما المؤشرات الرقمية تشير إلى تأخر أو ضعف إنجاز.'), 'rule'))
 
         for contractor, count in delayed_by_contractor.items():
