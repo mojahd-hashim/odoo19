@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <menuitem id="menu_ai_risk_root" name="AI Risk Center" sequence="40" groups="waqf_mosque_ai_risk_center.group_ai_risk_viewer"/>
+    <menuitem id="menu_ai_risk_root" name="AI Risk Center" sequence="40" web_icon="waqf_mosque_ai_risk_center,static/description/icon.svg" groups="waqf_mosque_ai_risk_center.group_ai_risk_viewer"/>
     <menuitem id="menu_ai_risk_runs" name="Runs" parent="menu_ai_risk_root" action="action_ai_snapshot_run" sequence="10"/>
     <menuitem id="menu_ai_mosque_snapshots" name="Mosque Snapshots" parent="menu_ai_risk_root" action="action_ai_mosque_snapshot" sequence="20"/>
     <menuitem id="menu_ai_alerts" name="Smart Alerts" parent="menu_ai_risk_root" action="action_ai_alert" sequence="30"/>

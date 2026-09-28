@@ -20,10 +20,9 @@
   <rect x="4.5" y="4.5" width="91" height="91" rx="18" fill="none" stroke="#C8A454" stroke-opacity=".45" stroke-width="1"/>
   <g stroke-linecap="round" stroke-linejoin="round">
 
-    <path d="M28 20H56L68 32V72C68 74 67 76 64 76H28C26 76 24 74 24 72V24C24 22 26 20 28 20Z" fill="none" stroke="#F3EBDA" stroke-width="3"/>
-    <path d="M56 20V32H68" fill="none" stroke="#F3EBDA" stroke-width="3"/>
-    <path d="M32 36H50M32 45H58M32 54H46" stroke="#F3EBDA" stroke-width="3" stroke-opacity=".75"/>
-    <rect x="52" y="54" width="24" height="24" fill="url(#g)"/><rect x="52" y="54" width="24" height="24" transform="rotate(45 64 66)" fill="url(#g)"/>
-    <path d="M58 66.5L62.5 71L70.5 62" fill="none" stroke="#17354A" stroke-width="3"/>
+    <path d="M30 50C30 36 39 28 50 28C61 28 70 36 70 50Z" fill="url(#g)"/>
+    <rect x="46" y="24" width="8" height="18" rx="3" fill="#E6CB86" stroke="#17354A" stroke-width="1.4"/>
+    <rect x="24" y="49" width="52" height="6" rx="3" fill="url(#g)"/>
+    <path d="M24 62H76V78H24Z M24 70H76 M37 62V70 M63 62V70 M50 70V78" fill="none" stroke="#F3EBDA" stroke-width="2.6" stroke-linejoin="miter" stroke-linecap="butt"/>
   </g>
 </svg>

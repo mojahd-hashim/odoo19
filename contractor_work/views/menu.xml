@@ -3,7 +3,7 @@
   <menuitem id="menu_contractor_root"
             name="أعمال المقاولين"
             sequence="85"
-            web_icon="contractor_work,static/description/icon.png"/>
+            web_icon="contractor_work,static/description/icon.svg"/>
 
   <menuitem id="menu_work_orders"
             name="أوامر العمل"

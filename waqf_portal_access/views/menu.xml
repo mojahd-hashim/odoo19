@@ -5,7 +5,7 @@
   <menuitem id="menu_portal_access_root"
             name="إدارة البوابة"
             sequence="90"
-            web_icon="waqf_portal_access,static/description/icon.png"/>
+            web_icon="waqf_portal_access,static/description/icon.svg"/>
 
   <!-- Sub Menus -->
   <menuitem id="menu_portal_users"

@@ -20,10 +20,11 @@
   <rect x="4.5" y="4.5" width="91" height="91" rx="18" fill="none" stroke="#C8A454" stroke-opacity=".45" stroke-width="1"/>
   <g stroke-linecap="round" stroke-linejoin="round">
 
-    <path d="M28 20H56L68 32V72C68 74 67 76 64 76H28C26 76 24 74 24 72V24C24 22 26 20 28 20Z" fill="none" stroke="#F3EBDA" stroke-width="3"/>
-    <path d="M56 20V32H68" fill="none" stroke="#F3EBDA" stroke-width="3"/>
-    <path d="M32 36H50M32 45H58M32 54H46" stroke="#F3EBDA" stroke-width="3" stroke-opacity=".75"/>
-    <rect x="52" y="54" width="24" height="24" fill="url(#g)"/><rect x="52" y="54" width="24" height="24" transform="rotate(45 64 66)" fill="url(#g)"/>
-    <path d="M58 66.5L62.5 71L70.5 62" fill="none" stroke="#17354A" stroke-width="3"/>
+    <rect x="24" y="24" width="40" height="52" rx="5" fill="none" stroke="#F3EBDA" stroke-width="3"/>
+    <rect x="35" y="19" width="18" height="10" rx="3" fill="url(#g)"/>
+    <path d="M31 40L34 43L39 37M31 53L34 56L39 50" fill="none" stroke="url(#g)" stroke-width="2.8"/>
+    <path d="M44 40H56M44 53H52" stroke="#F3EBDA" stroke-width="2.8" stroke-opacity=".75"/>
+    <circle cx="65" cy="63" r="10" fill="#17354A" stroke="#5FB3CF" stroke-width="3.4"/>
+    <path d="M72.5 70.5L80 78" stroke="#5FB3CF" stroke-width="4.2"/>
   </g>
 </svg>

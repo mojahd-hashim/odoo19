@@ -13,6 +13,7 @@
 
     <menuitem id="menu_waqf_dashboard"
               name="📊 لوحة الإدارة"
+              web_icon="waqf_dashboard,static/description/icon_dashboard.svg"
               action="action_dashboard_open"
               sequence="1"
               groups="waqf_mosque_rehab.group_mosque_waqf_manager,waqf_mosque_rehab.group_mosque_admin"/>
@@ -21,7 +22,7 @@
               name="البث المباشر"
               action="action_live_open"
               sequence="100"
-               web_icon="waqf_dashboard,static/icon.png"
+               web_icon="waqf_dashboard,static/description/icon_live.svg"
               groups="waqf_mosque_rehab.group_mosque_waqf_manager,waqf_mosque_rehab.group_mosque_admin"/>
 
     <record id="action_live_streams" model="ir.actions.act_window">
