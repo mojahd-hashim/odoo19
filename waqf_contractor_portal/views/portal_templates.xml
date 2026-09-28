@@ -2878,7 +2878,7 @@
             </div>
 
             <!-- Toasts -->
-            <t t-if="request.params.get('created') or request.params.get('submitted') or request.params.get('delivered') or request.params.get('rework_done')">
+            <t t-if="request.params.get('created') or request.params.get('submitted') or request.params.get('delivered') or request.params.get('rework_done') or request.params.get('note_added')">
                 <div class="cp-toast-success">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                         <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
@@ -2888,6 +2888,7 @@
                     <t t-elif="request.params.get('submitted')">تم إرسال طلب البدء للاستشاري</t>
                     <t t-elif="request.params.get('delivered')">تم إرسال التسليم للتقييم</t>
                     <t t-elif="request.params.get('rework_done')">تم إعادة الإرسال بعد التعديل</t>
+                    <t t-elif="request.params.get('note_added')">تمت إضافة الملاحظة إلى السجل</t>
                 </div>
             </t>
             <t t-if="request.params.get('error')">
@@ -3117,8 +3118,35 @@
                         </div>
                     </t>
 
+                    <!-- ملاحظات ومرفقات قبل الإرسال (مسودة / مرفوض) -->
+                    <t t-if="wo.state in ('draft','rejected')">
+                        <div style="background:white;border:1px solid var(--border);
+                                    border-radius:var(--r-lg);overflow:hidden;margin-bottom:14px">
+                            <div style="padding:10px 16px;background:var(--surface2);
+                                        border-bottom:1px solid var(--border);
+                                        font-size:12px;font-weight:600;color:var(--text2)">
+                                ✍️ إضافة ملاحظة / مرفقات قبل الإرسال للاستشاري
+                            </div>
+                            <form t-attf-action="/contractor/work-order/#{wo.id}/add-note"
+                                  method="post" enctype="multipart/form-data"
+                                  style="padding:12px 16px;display:flex;flex-direction:column;gap:10px">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <textarea name="note" rows="3" class="cp-input"
+                                          placeholder="اكتب ملاحظتك أو ردّك على ملاحظات الاستشاري..."
+                                          style="width:100%;resize:vertical;font-size:12px;padding:8px 10px;
+                                                 border:1px solid var(--border);border-radius:var(--r-sm)"/>
+                                <input type="file" name="note_files" multiple="multiple"
+                                       style="font-size:12px"/>
+                                <button type="submit" class="cp-btn-ghost"
+                                        style="align-self:flex-start">
+                                    + إضافة إلى السجل
+                                </button>
+                            </form>
+                        </div>
+                    </t>
+
                     <!-- زر إرسال طلب البدء -->
-                    <t t-if="wo.state == 'draft'">
+                    <t t-if="wo.state in ('draft','rejected')">
                         <form t-attf-action="/contractor/work-order/#{wo.id}/submit-commencement" method="post">
                             <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                             <button type="submit" class="cp-action-btn cp-action-primary"

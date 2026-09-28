@@ -4,6 +4,7 @@ from odoo.exceptions import AccessError, UserError
 from datetime import date, timedelta
 import base64
 import json
+from odoo.tools import plaintext2html
 # -*- coding: utf-8 -*-
 from odoo import http, _
 from odoo.http import request
@@ -1188,6 +1189,49 @@ class ContractorPortal(http.Controller):
             return request.redirect(
                 f'/contractor/work-order/{wo_id}?error={str(e)[:80]}')
         return request.redirect(f'/contractor/work-order/{wo_id}?submitted=1')
+
+    # ══════════════════════════════════════════════════════
+    # ADD NOTE / FILES — قبل الإرسال للاستشاري (مسودة / مرفوض)
+    # ══════════════════════════════════════════════════════
+    @http.route('/contractor/work-order/<int:wo_id>/add-note',
+                type='http', auth='user', website=True, methods=['POST'])
+    def work_order_add_note(self, wo_id, **post):
+        portal_user = self._get_portal_user()
+        if not portal_user:
+            return request.redirect('/web')
+        wo = request.env['contractor.work.order'].sudo().browse(wo_id)
+        if not wo.exists():
+            return request.redirect('/contractor/work-orders')
+        if wo.state not in ('draft', 'rejected'):
+            return request.redirect(
+                f'/contractor/work-order/{wo_id}?error=لا يمكن الإضافة في هذه المرحلة')
+
+        note = (post.get('note') or '').strip()
+        att_ids = []
+        for f in request.httprequest.files.getlist('note_files'):
+            if f and f.filename:
+                att = request.env['ir.attachment'].sudo().create({
+                    'name': f.filename,
+                    'datas': base64.b64encode(f.read()),
+                    'res_model': 'contractor.work.order',
+                    'res_id': wo.id,
+                    'type': 'binary',
+                    'mimetype': f.content_type,
+                })
+                att_ids.append(att.id)
+
+        if not note and not att_ids:
+            return request.redirect(
+                f'/contractor/work-order/{wo_id}?error=أدخل ملاحظة أو أرفق ملفاً')
+
+        wo.message_post(
+            body=plaintext2html(note) if note else '📎 تم إرفاق ملفات',
+            author_id=request.env.user.partner_id.id,
+            attachment_ids=att_ids,
+            message_type='comment',
+            subtype_xmlid='mail.mt_note',
+        )
+        return request.redirect(f'/contractor/work-order/{wo_id}?note_added=1')
 
     # ══════════════════════════════════════════════════════
     # SUBMIT DELIVERY
