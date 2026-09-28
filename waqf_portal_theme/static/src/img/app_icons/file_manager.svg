@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#22536E"/>
+      <stop offset="1" stop-color="#132B3E"/>
+    </linearGradient>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E6CB86"/>
+      <stop offset="1" stop-color="#B98F3E"/>
+    </linearGradient>
+    <clipPath id="c"><rect width="100" height="100" rx="22"/></clipPath>
+  </defs>
+  <rect width="100" height="100" rx="22" fill="url(#bg)"/>
+  <g clip-path="url(#c)" fill="none" stroke="#E6CB86" stroke-opacity=".10" stroke-width="1.2">
+    <rect x="68" y="68" width="44" height="44"/>
+    <rect x="68" y="68" width="44" height="44" transform="rotate(45 90 90)"/>
+    <rect x="-12" y="-12" width="30" height="30"/>
+    <rect x="-12" y="-12" width="30" height="30" transform="rotate(45 3 3)"/>
+  </g>
+  <rect x="4.5" y="4.5" width="91" height="91" rx="18" fill="none" stroke="#C8A454" stroke-opacity=".45" stroke-width="1"/>
+  <g stroke-linecap="round" stroke-linejoin="round">
+
+    <path d="M20 30C20 27 22 25 25 25H40L46 31H75C78 31 80 33 80 36V72C80 75 78 77 75 77H25C22 77 20 75 20 72Z" fill="#9E7A31"/>
+    <rect x="28" y="22" width="36" height="30" rx="2" fill="#F3EBDA" opacity=".55" transform="rotate(-6 46 37)"/>
+    <rect x="32" y="26" width="38" height="28" rx="2" fill="#F3EBDA"/>
+    <path d="M38 33H60M38 40H54" stroke="#17354A" stroke-width="2" stroke-opacity=".45"/>
+    <path d="M18 47C18 44.5 20 43 22.5 43H77.5C80 43 82 44.5 81.6 47L79 73C78.7 75.5 77 77 74.5 77H25.5C23 77 21.3 75.5 21 73Z" fill="url(#g)"/>
+  </g>
+</svg>
