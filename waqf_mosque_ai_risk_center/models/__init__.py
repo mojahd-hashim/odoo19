@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from . import ai_client
 from . import ai_run
 from . import ai_snapshot
 from . import ai_alert

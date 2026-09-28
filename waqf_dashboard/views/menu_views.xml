@@ -52,13 +52,11 @@
                 <app string="📊 Dashboard" name="waqf_dashboard_app">
                     <group>
 
-                        <!-- Azure OpenAI Settings -->
-                        <group>
-                            <field name="waqf_azure_openai_endpoint" placeholder="Endpoint URL"/>
-                            <field name="waqf_azure_openai_key" password="True" placeholder="API Key"/>
-                            <field name="waqf_azure_deployment" placeholder="Deployment"/>
-                            <field name="waqf_chatbot_system_prompt" placeholder="System Prompt"/>
-                        </group>
+                        <!-- الربط مع Azure OpenAI أصبح موحّداً في إعدادات مركز المخاطر الذكي -->
+                        <div class="text-muted">
+                            ربط Azure OpenAI للمساعد «مساند» وتحليل المخاطر موحّد في:
+                            مركز المخاطر الذكي ← الإعدادات ← ربط Azure OpenAI
+                        </div>
 
                         <!-- Live Stream Settings -->
                         <group>

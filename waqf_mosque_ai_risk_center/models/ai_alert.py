@@ -80,10 +80,13 @@ class WaqfAiAlert(models.Model):
 
             if s.get('pending_certificates_value', 0) > 0 and s.get('oldest_pending_certificate_days', 0) >= 7 and (s.get('days_delay', 0) > 0 or s.get('numeric_snapshot_json', {}).get('financial_time_variance', 0) < 5):
                 created.append(self._create_or_update_alert(run, self._rule_payload(s, 'payment_execution_impact', 'high', 'دفعات معلقة قد تؤثر على التنفيذ', 'وجود مستخلصات معلقة لمدة تتجاوز 7 أيام مع مؤشرات تأخر أو ضعف تقدم.'), 'rule'))
-            if s.get('financial_progress', 0) - s.get('time_progress', 0) >= 20:
-                created.append(self._create_or_update_alert(run, self._rule_payload(s, 'financial', 'high', 'انحراف مالي مقابل زمني', 'التقدم المالي أعلى من التقدم الزمني بفارق مؤثر.'), 'rule'))
-            if s.get('validated_visits_7d', 0) < 2 or s.get('days_since_last_report', 999) > 7:
-                created.append(self._create_or_update_alert(run, self._rule_payload(s, 'supervision', 'medium', 'ضعف إشراف ميداني', 'عدد الزيارات الموثقة أو حداثة التقارير أقل من الحد المطلوب.'), 'rule'))
+            # الصرف أعلى من المنفذ فعلياً (كان يقارن المنفذ بالزمن فينبّه عند التقدّم على الخطة)
+            if (s.get('numeric_snapshot_json') or {}).get('certified_vs_executed', 0) >= 15:
+                created.append(self._create_or_update_alert(run, self._rule_payload(s, 'financial', 'high', 'صرف أعلى من المنفذ', 'قيمة المستخلصات المعتمدة تتجاوز قيمة الأعمال المنفذة بفارق مؤثر.'), 'rule'))
+            active = s.get('state') in ('mobilizing', 'active')
+            # الحضور اليومي المطلوب: 8 ساعات من الأحد إلى الخميس عدا الإجازات الرسمية
+            if active and (s.get('visit_compliance', 100) < 60 or s.get('days_since_last_report', 999) > 7):
+                created.append(self._create_or_update_alert(run, self._rule_payload(s, 'supervision', 'medium', 'ضعف الحضور الإشرافي', 'الالتزام بالحضور اليومي (8 ساعات، الأحد–الخميس) أقل من 60% أو لا توجد تقارير حديثة.'), 'rule'))
             if s.get('days_since_last_report', 999) > 7 and s.get('attendance_count_7d', 0) == 0 and s.get('state') in ('active', 'in_progress', 'progress'):
                 created.append(self._create_or_update_alert(run, self._rule_payload(s, 'silent_project', 'critical', 'مشروع صامت', 'لا توجد تقارير أو زيارات حديثة رغم أن المشروع نشط.'), 'rule'))
             if s.get('ncr_count_30d', 0) > 0 or s.get('safety_incidents_30d', 0) > 0:
@@ -122,6 +125,13 @@ class WaqfAiAlert(models.Model):
                 'confidence': 0.8, 'priority_score': 90, 'impact_score': 90, 'probability_score': 80,
                 'related_metrics': {'critical_count': critical_count},
             }, 'rule')
+        # إغلاق تنبيهات القواعد التي لم تعد شروطها قائمة في هذا التحليل
+        self.search([
+            ('phase_id', '=', run.phase_id.id),
+            ('source', '=', 'rule'),
+            ('status', 'in', ['new', 'acknowledged']),
+            ('run_id', '!=', run.id),
+        ]).write({'status': 'resolved', 'resolved_date': fields.Datetime.now()})
         return [a.related_metrics_json for a in created if a]
 
     @api.model
@@ -144,8 +154,9 @@ class WaqfAiAlert(models.Model):
         mosque_id = item.get('mosque_id') or False
         title = item.get('title') or _('Risk Alert')
         alert_type = item.get('alert_type') or 'risk'
-        since = fields.Datetime.now() - timedelta(hours=24)
-        domain = [('alert_type', '=', alert_type), ('title', '=', title), ('create_date', '>=', since)]
+        # نحدّث التنبيه المفتوح نفسه بدل إنشاء تنبيه جديد كل يوم
+        domain = [('alert_type', '=', alert_type), ('title', '=', title),
+                  ('status', 'in', ['new', 'acknowledged', 'in_progress'])]
         if mosque_id:
             domain.append(('mosque_id', '=', mosque_id))
         if item.get('contractor'):

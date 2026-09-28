@@ -111,14 +111,32 @@ def mosque_perf(m, today=None):
 
 
 # ── On-site consultants ──────────────────────────────────────────
+DAILY_HOURS = 8.0
+
+
+def _person_key(a):
+    if a.engineer_id:
+        return ('e', a.engineer_id.id)
+    if 'portal_user_id' in a._fields and a.portal_user_id:
+        return ('u', a.portal_user_id.id)
+    return ('a', a.id)
+
+
 def onsite_list(env):
-    """Open check-ins since the start of today (Riyadh time)."""
+    """Open check-ins since the start of today (Riyadh time), with each
+    engineer's total minutes today across all mosques (target: 8 hours)."""
     now_utc = datetime.utcnow()
+    Att = env['mosque.attendance'].sudo()
+    today_all = Att.search([('check_in', '>=', riyadh_day_start_utc())])
+    day_minutes, day_mosques = {}, {}
+    for a in today_all:
+        key = _person_key(a)
+        end = a.check_out or now_utc
+        day_minutes[key] = day_minutes.get(key, 0) + max(0, int((end - a.check_in).total_seconds() // 60))
+        day_mosques.setdefault(key, set()).add(a.mosque_id.id)
+
     result = []
-    for a in env['mosque.attendance'].sudo().search([
-        ('check_in', '>=', riyadh_day_start_utc()),
-        ('check_out', '=', False),
-    ], order='check_in'):
+    for a in today_all.filtered(lambda x: not x.check_out).sorted('check_in'):
         m = a.mosque_id
         person = a.engineer_id.name if a.engineer_id else ''
         if not person and 'portal_user_id' in a._fields and a.portal_user_id:
@@ -137,5 +155,8 @@ def onsite_list(env):
             'elapsed_min': max(0, minutes),
             'validated': bool(a.is_validated),
             'gps': bool(a.gps_validated),
+            'today_min': day_minutes.get(_person_key(a), 0),
+            'today_target_min': int(DAILY_HOURS * 60),
+            'today_mosques': len(day_mosques.get(_person_key(a), ())),
         })
     return result

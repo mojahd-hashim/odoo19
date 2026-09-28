@@ -61,10 +61,11 @@
           <group string="التقييم والدفع"
                  invisible="state not in ['delivered','graded','rework','testing','warranty','closed']">
             <field name="grade"/>
-            <field name="payment_pct" widget="percentage"/>
+            <field name="payment_pct"/>
             <field name="graded_by" readonly="1"/>
             <field name="grade_date" readonly="1"/>
             <field name="rework_count" readonly="1"/>
+            <field name="boq_executed_posted" readonly="1"/>
           </group>
         </group>
 

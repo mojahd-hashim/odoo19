@@ -33,12 +33,14 @@ document.addEventListener('DOMContentLoaded', function () {
         map: null,
         cluster: null,
         mapMarkers: {},
-        liveStreams: {},
+        liveStreams: {},      // mosque_id → url (مباشر الآن)
+        streams: [],          // المباشر + التسجيلات
+        streamByMosque: {},   // mosque_id → أحدث بث (المباشر أولاً)
     };
 
     /* ── Helpers ────────────────────────────────────────────── */
     const $ = id => document.getElementById(id);
-    const fmt = n => new Intl.NumberFormat('ar-SA').format(Math.round(n || 0));
+    const fmt = n => new Intl.NumberFormat('en-US').format(Math.round(n || 0));
     const pct = n => Math.round(n || 0) + '%';
     const esc = s => String(s ?? '').replace(/[&<>"']/g,
         c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
@@ -135,9 +137,10 @@ document.addEventListener('DOMContentLoaded', function () {
         initQuickFilters();
         initAlertFilters();
         initMapFilters();
+        initSideTabs();
 
         loadChartJS(async () => {
-            const [mosques, summary, alerts, insights, risk, forecast, quality, contractors] =
+            const [mosques, summary, alerts, insights, risk, forecast, quality, contractors, streams] =
                 await Promise.all([
                     apiGet('/dashboard/api/mosques'),
                     apiGet('/dashboard/api/summary'),
@@ -147,9 +150,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     apiGet('/dashboard/api/forecast'),
                     apiGet('/dashboard/api/quality'),
                     apiGet('/dashboard/api/contractors'),
+                    apiGet('/dashboard/api/streams'),
                 ]);
 
             setMosques(mosques || []);
+            setStreams(streams || []);
             S.summary = summary || {};
             if (!S.scopePkgId && S.summary.current_package_id) S.scopePkgId = S.summary.current_package_id;
             renderAlerts(alerts || {});
@@ -172,6 +177,59 @@ document.addEventListener('DOMContentLoaded', function () {
         S.mosques = list;
         S.liveStreams = {};
         list.forEach(m => { if (m.stream_url) S.liveStreams[m.id] = m.stream_url; });
+        Object.values(S.streamByMosque).forEach(st => { if (st.is_live && st.mosque_id) S.liveStreams[st.mosque_id] = st.url; });
+    }
+
+    function setStreams(list) {
+        S.streams = Array.isArray(list) ? list : [];
+        S.streamByMosque = {};
+        S.streams.forEach(st => {           // مرتبة: المباشر أولاً ثم الأحدث
+            if (st.mosque_id && !S.streamByMosque[st.mosque_id]) S.streamByMosque[st.mosque_id] = st;
+            if (st.is_live && st.mosque_id) S.liveStreams[st.mosque_id] = st.url;
+        });
+        renderStreams();
+    }
+
+    function initSideTabs() {
+        document.querySelectorAll('.mapx-tab').forEach(t =>
+            t.addEventListener('click', () => {
+                document.querySelectorAll('.mapx-tab').forEach(x => x.classList.toggle('active', x === t));
+                document.querySelectorAll('.mapx-pane').forEach(p =>
+                    p.classList.toggle('active', p.dataset.pane === t.dataset.pane));
+            }));
+    }
+
+    function renderStreams() {
+        const box = $('stream-list');
+        const live = S.streams.filter(st => st.is_live).length;
+        const cnt = $('stream-count');
+        if (cnt) cnt.textContent = live ? `${live} مباشر` : S.streams.length;
+        if (!box) return;
+        if (!S.streams.length) {
+            box.innerHTML = `<div class="mapx-empty">لا توجد بثوث مسجّلة بعد</div>`;
+            return;
+        }
+        box.innerHTML = S.streams.map((st, i) => `
+          <div class="stream-card${st.is_live ? ' live' : ''}" data-i="${i}">
+            <div class="stream-thumb">${st.is_live ? '<span class="dot"></span>' : '▶'}</div>
+            <div class="onsite-info">
+              <div class="onsite-nm">${esc(st.mosque || st.name)}</div>
+              <div class="onsite-ms">${esc(st.name)}${st.started_by ? ' · ' + esc(st.started_by) : ''}</div>
+              <span class="onsite-flag ${st.is_live ? 'live' : 'rec'}">${st.is_live ? '● مباشر الآن' : '🎥 تسجيل'}</span>
+            </div>
+            <div class="onsite-tm">
+              <b>${esc((st.start || '').slice(11))}</b>
+              <span>${esc((st.start || '').slice(0, 10))}</span>
+            </div>
+          </div>`).join('');
+        box.querySelectorAll('.stream-card').forEach(c =>
+            c.addEventListener('click', () => {
+                const st = S.streams[parseInt(c.dataset.i)];
+                if (!st) return;
+                if (st.mosque_id) focusMosque(st.mosque_id);
+                openLiveStream({name: `${st.mosque || ''} — ${st.name}`, url: st.url,
+                                is_live: st.is_live, start: st.start});
+            }));
     }
 
     /* ── ساعة الرياض ──────────────────────────────────────────── */
@@ -551,7 +609,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return f === 'all' ? true
             : f === 'onsite' ? !!onsiteMap[m.id]
             : f === 'critical' ? (m.status === 'critical' || m.status === 'warning')
-            : f === 'stream' ? !!S.liveStreams[m.id] : true;
+            : f === 'stream' ? !!(S.liveStreams[m.id] || S.streamByMosque[m.id]) : true;
     }
 
     function refreshMapMarkers(fit) {
@@ -576,7 +634,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 html: `<div class="mk${people.length ? ' onsite' : ''}" style="background:${statusColor(m.status)}">
                          ${m.status === 'not_started' ? '•' : Math.round(m.actual_pct) + '%'}
                          ${people.length ? `<span class="mk-badge">👷${people.length > 1 ? people.length : ''}</span>` : ''}
-                         ${S.liveStreams[m.id] ? '<span class="mk-live"></span>' : ''}
+                         ${S.liveStreams[m.id] ? '<span class="mk-live"></span>'
+                            : S.streamByMosque[m.id] ? '<span class="mk-rec">🎥</span>' : ''}
                        </div>`,
                 iconSize: [34, 34], iconAnchor: [17, 17], popupAnchor: [0, -18],
             });
@@ -627,7 +686,10 @@ document.addEventListener('DOMContentLoaded', function () {
              padding:6px 9px;margin-bottom:8px;font-size:11px;color:#D9493B">⚠ ${esc(alert.title)}</div>` : ''}
         ${S.liveStreams[m.id] ? `<button class="map-stream-btn" style="width:100%;padding:7px;background:#D9493B;color:#fff;
              border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;margin-bottom:6px;font-family:inherit">
-             ● مشاهدة البث المباشر</button>` : ''}
+             ● مشاهدة البث المباشر</button>`
+          : S.streamByMosque[m.id] ? `<button class="map-stream-btn" style="width:100%;padding:7px;background:#fff;color:#1B3A52;
+             border:1px solid #EAE1CE;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;margin-bottom:6px;font-family:inherit">
+             🎥 عرض آخر بث · ${esc(S.streamByMosque[m.id].start)}</button>` : ''}
         <button class="map-detail-btn" style="width:100%;padding:8px;background:#237292;color:#fff;border:none;
              border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">عرض التفاصيل ›</button>
       </div>`;
@@ -681,6 +743,12 @@ document.addEventListener('DOMContentLoaded', function () {
               <div class="onsite-ms">🕌 ${esc(p.mosque)}${p.code ? ' · ' + esc(p.code) : ''}</div>
               <span class="onsite-flag ${p.validated || p.gps ? 'ok' : 'no'}">
                 ${p.validated || p.gps ? '✓ موقع موثّق' : 'غير موثّق'}</span>
+              ${p.today_target_min ? `
+              <div class="onsite-day" title="مجموع ساعات اليوم على كل المساجد — المطلوب 8 ساعات">
+                <div class="onsite-day-bar"><i style="width:${Math.min(100, p.today_min / p.today_target_min * 100)}%;
+                     background:${p.today_min >= p.today_target_min ? 'var(--green)' : 'var(--primary)'}"></i></div>
+                <span>اليوم ${elapsedLabel(p.today_min)} / 8س${p.today_mosques > 1 ? ` · ${p.today_mosques} مساجد` : ''}</span>
+              </div>` : ''}
             </div>
             <div class="onsite-tm">
               <b>${esc(p.checkin)}</b>
@@ -701,9 +769,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function _openMosqueStream(mosqueId, mosqueName) {
-        const url = S.liveStreams[mosqueId];
+        const st = S.streamByMosque[mosqueId];
+        const url = S.liveStreams[mosqueId] || st?.url;
         if (!url) return;
-        openLiveStream({name: mosqueName, url});
+        openLiveStream({name: mosqueName, url, is_live: !!S.liveStreams[mosqueId], start: st?.start});
     }
 
     /* ══════════════════════════════════════════════════════════
@@ -1483,24 +1552,24 @@ ${ai.forecast_finish ? `
     <div class="kpi-rings">
       <div class="kpi-ring-wrap">
         <canvas id="ring-financial" width="72" height="72"></canvas>
-        <div class="kpi-ring-label">مالي (40%)</div>
+        <div class="kpi-ring-label">الإنجاز الفعلي</div>
         <div class="kpi-ring-val" style="color:var(--gold)">${pct(m.financial_kpi)}</div>
       </div>
       <div class="kpi-ring-wrap">
         <canvas id="ring-overall" width="88" height="88"></canvas>
-        <div class="kpi-ring-label" style="font-weight:700">KPI الكلي</div>
+        <div class="kpi-ring-label" style="font-weight:700" title="60% الالتزام بالجدول · 25% الحضور اليومي · 15% الالتزام بالمدة">مؤشر الأداء العام</div>
         <div class="kpi-ring-val" style="font-size:16px;color:var(--primary)">
           ${pct(m.overall_kpi)}
         </div>
       </div>
       <div class="kpi-ring-wrap">
         <canvas id="ring-time" width="72" height="72"></canvas>
-        <div class="kpi-ring-label">زمني (35%)</div>
+        <div class="kpi-ring-label">المخطط حتى اليوم</div>
         <div class="kpi-ring-val" style="color:var(--green)">${pct(m.time_kpi)}</div>
       </div>
       <div class="kpi-ring-wrap">
         <canvas id="ring-visit" width="72" height="72"></canvas>
-        <div class="kpi-ring-label">إشرافي (25%)</div>
+        <div class="kpi-ring-label" title="حضور يومي 8 ساعات من الأحد إلى الخميس عدا الإجازات الرسمية">الالتزام بالحضور اليومي</div>
         <div class="kpi-ring-val" style="color:var(--primary-l)">
           ${pct(m.visit_compliance)}
         </div>
@@ -1519,8 +1588,23 @@ ${ai.forecast_finish ? `
     ${pendingCOs > 0 ? `<span class="tab-badge orange">${pendingCOs}</span>` : ''}
   </button>
 
+  <button class="tab-btn" data-tab="works">
+    الأعمال المنفذة
+    ${(data.work_orders || []).length ? `<span class="tab-badge navy">${data.work_orders.length}</span>` : ''}
+  </button>
+  <button class="tab-btn" data-tab="samples">
+    عينات المواد
+    ${(data.submittals || []).filter(x => ['submitted','submitted_chief','submitted_waqf'].includes(x.state)).length
+        ? `<span class="tab-badge orange">${data.submittals.filter(x => ['submitted','submitted_chief','submitted_waqf'].includes(x.state)).length}</span>` : ''}
+  </button>
   <button class="tab-btn" data-tab="visits">الزيارات والحضور</button>
 </div>
+
+<!-- Work orders: documented executed works with quantities -->
+<div class="tab-panel" data-tab-panel="works">${buildWorkOrdersHTML(data.work_orders || [])}</div>
+
+<!-- Material samples -->
+<div class="tab-panel" data-tab-panel="samples">${buildSubmittalsHTML(data.submittals || [])}</div>
 
 <!-- Tasks -->
 <div class="tab-panel" data-tab-panel="tasks">
@@ -1629,6 +1713,85 @@ ${ai.forecast_finish ? `
     }
 
     /* ── Task / Cert / CO HTML builders ──────────────────────── */
+    /* ── أوامر العمل: الأعمال الموثقة وكمياتها ─────────────── */
+    const WO_COLORS = {
+        draft: '#8C98A2', submitted: '#D98A0B', approved: '#237292', delivered: '#C8A454',
+        graded: '#1F9D6B', rework: '#D9493B', testing: '#7C5CBF', warranty: '#2E8FB5',
+        closed: '#1F9D6B', rejected: '#D9493B',
+    };
+    function buildWorkOrdersHTML(wos) {
+        if (!wos.length) return `<div class="wx-empty">لا توجد أوامر عمل لهذا المسجد</div>`;
+        const accepted = wos.filter(w => w.posted);
+        const accVal = accepted.reduce((s, w) => s + (w.total_value || 0), 0);
+        const openCnt = wos.filter(w => ['submitted', 'approved', 'delivered', 'rework', 'testing'].includes(w.state)).length;
+        return `
+      <div class="wx-summary">
+        <div><b>${wos.length}</b><span>أمر عمل</span></div>
+        <div><b style="color:var(--green)">${accepted.length}</b><span>مقبول ومُرحّل للمنفذ</span></div>
+        <div><b>${fmt(accVal)}</b><span>قيمة الأعمال المقبولة (ر)</span></div>
+        <div><b style="color:var(--orange)">${openCnt}</b><span>قيد التنفيذ / المراجعة</span></div>
+      </div>
+      ${wos.map(w => `
+        <div class="wx-card">
+          <div class="wx-head">
+            <span class="wx-code">${esc(w.name)}</span>
+            <span class="wx-state" style="background:${WO_COLORS[w.state] || '#8C98A2'}1A;color:${WO_COLORS[w.state] || '#8C98A2'}">${esc(w.state_label)}</span>
+            ${w.grade ? `<span class="wx-grade g-${w.grade.toLowerCase()}">${w.grade}</span>` : ''}
+            ${w.posted ? '<span class="wx-posted">✓ مُرحّل للمنفذ</span>' : ''}
+            <span class="wx-val">${fmt(w.total_value)} ر</span>
+          </div>
+          <div class="wx-desc">${esc(w.description)}</div>
+          <div class="wx-meta">
+            ${w.supervisor ? `<span>👷 ${esc(w.supervisor)}</span>` : ''}
+            ${w.date_requested ? `<span>طلب ${esc(w.date_requested)}</span>` : ''}
+            ${w.date_delivered ? `<span>تسليم ${esc(w.date_delivered)}</span>` : ''}
+            ${w.photos ? `<span>📷 ${w.photos} صورة تسليم</span>` : ''}
+          </div>
+          ${w.lines.length ? `
+          <table class="boq-table wx-lines">
+            <thead><tr><th>البند</th><th>الوصف</th><th>الكمية</th><th>الوحدة</th><th>سعر الوحدة</th><th>القيمة</th></tr></thead>
+            <tbody>${w.lines.map(l => `
+              <tr><td>${esc(l.code)}</td><td>${esc(l.description)}</td>
+                  <td><b>${l.qty}</b></td><td>${esc(l.uom)}</td>
+                  <td>${fmt(l.unit_price)}</td><td>${fmt(l.value)}</td></tr>`).join('')}
+            </tbody>
+          </table>` : ''}
+        </div>`).join('')}`;
+    }
+
+    /* ── عينات المواد ───────────────────────────────────────── */
+    function buildSubmittalsHTML(subs) {
+        if (!subs.length) return `<div class="wx-empty">لا توجد عينات مواد لهذا المسجد</div>`;
+        const col = st => st.startsWith('approved') ? '#1F9D6B' : st === 'rejected' ? '#D9493B'
+            : st === 'revision' ? '#D98A0B' : st === 'draft' ? '#8C98A2' : '#237292';
+        return `
+      <div class="wx-summary">
+        <div><b>${subs.length}</b><span>عينة</span></div>
+        <div><b style="color:var(--green)">${subs.filter(x => x.state.startsWith('approved')).length}</b><span>معتمدة</span></div>
+        <div><b style="color:var(--orange)">${subs.filter(x => ['submitted','submitted_chief','submitted_waqf'].includes(x.state)).length}</b><span>بانتظار المراجعة</span></div>
+        <div><b style="color:var(--red)">${subs.filter(x => ['revision','rejected'].includes(x.state)).length}</b><span>تعديل / مرفوضة</span></div>
+      </div>
+      <div class="wx-grid">
+      ${subs.map(x => `
+        <div class="wx-card">
+          <div class="wx-head">
+            <span class="wx-code">${esc(x.name)}</span>
+            <span class="wx-state" style="background:${col(x.state)}1A;color:${col(x.state)}">${esc(x.state_label)}</span>
+            ${x.grade ? `<span class="wx-grade g-${x.grade.toLowerCase()}">${x.grade}</span>` : ''}
+          </div>
+          <div class="wx-desc"><b>${esc(x.material)}</b>${x.manufacturer ? ' · ' + esc(x.manufacturer) : ''}</div>
+          <div class="wx-meta">
+            ${x.boq ? `<span>📋 ${esc(x.boq)}</span>` : ''}
+            ${x.work_order ? `<span>🔗 ${esc(x.work_order)}</span>` : ''}
+            ${x.date ? `<span>${esc(x.date)}</span>` : ''}
+          </div>
+          ${x.notes ? `<div class="wx-note">${esc(x.notes)}</div>` : ''}
+          ${x.docs.length ? `<div class="wx-docs">${x.docs.map(d =>
+              `<a href="${d.url}" target="_blank">📎 ${esc(truncate(d.name, 28))}</a>`).join('')}</div>` : ''}
+        </div>`).join('')}
+      </div>`;
+    }
+
     function buildTasksHTML(tasks) {
         if (!tasks?.length)
             return '<div style="padding:24px;text-align:center;color:var(--text3)">لا توجد مهام</div>';
@@ -2164,6 +2327,12 @@ ${ai.forecast_finish ? `
 
     function openLiveStream(data) {
         $('stream-modal-title').textContent = data.name || 'بث مباشر';
+        const lbl = $('stream-modal-live');
+        if (lbl) {
+            const live = data.is_live !== false;
+            lbl.textContent = live ? '● مباشر' : `🎥 تسجيل ${data.start || ''}`;
+            lbl.style.color = live ? 'var(--red)' : 'var(--text3)';
+        }
         const embed = $('stream-embed');
         const url = data.url || data.hls_url || '';
 
@@ -2267,12 +2436,14 @@ ${ai.forecast_finish ? `
         const interval = Math.max(30, CONFIG.refresh_interval || 60) * 1000;
         S.refreshTimer = setInterval(async () => {
             checkLiveStream();
-            const [mosques, sum, alerts, onsite] = await Promise.all([
+            const [mosques, sum, alerts, onsite, streams] = await Promise.all([
                 apiGet('/dashboard/api/mosques'),
                 apiGet('/dashboard/api/summary'),
                 apiGet('/dashboard/api/alerts'),
                 apiGet('/dashboard/api/onsite'),
+                apiGet('/dashboard/api/streams'),
             ]);
+            if (Array.isArray(streams)) setStreams(streams);
             if (Array.isArray(mosques)) setMosques(mosques);
             if (sum) S.summary = sum;
             if (alerts) renderAlerts(alerts);

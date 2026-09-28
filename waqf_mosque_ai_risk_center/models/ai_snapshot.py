@@ -65,14 +65,16 @@ class WaqfAiMosqueSnapshot(models.Model):
         d30 = dt_now - timedelta(days=30)
 
         certificates = getattr(mosque, 'certificate_ids', self.env['mosque.certificate']).sudo()
-        pending_certs = certificates.filtered(lambda c: getattr(c, 'state', False) not in ('done', 'approved', 'paid', 'cancel'))
+        # معلّق = قيد مراجعة الاستشاري أو الوقف (ليس مسودة ولا معتمد ولا مرفوض)
+        pending_certs = certificates.filtered(
+            lambda c: c.state in ('consultant_review', 'consultant_approved', 'waqf_review'))
         oldest_pending_days = 0
         if pending_certs:
             oldest = min(pending_certs.mapped('create_date') or [dt_now])
             oldest_pending_days = (dt_now.date() - oldest.date()).days
 
         cos = getattr(mosque, 'change_order_ids', self.env['mosque.change.order']).sudo()
-        pending_cos = cos.filtered(lambda c: getattr(c, 'state', False) not in ('approved', 'done', 'cancel', 'rejected'))
+        pending_cos = cos.filtered(lambda c: c.state == 'review')
 
         reports = getattr(mosque, 'supervision_ids', self.env['mosque.supervision']).sudo().sorted('report_date')
         reports_30d = reports.filtered(lambda r: getattr(r, 'report_date', False) and fields.Date.to_date(r.report_date) >= (today - timedelta(days=30)))
@@ -100,7 +102,7 @@ class WaqfAiMosqueSnapshot(models.Model):
             lambda t:
             t.date_deadline
             and fields.Date.to_date(t.date_deadline) < today
-            and t.stage_id
+            and not (t.stage_id and t.stage_id.fold)      # المهام المغلقة ليست متأخرة
         )
 
         latest_workers = int(getattr(last_report, 'workers_on_site', 0) or 0) if last_report else 0
@@ -108,14 +110,21 @@ class WaqfAiMosqueSnapshot(models.Model):
         ncr_30 = sum(int(getattr(r, 'ncr_count', 0) or 0) for r in reports_30d)
         safety_30 = sum(int(getattr(r, 'safety_incidents', 0) or 0) for r in reports_30d)
 
-        active_streams = len(reports.filtered(lambda r: bool(getattr(r, 'live_stream_url', False)))) + len(attendance_7d.filtered(lambda a: bool(getattr(a, 'live_stream_url', False))))
+        active_streams = self.env['waqf.live.stream'].sudo().search_count(
+            [('mosque_id', '=', mosque.id), ('is_active', '=', True)]) if 'waqf.live.stream' in self.env else 0
         financial_progress = self._safe_num(getattr(mosque, 'financial_progress', 0))
         time_progress = self._safe_num(getattr(mosque, 'time_progress', 0))
         days_delay = int(getattr(mosque, 'days_delay', 0) or 0)
 
+        total_boq = self._safe_num(getattr(mosque, 'total_boq_value', 0)) or boq_contract_value
+        certified_percent = (self._safe_num(getattr(mosque, 'certified_amount', 0)) / total_boq * 100.0) if total_boq else 0.0
+
         report_quality_score = self._report_quality_score(last_report, boq_lines)
         numeric = {
             'financial_time_variance': financial_progress - time_progress,
+            # المصروف (المستخلصات المعتمدة) مقابل المنفذ فعلياً
+            'certified_percent': round(certified_percent, 1),
+            'certified_vs_executed': round(certified_percent - boq_execution_percent, 1),
             'report_quality_score': report_quality_score,
             'short_visits_7d': len(short_visits),
             'expected_finish_delay': days_delay if days_delay > 0 else 0,

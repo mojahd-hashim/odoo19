@@ -329,8 +329,8 @@ class ContractorWorkOrder(models.Model):
                 rec.message_post(
                     body=f'⚠ التقييم {rec.grade.upper()} — مطلوب إعادة عمل')
             else:
-                rec.message_post(
-                    body=f'✅ التقييم {rec.grade.upper()} — {rec.grade_notes}')
+                notes = f' — {rec.grade_notes}' if rec.grade_notes else ''
+                rec.message_post(body=f'✅ التقييم {rec.grade.upper()}{notes}')
 
     def action_start_testing(self):
         """الانتقال لمرحلة الاختبار."""

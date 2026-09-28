@@ -59,11 +59,8 @@ class ResConfigSettings(models.TransientModel):
     def get_dashboard_config(self):
         """Return config dict for dashboard JS."""
         ICP = self.env['ir.config_parameter'].sudo()
+        # لا تُرسل بيانات Azure (خاصة المفتاح) إلى المتصفح — الاتصال يتم من الخادم فقط
         return {
-            'azure_endpoint':   ICP.get_param('waqf.dashboard.azure_endpoint', ''),
-            'azure_key':        ICP.get_param('waqf.dashboard.azure_key', ''),
-            'azure_deployment': ICP.get_param('waqf.dashboard.azure_deployment', 'gpt-4o'),
-            'chatbot_prompt':   ICP.get_param('waqf.dashboard.chatbot_prompt', ''),
             'live_stream_enabled': ICP.get_param(
                 'waqf.dashboard.live_stream_enabled', 'True') == 'True',
             'live_stream_url':   ICP.get_param('waqf.dashboard.live_stream_url', ''),

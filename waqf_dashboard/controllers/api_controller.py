@@ -9,6 +9,10 @@ from .helpers import (
 )
 
 
+# حالات المستخلص المعلّق (قيد مراجعة الاستشاري أو الوقف)
+PENDING_CERT_STATES = ['consultant_review', 'consultant_approved', 'waqf_review']
+
+
 def _json(data):
     return request.make_response(
         json.dumps(data, ensure_ascii=False, default=str),
@@ -30,7 +34,7 @@ class WaqfDashboardAPI(http.Controller):
         CO = env['mosque.change.order'].sudo()
 
         pending = {
-            'certs': Cert.search_count([('state', 'in', ['submitted', 'consultant_approved'])]),
+            'certs': Cert.search_count([('state', 'in', PENDING_CERT_STATES)]),
             'cos': CO.search_count([('state', '=', 'review')]),
             'work_orders': 0,
             'claims': 0,
@@ -176,7 +180,7 @@ class WaqfDashboardAPI(http.Controller):
 
         cutoff = datetime.utcnow() - timedelta(days=7)
         for c in env['mosque.certificate'].sudo().search(
-                [('state', 'in', ['submitted', 'consultant_approved']), ('create_date', '<', cutoff)]):
+                [('state', 'in', PENDING_CERT_STATES), ('create_date', '<', cutoff)]):
             add('high', 'financial', f'مستخلص #{c.cert_number} معلّق منذ أكثر من 7 أيام',
                 f'{c.mosque_id.name or ""} · {round(c.certified_amount or 0):,} ريال', c.mosque_id)
         for co in env['mosque.change.order'].sudo().search(
@@ -310,10 +314,10 @@ class WaqfDashboardAPI(http.Controller):
             # Pending approvals
             Cert = request.env['mosque.certificate'].sudo()
             pending = Cert.search_count(
-                [('state', 'in', ['submitted', 'consultant_approved'])])
+                [('state', 'in', PENDING_CERT_STATES)])
             if pending > 0:
                 total_val = sum(Cert.search(
-                    [('state', 'in', ['submitted', 'consultant_approved'])]
+                    [('state', 'in', PENDING_CERT_STATES)]
                 ).mapped('certified_amount'))
                 insights.append({
                     'type': 'action', 'icon': '🎯', 'priority': 4,
@@ -833,6 +837,55 @@ class WaqfDashboardAPI(http.Controller):
                 'validated': att.is_validated,
             })
 
+        # Work orders — الأعمال الموثقة وكمياتها
+        work_orders, submittals = [], []
+        if 'contractor.work.order' in request.env:
+            WO = request.env['contractor.work.order'].sudo()
+            wo_states = dict(WO._fields['state'].selection)
+            for wo in WO.search([('mosque_id', '=', mosque_id)], order='date_requested desc, id desc'):
+                work_orders.append({
+                    'id': wo.id,
+                    'name': wo.name,
+                    'description': wo.work_description or '',
+                    'state': wo.state,
+                    'state_label': wo_states.get(wo.state, wo.state),
+                    'grade': (wo.grade or '').upper(),
+                    'date_requested': str(wo.date_requested or ''),
+                    'date_delivered': str(wo.date_delivered or ''),
+                    'total_value': wo.total_value,
+                    'posted': bool(wo.boq_executed_posted),
+                    'supervisor': wo.supervisor_id.name or '',
+                    'photos': len(wo.delivery_photo_ids),
+                    'lines': [{
+                        'code': ln.item_code or '',
+                        'description': (ln.description or '')[:80],
+                        'uom': ln.uom or '',
+                        'qty': ln.qty_requested,
+                        'unit_price': ln.unit_price,
+                        'value': ln.line_value,
+                    } for ln in wo.boq_line_ids],
+                })
+
+            Sub = request.env['contractor.material.submittal'].sudo()
+            sub_states = dict(Sub._fields['state'].selection)
+            for sb in Sub.search(['|', ('mosque_id', '=', mosque_id), ('mosque_ids', 'in', [mosque_id])],
+                                 order='date_submitted desc, id desc'):
+                submittals.append({
+                    'id': sb.id,
+                    'name': sb.display_name_rev or sb.name,
+                    'material': sb.material_name or '',
+                    'manufacturer': sb.manufacturer or '',
+                    'boq': (sb.boq_id.item_code or '') + (' · ' + sb.boq_id.description[:50] if sb.boq_id else ''),
+                    'work_order': sb.work_order_id.name or '',
+                    'state': sb.state,
+                    'state_label': sub_states.get(sb.state, sb.state),
+                    'grade': (sb.grade or '').upper(),
+                    'date': str(sb.date_submitted or ''),
+                    'notes': sb.review_notes or sb.notes or '',
+                    'docs': [{'id': d.id, 'name': d.name, 'url': '/web/content/%d' % d.id}
+                             for d in sb.document_ids],
+                })
+
         # AI snapshot for this mosque
         ai_data = {}
         if 'waqf.ai.mosque.snapshot' in request.env:
@@ -903,6 +956,8 @@ class WaqfDashboardAPI(http.Controller):
             'change_orders': cos,
             'visits': visits,
             'attendance': attendance,
+            'work_orders': work_orders,
+            'submittals': submittals,
         })
 
     # ══════════════════════════════════════════════════════
@@ -912,6 +967,27 @@ class WaqfDashboardAPI(http.Controller):
     def api_onsite(self, **kw):
         """Consultants currently checked in — times in Riyadh (UTC+3)."""
         return _json(onsite_list(request.env))
+
+    # ══════════════════════════════════════════════════════
+    # STREAMS — المباشر والمسجّل (قابل للعرض في أي وقت)
+    # ══════════════════════════════════════════════════════
+    @http.route('/dashboard/api/streams', type='http', auth='user', csrf=False)
+    def api_streams(self, **kw):
+        streams = request.env['waqf.live.stream'].sudo().search(
+            [('stream_url', '!=', False)], order='is_active desc, start_time desc', limit=40)
+        return _json([{
+            'id': st.id,
+            'name': st.name or '',
+            'url': st.stream_url,
+            'is_live': bool(st.is_active),
+            'mosque_id': st.mosque_id.id or None,
+            'mosque': st.mosque_id.name or '',
+            'code': st.mosque_id.code or '',
+            'start': fmt_riyadh(st.start_time, '%Y-%m-%d %H:%M'),
+            'end': fmt_riyadh(st.end_time, '%H:%M'),
+            'viewers': st.viewers or 0,
+            'started_by': st.started_by.name or '',
+        } for st in streams])
 
     # ══════════════════════════════════════════════════════
     # LIVE STREAM

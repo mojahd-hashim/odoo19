@@ -175,7 +175,7 @@
               <button class="mapx-filter active" data-f="all">كل المساجد</button>
               <button class="mapx-filter" data-f="onsite">في الموقع الآن</button>
               <button class="mapx-filter" data-f="critical">متأخرة</button>
-              <button class="mapx-filter" data-f="stream">بث مباشر</button>
+              <button class="mapx-filter" data-f="stream">بها بث</button>
             </div>
             <div id="mosque-map">&#160;</div>
             <div class="mapx-legend">
@@ -184,18 +184,33 @@
               <span><i style="background:#DE5B4C"/>حرج</span>
               <span><i style="background:#2E8FB5"/>مكتمل</span>
               <span><i style="background:#1F9D6B;box-shadow:0 0 0 3px rgba(31,157,107,.3)"/>مستشار في الموقع</span>
+              <span><i style="background:#D9493B"/>بث مباشر</span>
+              <span>🎥 تسجيل متاح</span>
             </div>
           </div>
           <div class="mapx-side">
-            <div class="mapx-side-hdr">
-              <div class="mapx-side-title">
-                <span class="live"/>المستشارون في المواقع الآن
-                <span class="mapx-count" id="onsite-count"><t t-esc="on_site_count"/></span>
-              </div>
-              <div class="mapx-side-sub" id="onsite-updated">اضغط على المستشار لتحديد موقعه على الخريطة</div>
+            <div class="mapx-tabs">
+              <button class="mapx-tab active" data-pane="onsite" type="button">
+                <span class="live"/>في الموقع الآن <b id="onsite-count"><t t-esc="on_site_count"/></b>
+              </button>
+              <button class="mapx-tab" data-pane="streams" type="button">
+                <span class="rec"/>البث <b id="stream-count">0</b>
+              </button>
             </div>
-            <div class="mapx-list" id="onsite-list">
-              <div class="mapx-empty">جاري التحميل...</div>
+            <div class="mapx-pane active" data-pane="onsite">
+              <div class="mapx-side-sub" id="onsite-updated">اضغط على المستشار لتحديد موقعه على الخريطة</div>
+              <div class="mapx-list" id="onsite-list">
+                <div class="mapx-empty">جاري التحميل...</div>
+              </div>
+            </div>
+            <div class="mapx-pane" data-pane="streams">
+              <div class="mapx-side-sub">
+                المباشر والتسجيلات السابقة — اضغط للمشاهدة في أي وقت
+                <a href="/live/wall" target="_blank" class="mapx-wall">جدار البث ↗</a>
+              </div>
+              <div class="mapx-list" id="stream-list">
+                <div class="mapx-empty">جاري التحميل...</div>
+              </div>
             </div>
           </div>
         </div>
@@ -322,13 +337,13 @@
   <div class="modal" style="max-width:860px">
     <div class="modal-hdr">
       <div class="modal-title" id="stream-modal-title">بث مباشر</div>
-      <span style="font-size:11px;color:var(--red);font-weight:700">● مباشر</span>
+      <span id="stream-modal-live" style="font-size:11px;color:var(--red);font-weight:700">● مباشر</span>
       <button class="modal-close" onclick="closeModal('modal-stream')">✕</button>
     </div>
     <div class="modal-body" style="padding:0">
       <div class="stream-embed" id="stream-embed"/>
       <div style="padding:12px 18px;font-size:11px;color:var(--text3)">
-        البث من الموقع الميداني عبر Cloudflare Stream
+        البث من الموقع الميداني — يمكن مشاهدة التسجيلات في أي وقت
       </div>
     </div>
   </div>

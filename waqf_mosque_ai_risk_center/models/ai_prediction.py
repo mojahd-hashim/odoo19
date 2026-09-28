@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import json
+
 from odoo import api, fields, models
 
 
@@ -60,7 +62,7 @@ class WaqfAiPhaseInsight(models.Model):
     recommendations_json = fields.Text()
 
     @api.model
-    def _build_phase_insight(self, run, snapshots):
+    def _build_phase_insight(self, run, snapshots, ai_response=None):
         critical = len(run.alert_ids.filtered(lambda a: a.severity == 'critical'))
         high = len(run.alert_ids.filtered(lambda a: a.severity == 'high'))
         health = 'good'
@@ -77,7 +79,7 @@ class WaqfAiPhaseInsight(models.Model):
             'overall_summary': 'تم تحليل %s مسجد في المرحلة، ونتج عنها %s تنبيه.' % (len(snapshots), len(run.alert_ids)),
             'financial_risk_level': 'high' if any(s.get('pending_certificates_value', 0) > 0 for s in snapshots) else 'low',
             'quality_risk_level': 'high' if any(s.get('ncr_count_30d', 0) or s.get('safety_incidents_30d', 0) for s in snapshots) else 'low',
-            'supervision_risk_level': 'high' if any(s.get('validated_visits_7d', 0) < 2 for s in snapshots) else 'low',
+            'supervision_risk_level': 'high' if any(s.get('state') == 'active' and s.get('visit_compliance', 100) < 60 for s in snapshots) else 'low',
             'approval_risk_level': 'high' if any(s.get('pending_change_orders_count', 0) for s in snapshots) else 'low',
             'critical_projects_count': critical,
             'predicted_delays_count': len([s for s in snapshots if s.get('days_delay', 0) > 0]),
@@ -87,4 +89,14 @@ class WaqfAiPhaseInsight(models.Model):
             'executive_insights_json': [],
             'recommendations_json': [],
         }
+        summary = (ai_response or {}).get('phase_summary') or {}
+        if isinstance(summary, dict):
+            if summary.get('overall_summary'):
+                vals['overall_summary'] = summary['overall_summary']
+            if summary.get('phase_health') in dict(self._fields['phase_health'].selection):
+                vals['phase_health'] = summary['phase_health']
+            vals['executive_insights_json'] = json.dumps(summary.get('executive_insights') or [], ensure_ascii=False)
+            vals['recommendations_json'] = json.dumps(summary.get('recommendations') or [], ensure_ascii=False)
+        elif isinstance(summary, str) and summary.strip():
+            vals['overall_summary'] = summary
         return self.create(vals)

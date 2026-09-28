@@ -6,41 +6,154 @@
         <field name="inherit_id" ref="base.res_config_settings_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//form" position="inside">
-                <app data-string="AI Risk Center" string="AI Risk Center" name="waqf_ai_risk_center"
+                <app data-string="مركز المخاطر الذكي" string="مركز المخاطر الذكي"
+                     name="waqf_mosque_ai_risk_center"
                      groups="waqf_mosque_ai_risk_center.group_ai_risk_admin">
-                    <block title="Azure OpenAI">
-                        <setting string="Enable AI Analysis">
-                            <field name="waqf_ai_enabled"/>
-                        </setting>
-                        <setting string="Azure Endpoint">
+
+                    <block title="الربط مع Azure OpenAI (ChatGPT)"
+                           help="بيانات المورد من Azure AI Foundry / Azure OpenAI ← Keys and Endpoint و Deployments">
+                        <setting string="رابط المورد (Endpoint)"
+                                 help="مثال: https://my-resource.openai.azure.com — يُقبل أيضاً رابط كامل منسوخ من Azure">
                             <field name="waqf_ai_azure_endpoint" placeholder="https://xxxx.openai.azure.com"/>
                         </setting>
-                        <setting string="Azure API Key">
+                        <setting string="مفتاح API" help="KEY 1 أو KEY 2 — يُحفظ في الخادم فقط ولا يُرسل للمتصفح">
                             <field name="waqf_ai_azure_api_key" password="True"/>
                         </setting>
-                        <setting string="Deployment">
-                            <field name="waqf_ai_azure_deployment"/>
+                        <setting string="اسم الـ Deployment"
+                                 help="الاسم الذي أنشأته للنموذج في Azure (مثل gpt-4o أو gpt-4.1-mini)">
+                            <field name="waqf_ai_azure_deployment" placeholder="gpt-4o"/>
+                        </setting>
+                        <setting string="إصدار API"
+                                 help="مثل 2024-10-21 — أو اكتب v1 لاستخدام واجهة Azure الجديدة الموحّدة">
+                            <field name="waqf_ai_azure_api_version" placeholder="2024-10-21"/>
+                        </setting>
+                        <setting string="نموذج استدلالي"
+                                 help="فعّله مع نماذج o1 / o3 / o4-mini / GPT-5 (لا تدعم temperature وتستخدم max_completion_tokens)">
+                            <field name="waqf_ai_reasoning_model"/>
+                        </setting>
+                        <setting string="اختبار الاتصال"
+                                 help="يرسل طلباً قصيراً بالقيم الحالية في هذه الصفحة (قبل الحفظ) ويعرض النتيجة">
+                            <button name="action_waqf_ai_test_connection" type="object"
+                                    string="اختبار الاتصال الآن" icon="fa-plug" class="btn-primary"/>
                         </setting>
                     </block>
-                    <block title="Run Settings">
-                        <setting string="Run Interval Hours">
-                            <field name="waqf_ai_run_interval_hours"/>
+
+                    <block title="إعدادات النموذج">
+                        <setting string="درجة الإبداع (temperature)"
+                                 help="0.0–0.3 للتحليل الدقيق · يُتجاهل مع النماذج الاستدلالية">
+                            <field name="waqf_ai_temperature"/>
                         </setting>
-                        <setting string="Max Mosques Per Run">
+                        <setting string="الحد الأقصى للمخرجات" help="عدد tokens في رد النموذج">
+                            <field name="waqf_ai_max_tokens"/>
+                        </setting>
+                        <setting string="مهلة الاتصال (ثانية)" help="يُعاد المحاولة تلقائياً عند 429 / 5xx">
+                            <field name="waqf_ai_timeout"/>
+                        </setting>
+                    </block>
+
+                    <block title="الاستخدامات">
+                        <setting string="تحليل المخاطر بالذكاء الاصطناعي"
+                                 help="بدونه يعمل التحليل بالقواعد فقط (التنبيهات الأساسية مستمرة)">
+                            <field name="waqf_ai_enabled"/>
+                            <div class="mt-2" invisible="not waqf_ai_enabled">
+                                <label for="waqf_ai_analysis_prompt" string="تعليمات التحليل" class="o_form_label"/>
+                                <field name="waqf_ai_analysis_prompt" class="w-100"
+                                       placeholder="تعليمات النموذج — صيغة JSON المطلوبة تُضاف تلقائياً"/>
+                            </div>
+                        </setting>
+                        <setting string="المساعد «مساند» في لوحة الإدارة"
+                                 help="المحادثة في /dashboard تستخدم نفس الربط">
+                            <field name="waqf_ai_chat_enabled"/>
+                            <div class="mt-2" invisible="not waqf_ai_chat_enabled">
+                                <label for="waqf_ai_chat_prompt" string="تعليمات المساعد" class="o_form_label"/>
+                                <field name="waqf_ai_chat_prompt" class="w-100"/>
+                            </div>
+                        </setting>
+                    </block>
+
+                    <block title="جدولة التحليل">
+                        <setting string="التحليل كل" help="يُطبَّق على المهمة المجدولة عند الحفظ">
+                            <field name="waqf_ai_run_interval_hours" class="oe_inline"/> ساعة
+                        </setting>
+                        <setting string="أقصى عدد مساجد" help="0 = كل مساجد المرحلة الحالية">
                             <field name="waqf_ai_max_mosques_per_run"/>
                         </setting>
-                        <setting string="Confidence Threshold">
+                        <setting string="حد الثقة"
+                                 help="تنبيهات وتوقعات الذكاء الاصطناعي الأقل من هذه الثقة (0–1) لا تُحفظ">
                             <field name="waqf_ai_confidence_threshold"/>
+                        </setting>
+                        <setting string="تشغيل التحليل الآن" help="يحفظ الإعدادات ثم يحلل المرحلة الحالية">
+                            <button name="action_waqf_ai_run_now" type="object"
+                                    string="تحليل المرحلة الحالية" icon="fa-play" class="btn-secondary"/>
+                        </setting>
+                    </block>
+
+                    <block title="الاستهلاك (آخر 30 يوماً)">
+                        <setting string="عدد الاتصالات">
+                            <field name="waqf_ai_calls_30d" readonly="1"/>
+                        </setting>
+                        <setting string="إجمالي Tokens">
+                            <field name="waqf_ai_tokens_30d" readonly="1"/>
+                        </setting>
+                        <setting string="الأخطاء">
+                            <field name="waqf_ai_errors_30d" readonly="1"/>
+                            <button name="action_waqf_ai_open_logs" type="object"
+                                    string="سجل الاتصالات" icon="fa-list" class="btn-link"/>
                         </setting>
                     </block>
                 </app>
             </xpath>
         </field>
     </record>
-<!--    <record id="action_ai_risk_config" model="ir.actions.act_window">-->
-<!--        <field name="name">AI Risk Configuration</field>-->
-<!--        <field name="res_model">res.config.settings</field>-->
-<!--        <field name="view_mode">form</field>-->
-<!--        <field name="target">inline</field>-->
-<!--    </record>-->
+
+    <record id="action_ai_risk_config" model="ir.actions.act_window">
+        <field name="name">إعدادات مركز المخاطر الذكي</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'waqf_mosque_ai_risk_center', 'bin_size': False}</field>
+    </record>
+
+    <!-- سجل الاتصالات -->
+    <record id="view_ai_call_log_list" model="ir.ui.view">
+        <field name="name">waqf.ai.call.log.list</field>
+        <field name="model">waqf.ai.call.log</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" decoration-danger="status == 'error'" decoration-muted="purpose == 'test'">
+                <field name="create_date" string="الوقت"/>
+                <field name="purpose"/>
+                <field name="deployment"/>
+                <field name="status"/>
+                <field name="latency_ms"/>
+                <field name="prompt_tokens" sum="المجموع" optional="show"/>
+                <field name="completion_tokens" sum="المجموع" optional="show"/>
+                <field name="total_tokens" sum="المجموع"/>
+                <field name="user_id" optional="hide"/>
+                <field name="error" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_ai_call_log_search" model="ir.ui.view">
+        <field name="name">waqf.ai.call.log.search</field>
+        <field name="model">waqf.ai.call.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <filter name="errors" string="الأخطاء" domain="[('status', '=', 'error')]"/>
+                <filter name="last30" string="آخر 30 يوماً"
+                        domain="[('create_date', '>=', (context_today() - relativedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <group>
+                    <filter name="g_purpose" string="الاستخدام" context="{'group_by': 'purpose'}"/>
+                    <filter name="g_day" string="اليوم" context="{'group_by': 'create_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_ai_call_log" model="ir.actions.act_window">
+        <field name="name">سجل اتصالات Azure OpenAI</field>
+        <field name="res_model">waqf.ai.call.log</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'search_default_last30': 1}</field>
+    </record>
 </odoo>

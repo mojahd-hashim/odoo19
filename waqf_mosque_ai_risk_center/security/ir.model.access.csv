@@ -11,3 +11,5 @@ access_ai_prediction_viewer,ai.prediction.viewer,model_waqf_ai_prediction,group_
 access_ai_prediction_admin,ai.prediction.admin,model_waqf_ai_prediction,group_ai_risk_admin,1,1,1,1
 access_ai_phase_insight_viewer,ai.phase.insight.viewer,model_waqf_ai_phase_insight,group_ai_risk_viewer,1,0,0,0
 access_ai_phase_insight_admin,ai.phase.insight.admin,model_waqf_ai_phase_insight,group_ai_risk_admin,1,1,1,1
+access_ai_call_log_manager,ai.call.log.manager,model_waqf_ai_call_log,group_ai_risk_manager,1,0,0,0
+access_ai_call_log_admin,ai.call.log.admin,model_waqf_ai_call_log,group_ai_risk_admin,1,0,0,1

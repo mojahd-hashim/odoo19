@@ -39,3 +39,6 @@ access_workforce_type_admin,workforce.type admin,model_mosque_workforce_type,gro
 access_workforce_type_user,workforce.type user,model_mosque_workforce_type,base.group_user,1,0,0,0
 access_supervision_workforce_admin,supervision.workforce admin,model_mosque_supervision_workforce,group_mosque_admin,1,1,1,1
 access_supervision_workforce_user,supervision.workforce user,model_mosque_supervision_workforce,base.group_user,1,1,1,1
+access_mosque_public_holiday_user,mosque.public.holiday user,model_mosque_public_holiday,base.group_user,1,0,0,0
+access_mosque_public_holiday_manager,mosque.public.holiday manager,model_mosque_public_holiday,group_mosque_waqf_manager,1,1,1,1
+access_mosque_public_holiday_admin,mosque.public.holiday admin,model_mosque_public_holiday,group_mosque_admin,1,1,1,1

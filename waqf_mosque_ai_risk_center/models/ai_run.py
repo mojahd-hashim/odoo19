@@ -3,8 +3,6 @@ import json
 import logging
 import time
 from datetime import timedelta
-from urllib import request as urlrequest
-from urllib.error import HTTPError, URLError
 
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
@@ -109,13 +107,9 @@ class WaqfAiSnapshotRun(models.Model):
     def _find_current_phase(self):
         Package = self.env['mosque.package'].sudo()
         today = fields.Date.context_today(self)
-        #todo
-        # phase = Package.search([
-        #     ('planned_start', '<=', today),
-        #     ('planned_end', '>=', today),
-        # ], order='planned_start desc', limit=1)
         phase = Package.search([
-            ('id', '=', 1)
+            ('planned_start', '<=', today),
+            ('planned_end', '>=', today),
         ], order='planned_start desc', limit=1)
         if phase:
             return phase
@@ -142,6 +136,8 @@ class WaqfAiSnapshotRun(models.Model):
             max_mosques = int(self._get_param('waqf_ai_max_mosques_per_run', 0) or 0)
 
             mosques = phase.mosque_ids.sudo()
+            # التقدم الزمني والتأخير مخزّنة وتعتمد على تاريخ اليوم — نحدّثها قبل اللقطة
+            mosques._recompute_progress()
 
             if max_mosques:
                 mosques = mosques[:max_mosques]
@@ -176,18 +172,24 @@ class WaqfAiSnapshotRun(models.Model):
             self.env.cr.commit()
 
             ai_error = False
+            ai_response = None
 
             if run._get_param('waqf_ai_enabled', 'False') in ('True', 'true', '1'):
 
                 try:
+                    # تنبيهات القواعد بصيغة مختصرة حتى لا يكررها النموذج
+                    rule_alerts = [{
+                        'mosque_id': a.mosque_id.id or None, 'alert_type': a.alert_type,
+                        'severity': a.severity, 'title': a.title,
+                    } for a in run.alert_ids]
                     ai_response = run._call_azure_openai({
                         'phase': self._phase_payload(phase),
                         'mosques': snapshots_payload,
-                        'rule_alerts': rule_alert_payloads,
+                        'rule_alerts': rule_alerts,
                     })
 
                     run.write({
-                        'ai_response_json': ai_response,
+                        'ai_response_json': json.dumps(ai_response, ensure_ascii=False, indent=2),
                     })
 
                     self.env.cr.commit()
@@ -206,7 +208,8 @@ class WaqfAiSnapshotRun(models.Model):
 
             run.env['waqf.ai.phase.insight']._build_phase_insight(
                 run,
-                snapshots_payload
+                snapshots_payload,
+                ai_response if not ai_error else None,
             )
 
             self.env.cr.commit()
@@ -248,103 +251,103 @@ class WaqfAiSnapshotRun(models.Model):
         }
 
     def _call_azure_openai(self, snapshot):
+        """يستدعي Azure OpenAI عبر العميل الموحّد ويعيد JSON."""
         self.ensure_one()
-        ICP = self.env['ir.config_parameter'].sudo()
-        endpoint = ICP.get_param('waqf_ai_azure_endpoint')
-        api_key = ICP.get_param('waqf_ai_azure_api_key')
-        deployment = ICP.get_param('waqf_ai_azure_deployment')
-        if not endpoint or not api_key or not deployment:
-            raise UserError(_('Azure OpenAI settings are incomplete.'))
+        res = self.env['waqf.ai.client'].chat_json([
+            {'role': 'system', 'content': self._azure_system_prompt()},
+            {'role': 'user', 'content': json.dumps(snapshot, ensure_ascii=False, default=str)},
+        ], purpose='analysis', temperature=0.1)
+        return res['json']
 
-        endpoint = endpoint.rstrip('/')
-        url = '%s/openai/deployments/%s/chat/completions?api-version=2024-02-15-preview' % (endpoint, deployment)
-        system_prompt = self._azure_system_prompt()
-        payload = {
-            'messages': [
-                {'role': 'system', 'content': system_prompt},
-                {'role': 'user', 'content': json.dumps(snapshot, ensure_ascii=False, default=str)},
-            ],
-            'temperature': 0.1,
-            'response_format': {'type': 'json_object'},
-        }
-        data = json.dumps(payload, ensure_ascii=False, indent=2).encode('utf-8')
-        req = urlrequest.Request(url, data=data, headers={
-            'Content-Type': 'application/json',
-            'api-key': api_key,
-        }, method='POST')
-        try:
-            with urlrequest.urlopen(req, timeout=90) as resp:
-                result = json.loads(resp.read().decode('utf-8'))
-        except HTTPError as exc:
-            raise UserError(_('Azure OpenAI HTTP error: %s - %s') % (exc.code, exc.read().decode('utf-8', errors='ignore')))
-        except URLError as exc:
-            raise UserError(_('Azure OpenAI connection error: %s') % exc)
-        content = result.get('choices', [{}])[0].get('message', {}).get('content', '{}')
-        return json.loads(content)
+    AI_OUTPUT_SCHEMA = '''
+أعد JSON فقط بهذا الشكل (بدون أي نص خارجه):
+{
+  "phase_summary": {"overall_summary": "نص", "phase_health": "good|watch|risk|critical",
+                    "executive_insights": ["نص"], "recommendations": ["نص"]},
+  "alerts": [{"mosque_id": رقم أو null, "contractor": "نص أو null",
+              "alert_type": "delay|financial|approval|quality|supervision|boq|contractor|change_order|payment_execution_impact|data_conflict|silent_project|risk",
+              "severity": "low|medium|high|critical", "title": "نص قصير", "summary": "نص",
+              "root_cause": "نص", "impact": "نص", "recommendation": "نص",
+              "confidence": 0.0-1.0, "priority_score": 0-100, "impact_score": 0-100, "probability_score": 0-100}],
+  "predictions": [{"mosque_id": رقم أو null,
+                   "prediction_type": "expected_delay|financial_overrun|quality_risk|supervision_gap|approval_bottleneck|phase_delay",
+                   "prediction_text": "نص", "probability": 0.0-1.0, "expected_delay_days": رقم,
+                   "confidence": 0.0-1.0, "recommendation": "نص"}]
+}
+استخدم mosque_id كما ورد في البيانات فقط.'''
 
     @api.model
     def _azure_system_prompt(self):
-        return '''أنت وكيل تحليل مخاطر تنفيذي لمشروع تأهيل المساجد.
-حلل بيانات المرحلة الحالية فقط.
-اربط بين الأرقام والتقارير والدفعات والاعتمادات والزيارات وأوامر التغيير وتنفيذ BOQ.
-استخرج التنبيهات والمخاطر والتوقعات التي تساعد الإدارة على اتخاذ القرار.
-لا تنشئ تنبيهًا إلا إذا كان له دليل واضح.
-لا تكرر التنبيهات.
-لا تصف الأرقام فقط، بل اربط السبب بالأثر.
-حدد الأولوية التنفيذية.
-اكتب بالعربية الإدارية المختصرة.
-أعد JSON فقط بالشكل المطلوب: phase_summary, alerts, predictions.'''
+        from .res_config_settings import DEFAULT_ANALYSIS_PROMPT
+        prompt = self._get_param('waqf_ai_analysis_prompt') or DEFAULT_ANALYSIS_PROMPT
+        return prompt.strip() + '\n' + self.AI_OUTPUT_SCHEMA
 
     def _store_ai_response(self, ai_response):
+        """يحفظ تنبيهات وتوقعات النموذج بعد التحقق منها وتطبيق حد الثقة."""
         self.ensure_one()
-
         response = ai_response or {}
+        Alert = self.env['waqf.ai.alert']
+        Pred = self.env['waqf.ai.prediction']
+        valid_mosques = set(self.snapshot_ids.mapped('mosque_id').ids)
+        alert_types = dict(Alert._fields['alert_type'].selection)
+        severities = dict(Alert._fields['severity'].selection)
+        pred_types = dict(Pred._fields['prediction_type'].selection)
+        threshold = float(self._get_param('waqf_ai_confidence_threshold', 0.55) or 0)
 
+        def num(v, default=0.0):
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                return default
+
+        def mosque(v):
+            try:
+                v = int(v)
+            except (TypeError, ValueError):
+                return False
+            return v if v in valid_mosques else False
+
+        kept = []
         for item in response.get('alerts', []) or []:
-            self.env['waqf.ai.alert'].create({
-                'run_id': self.id,
-                'phase_id': self.phase_id.id,
-                'mosque_id': item.get('mosque_id') or False,
-                'contractor': item.get('contractor'),
-                'alert_type': item.get('alert_type') or 'risk',
-                'severity': item.get('severity') or 'medium',
-                'title': item.get('title') or 'تنبيه ذكي',
-                'summary': item.get('summary'),
-                'root_cause': item.get('root_cause'),
-                'impact': item.get('impact'),
-                'phase_impact': item.get('phase_impact'),
-                'recommendation': item.get('recommendation'),
-                'confidence': item.get('confidence') or 0.0,
-                'priority_score': item.get('priority_score') or 0,
-                'impact_score': item.get('impact_score') or 0,
-                'probability_score': item.get('probability_score') or 0,
-                'related_metrics_json': json.dumps(
-                    item.get('related_metrics') or {},
-                    ensure_ascii=False,
-                    indent=2
-                ),
-                'ai_payload_json': json.dumps(
-                    item,
-                    ensure_ascii=False,
-                    indent=2
-                ),
-                'source': 'ai',
-            })
+            if not isinstance(item, dict):
+                continue
+            conf = num(item.get('confidence'))
+            if conf > 1:
+                conf = conf / 100.0
+            if conf < threshold:
+                continue
+            item = dict(item,
+                        mosque_id=mosque(item.get('mosque_id')),
+                        alert_type=item.get('alert_type') if item.get('alert_type') in alert_types else 'risk',
+                        severity=item.get('severity') if item.get('severity') in severities else 'medium',
+                        confidence=conf)
+            kept.append(Alert._create_or_update_alert(self, item, 'ai'))
+
+        # تنبيهات الذكاء الاصطناعي السابقة التي لم تتكرر في هذا التحليل تُغلق
+        Alert.search([
+            ('phase_id', '=', self.phase_id.id),
+            ('source', 'in', ['ai', 'hybrid']),
+            ('status', 'in', ['new', 'acknowledged']),
+            ('id', 'not in', [a.id for a in kept if a]),
+        ]).write({'status': 'resolved', 'resolved_date': fields.Datetime.now()})
 
         for item in response.get('predictions', []) or []:
-            self.env['waqf.ai.prediction'].create({
+            if not isinstance(item, dict):
+                continue
+            conf = num(item.get('confidence'))
+            if conf > 1:
+                conf = conf / 100.0
+            if conf < threshold:
+                continue
+            Pred.create({
                 'run_id': self.id,
                 'phase_id': self.phase_id.id,
-                'mosque_id': item.get('mosque_id') or False,
-                'prediction_type': item.get('prediction_type') or 'expected_delay',
+                'mosque_id': mosque(item.get('mosque_id')),
+                'prediction_type': item.get('prediction_type') if item.get('prediction_type') in pred_types else 'expected_delay',
                 'prediction_text': item.get('prediction_text'),
-                'probability': item.get('probability') or 0.0,
-                'expected_delay_days': item.get('expected_delay_days') or 0,
-                'confidence': item.get('confidence') or 0.0,
-                'evidence_json': json.dumps(
-                    item.get('evidence') or {},
-                    ensure_ascii=False,
-                    indent=2
-                ),
+                'probability': num(item.get('probability')),
+                'expected_delay_days': int(num(item.get('expected_delay_days'))),
+                'confidence': conf,
+                'evidence_json': json.dumps(item.get('evidence') or {}, ensure_ascii=False, indent=2),
                 'recommendation': item.get('recommendation'),
             })

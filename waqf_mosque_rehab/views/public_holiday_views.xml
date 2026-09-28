@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="view_mosque_public_holiday_list" model="ir.ui.view">
+    <field name="name">mosque.public.holiday.list</field>
+    <field name="model">mosque.public.holiday</field>
+    <field name="arch" type="xml">
+      <list editable="bottom">
+        <field name="name"/>
+        <field name="date_from"/>
+        <field name="date_to"/>
+        <field name="note" optional="show"/>
+      </list>
+    </field>
+  </record>
+
+  <record id="action_mosque_public_holiday" model="ir.actions.act_window">
+    <field name="name">الإجازات الرسمية</field>
+    <field name="res_model">mosque.public.holiday</field>
+    <field name="view_mode">list</field>
+    <field name="help" type="html">
+      <p class="o_view_nocontent_smiling_face">أضف الإجازات الرسمية</p>
+      <p>تُستثنى من أيام الحضور اليومي المطلوبة للمهندسين (الأحد–الخميس).</p>
+    </field>
+  </record>
+
+  <menuitem id="menu_mosque_public_holiday"
+            name="الإجازات الرسمية"
+            parent="menu_mosque_project"
+            action="action_mosque_public_holiday"
+            sequence="40"/>
+</odoo>
