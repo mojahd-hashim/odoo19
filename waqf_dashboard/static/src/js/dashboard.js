@@ -12,36 +12,52 @@ document.addEventListener('DOMContentLoaded', function () {
     const dataEl = document.getElementById('waqf-data');
     const CONFIG = JSON.parse(dataEl?.dataset.config || '{}');
     const PKGS = JSON.parse(dataEl?.dataset.packages || '[]');
-    const SUMMARY = JSON.parse(dataEl?.dataset.summary || '{}');
     const ONSITE = JSON.parse(dataEl?.dataset.onsite || '[]');
     const HAS_AI = dataEl?.dataset.hasAi === '1';
 
     /* ── State ─────────────────────────────────────────────── */
     const S = {
-        mosques: [],
+        mosques: [],          // كل المساجد (من /api/mosques)
         packages: PKGS,
+        scopePkgId: (PKGS.find(p => p.is_current) || {}).id || null,
+        summary: {},
+        onsite: ONSITE,
         allAlerts: [],
+        alertFilter: 'all',
+        hmFilter: 'all',
+        mapFilter: 'all',
         activeMosqueId: null,
         mosqueContext: null,
         chatHistory: [],
         refreshTimer: null,
         map: null,
+        cluster: null,
         mapMarkers: {},
-        liveStreams: {},   // ← تأكد أنه موجود هنا
+        liveStreams: {},
     };
 
     /* ── Helpers ────────────────────────────────────────────── */
     const $ = id => document.getElementById(id);
     const fmt = n => new Intl.NumberFormat('ar-SA').format(Math.round(n || 0));
     const pct = n => Math.round(n || 0) + '%';
+    const esc = s => String(s ?? '').replace(/[&<>"']/g,
+        c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+    const STATUS = {
+        ok:          {label: 'في الموعد',  color: '#25A874'},
+        warning:     {label: 'تأخر بسيط', color: '#E0A12A'},
+        critical:    {label: 'حرج',        color: '#DE5B4C'},
+        done:        {label: 'مكتمل',      color: '#2E8FB5'},
+        not_started: {label: 'لم يبدأ',    color: '#B9AE96'},
+    };
+    const statusColor = s => (STATUS[s] || STATUS.not_started).color;
     const dotColor = kpi =>
-        kpi >= 70 ? '#2ECC8A' : kpi >= 50 ? '#F0A500' : kpi > 0 ? '#E85555' : '#B0C0CC';
+        kpi >= 70 ? '#25A874' : kpi >= 50 ? '#E0A12A' : kpi > 0 ? '#DE5B4C' : '#B9AE96';
     const truncate = (s, n) =>
         s && s.length > n ? s.substring(0, n) + '…' : (s || '');
     const kanbanColor = c =>
         ({
-            green: '#2ECC8A', red: '#E85555', yellow: '#F0A500',
-            orange: '#F0A500', grey: '#8FA3B3'
+            green: '#1F9D6B', red: '#D9493B', yellow: '#D98A0B',
+            orange: '#D98A0B', grey: '#8FA3B3'
         }[c] || '#8FA3B3');
     const stateLabel = s =>
         ({
@@ -76,11 +92,26 @@ document.addEventListener('DOMContentLoaded', function () {
         if (mime.includes('zip')) return '🗜';
         return '📁';
     };
+    // قيمة مالية مختصرة: مليون / ألف
+    const money = v => v >= 1e6
+        ? {val: (v / 1e6).toLocaleString('en-US', {maximumFractionDigits: 1}), unit: 'م ر'}
+        : {val: Math.round(v / 1000).toLocaleString('en-US'), unit: 'ألف ر'};
+    const elapsedLabel = min => {
+        const h = Math.floor(min / 60), m = min % 60;
+        return h ? `${h}س ${m}د` : `${m}د`;
+    };
+    const scopedMosques = () => S.scopePkgId
+        ? S.mosques.filter(m => m.package_id === S.scopePkgId) : S.mosques;
 
     /* ── API ────────────────────────────────────────────────── */
     async function apiGet(url) {
-        const r = await fetch(url, {credentials: 'same-origin'});
-        return r.json();
+        try {
+            const r = await fetch(url, {credentials: 'same-origin'});
+            return await r.json();
+        } catch (e) {
+            console.warn('dashboard api', url, e);
+            return null;
+        }
     }
 
     async function apiPost(url, data) {
@@ -98,21 +129,18 @@ document.addEventListener('DOMContentLoaded', function () {
        INIT
        ══════════════════════════════════════════════════════════ */
     async function init() {
-        loadChartJS(async () => {
-            // Render immediately from server data
-            renderSummary(SUMMARY);
-            if (S.packages.length) {
-                buildSidebar(S.packages);
-                buildPhaseGantt(S.packages);
-                S.packages.forEach(pkg =>
-                    pkg.mosques?.forEach(m =>
-                        S.mosques.push({...m, package: pkg.name})));
-            }
+        startClock();
+        buildSidebar(S.packages);
+        renderOnsite(S.onsite);
+        initQuickFilters();
+        initAlertFilters();
+        initMapFilters();
 
-            // Parallel API calls
-            const [mosques, alerts, insights, risk, forecast, quality, contractors] =
+        loadChartJS(async () => {
+            const [mosques, summary, alerts, insights, risk, forecast, quality, contractors] =
                 await Promise.all([
                     apiGet('/dashboard/api/mosques'),
+                    apiGet('/dashboard/api/summary'),
                     apiGet('/dashboard/api/alerts'),
                     apiGet('/dashboard/api/ai_insights'),
                     apiGet('/dashboard/api/risk_matrix'),
@@ -121,255 +149,252 @@ document.addEventListener('DOMContentLoaded', function () {
                     apiGet('/dashboard/api/contractors'),
                 ]);
 
-            S.mosques = mosques;
-            buildHeatmap(mosques);
-            initMap(mosques);
-            renderAlerts(alerts);
-            renderAIInsights(insights);
-            renderRiskMatrix(risk.points || []);
-            renderForecast(forecast.rows || []);
-            renderQuality(quality);
-            renderContractors(contractors.contractors || []);
-            renderCriticalProjects(mosques);
+            setMosques(mosques || []);
+            S.summary = summary || {};
+            if (!S.scopePkgId && S.summary.current_package_id) S.scopePkgId = S.summary.current_package_id;
+            renderAlerts(alerts || {});
+            applyScope();
+            initMap();
+            if (insights) renderAIInsights(insights);
+            renderRiskMatrix(risk?.points || []);
+            renderForecast(forecast?.rows || []);
+            if (quality) renderQuality(quality);
+            renderContractors(contractors?.contractors || []);
+            renderCriticalProjects(S.mosques);
             loadOnSite();
             checkLiveStream();
             initSearch();
-            initQuickFilters();
             startRefresh();
         });
     }
 
-    /* ══════════════════════════════════════════════════════════
-       SUMMARY KPI STRIP
-       ══════════════════════════════════════════════════════════ */
-    function renderSummary(d) {
-        if (!d || !Object.keys(d).length) return;
-
-        const set = (id, val) => {
-            const el = $(id);
-            if (el) el.textContent = val;
-        };
-        const setTrend = (id, delta, labels) => {
-            const el = $(id);
-            if (!el) return;
-            const up = delta > 0, dn = delta < 0;
-            el.className = 'exec-kpi-trend ' + (up ? 'up' : dn ? 'down' : 'flat');
-            el.innerHTML = `<span class="arrow">${up ? '↑' : dn ? '↓' : '→'}</span>
-        ${Math.abs(delta)} ${labels[up ? 0 : dn ? 1 : 2]}`;
-        };
-
-        // set('kpi-total-value', fmt(d.total_contract_value / 1000000));
-        // set('kpi-avg-kpi', Math.round(d.avg_kpi || 0));
-        // set('kpi-critical', d.critical_count || 0);
-        // set('kpi-total-delay', d.total_delay_days || 0);
-        // set('kpi-co-value', fmt((d.co_value || 0) / 1000));
-        // set('kpi-pending', (d.pending_certs || 0) + (d.pending_cos || 0));
-        // set('kpi-ontime', d.on_time_count || 0);
-
-        setTrend('kpi-avg-trend', d.avg_kpi_delta || 0, ['%', '%', 'بدون تغيير']);
-        setTrend('kpi-critical-trend', -(d.critical_delta || 0), ['مشروع', 'مشروع', '']);
-        setTrend('kpi-pending-trend', -(d.pending_certs_delta || 0), ['جديد', 'أقل', '']);
-
-        // Animate numbers
-        animateCounters();
+    function setMosques(list) {
+        S.mosques = list;
+        S.liveStreams = {};
+        list.forEach(m => { if (m.stream_url) S.liveStreams[m.id] = m.stream_url; });
     }
 
-    function animateCounters() {
-        document.querySelectorAll('.exec-kpi-value').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(8px)';
-            setTimeout(() => {
-                el.style.transition = 'opacity .4s ease, transform .4s ease';
-                el.style.opacity = '1';
-                el.style.transform = 'translateY(0)';
-            }, 50);
+    /* ── ساعة الرياض ──────────────────────────────────────────── */
+    function startClock() {
+        const el = $('riyadh-clock');
+        if (!el) return;
+        const f = new Intl.DateTimeFormat('en-GB', {
+            timeZone: 'Asia/Riyadh', hour: '2-digit', minute: '2-digit', hour12: false,
         });
+        const tick = () => { el.textContent = f.format(new Date()); };
+        tick();
+        setInterval(tick, 15000);
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       SCOPE (المرحلة المختارة)
+       ══════════════════════════════════════════════════════════ */
+    function applyScope() {
+        const pkg = S.packages.find(p => p.id === S.scopePkgId);
+        const chip = $('scope-chip');
+        if (chip) chip.textContent = pkg ? `المرحلة: ${pkg.name}` : 'كل المراحل';
+        $('sb-scope-all')?.classList.toggle('active', !pkg);
+        document.querySelectorAll('.sb-pkg-card').forEach(c =>
+            c.classList.toggle('active', parseInt(c.dataset.pkgId) === S.scopePkgId));
+
+        const list = scopedMosques();
+        renderKPIs(list, S.summary);
+        buildHeatmap(list);
+        buildPhaseGantt(pkg || S.packages.find(p => p.is_current));
+        refreshMapMarkers();
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       KPI STRIP — محسوبة من بيانات المساجد الحية
+       ══════════════════════════════════════════════════════════ */
+    function renderKPIs(list, summary) {
+        const set = (id, v) => { const el = $(id); if (el) el.innerHTML = v; };
+        const n = list.length;
+        const contract = list.reduce((s, m) => s + (m.contract_value || 0), 0);
+        const boq = list.reduce((s, m) => s + (m.boq_value || 0), 0);
+        const executed = list.reduce((s, m) => s + (m.executed_value || 0), 0);
+        const actual = boq ? executed / boq * 100 : 0;
+        // المخطط موزون بقيمة جدول الكميات
+        const planned = boq ? list.reduce((s, m) => s + (m.boq_value || 0) * (m.planned_pct || 0), 0) / boq : 0;
+        const by = st => list.filter(m => m.status === st).length;
+        const active = n - by('not_started');
+
+        const c = money(contract);
+        set('kpi-total-value', c.val); set('kpi-total-unit', c.unit);
+        set('kpi-total-sub', `<b>${n}</b> مسجد · جدول الكميات ${money(boq).val} ${money(boq).unit}`);
+
+        set('kpi-actual', Math.round(actual));
+        const bar = $('kpi-actual-bar'); if (bar) bar.style.width = Math.min(100, actual) + '%';
+        const mark = $('kpi-plan-mark'); if (mark) mark.style.right = Math.min(100, planned) + '%';
+        const diff = Math.round(actual - planned);
+        set('kpi-actual-sub', `المخطط <b>${Math.round(planned)}%</b> · ` +
+            (diff >= 0 ? `<span style="color:var(--green)">متقدم ${diff}%</span>`
+                       : `<span style="color:var(--red)">متأخر ${Math.abs(diff)}%</span>`));
+
+        const e = money(executed);
+        set('kpi-executed', e.val); set('kpi-executed-unit', e.unit);
+        set('kpi-executed-sub', `حسب الكميات المنفذة المعتمدة`);
+
+        set('kpi-ontime', by('ok') + by('done'));
+        set('kpi-ontime-of', ` / ${active}`);
+        set('kpi-ontime-sub', `<b>${by('done')}</b> مكتمل · <b>${by('not_started')}</b> لم يبدأ`);
+
+        set('kpi-critical', by('critical'));
+        const late = list.filter(m => m.days_delay > 0).length;
+        set('kpi-critical-sub', `<b>${late}</b> تجاوز المدة · <b>${by('warning')}</b> تأخر بسيط`);
+
+        const p = summary?.pending || {};
+        set('kpi-pending', summary?.pending_total ?? '—');
+        set('kpi-pending-sub',
+            `أوامر عمل <b>${p.work_orders || 0}</b> · مستخلصات <b>${(p.certs || 0) + (p.claims || 0)}</b>` +
+            ` · تغيير <b>${p.cos || 0}</b>`);
     }
 
     /* ══════════════════════════════════════════════════════════
        SMART ALERT CENTER
        ══════════════════════════════════════════════════════════ */
+    const SEV = {
+        critical: {cls: 'cr', label: 'حرج', icon: '🔴'},
+        high:     {cls: 'hi', label: 'مرتفع', icon: '🟠'},
+        medium:   {cls: 'md', label: 'متوسط', icon: '🟡'},
+        low:      {cls: 'low', label: 'منخفض', icon: '🟢'},
+    };
+
     function renderAlerts(data) {
         S.allAlerts = data.alerts || [];
         const countEl = $('alert-count');
-        if (countEl) countEl.textContent = S.allAlerts.length;
-
-        // Source badge
+        if (countEl) countEl.textContent = data.total ?? S.allAlerts.length;
+        const counts = data.counts || {};
+        document.querySelectorAll('[data-an]').forEach(el => {
+            const v = counts[el.dataset.an];
+            el.textContent = v ? v : '';
+        });
         const srcEl = $('alert-source-badge');
-        if (srcEl) srcEl.textContent = data.source === 'ai_center' ? '🤖 AI Center' : '⚙ محسوب';
+        if (srcEl) srcEl.textContent = data.source === 'ai_center'
+            ? '🤖 من مركز المخاطر الذكي' : '⚙ محسوبة من البيانات الحية';
+        const runEl = $('alert-run');
+        if (runEl) runEl.textContent = data.last_run ? `آخر تحليل: ${data.last_run}` : '';
+        renderAlertList(S.alertFilter);
+    }
 
-        renderAlertList('all');
-
-        // Filter buttons
-        document.querySelectorAll('.alert-filter').forEach(btn => {
+    function initAlertFilters() {
+        document.querySelectorAll('.alert-filter').forEach(btn =>
             btn.addEventListener('click', function () {
                 document.querySelectorAll('.alert-filter').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-                renderAlertList(this.dataset.filter);
-            });
-        });
+                S.alertFilter = this.dataset.filter;
+                renderAlertList(S.alertFilter);
+            }));
     }
 
     function renderAlertList(filter) {
         const list = $('alert-list');
         if (!list) return;
+        const items = filter === 'all' ? S.allAlerts
+            : filter === 'critical' ? S.allAlerts.filter(a => a.severity === 'critical')
+            : S.allAlerts.filter(a => a.group === filter);
 
-        const filtered = filter === 'all' ? S.allAlerts :
-            S.allAlerts.filter(a => a.severity === filter || a.category === filter);
-
-        if (!filtered.length) {
-            list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text3)">
-        لا توجد تنبيهات في هذا التصنيف</div>`;
+        if (!items.length) {
+            list.innerHTML = `<div style="padding:28px;text-align:center;color:var(--text3)">
+                ✓ لا توجد تنبيهات في هذا التصنيف</div>`;
             return;
         }
+        list.innerHTML = items.map((a, i) => {
+            const sv = SEV[a.severity] || SEV.medium;
+            const more = a.root_cause || a.recommendation;
+            return `
+          <div class="alert-item" data-i="${i}">
+            <div class="alert-severity ${sv.cls}"></div>
+            <div class="alert-body">
+              <div class="alert-title">${esc(a.title)}</div>
+              <div class="alert-desc">${esc(a.description)}</div>
+              ${a.mosque_name ? `<div class="alert-sub">🕌 ${esc(a.mosque_name)}${a.mosque_code ? ' · ' + esc(a.mosque_code) : ''}</div>` : ''}
+            </div>
+            <div class="alert-actions">
+              <span class="alert-badge ${sv.cls}">${sv.label}</span>
+              ${a.mosque_id ? `<button class="alert-cta" data-mosque="${a.mosque_id}">فتح المسجد</button>` : ''}
+            </div>
+            ${more ? `<dl class="alert-more">
+                ${a.root_cause && a.root_cause !== a.description ? `<dt>السبب</dt><dd>${esc(a.root_cause)}</dd>` : ''}
+                ${a.recommendation ? `<dt>التوصية</dt><dd>${esc(a.recommendation)}</dd>` : ''}
+                ${a.created_at ? `<dd style="color:var(--text3);font-size:10px">${esc(a.created_at)} (توقيت الرياض)${a.confidence ? ' · ثقة ' + a.confidence + '%' : ''}</dd>` : ''}
+              </dl>` : ''}
+          </div>`;
+        }).join('');
 
-        const sevIcon = {critical: '🔴', high: '🟠', medium: '🟡', low: '🟢'};
-        const sevClass = {critical: 'cr', high: 'hi', medium: 'md', low: 'low'};
-
-        list.innerHTML = filtered.slice(0, 6).map(a => `
-      <div class="alert-item" data-mosque="${a.mosque_id || ''}"
-           onclick="a.mosque_id && loadMosqueDetailGlobal(${a.mosque_id || 0})">
-        <div class="alert-severity ${sevClass[a.severity] || 'md'}"></div>
-        <div class="alert-icon">${sevIcon[a.severity] || '⚠️'}</div>
-        <div class="alert-body">
-          <div class="alert-title">${a.title}</div>
-          <div class="alert-desc">${a.description}</div>
-        </div>
-        <span class="alert-badge ${sevClass[a.severity] || 'md'}">
-          ${a.severity === 'critical' ? 'حرج' :
-            a.severity === 'high' ? 'مرتفع' :
-                a.severity === 'medium' ? 'متوسط' : 'منخفض'}
-        </span>
-        <button class="alert-cta" onclick="event.stopPropagation();
-          ${a.mosque_id ? `loadMosqueDetailGlobal(${a.mosque_id})` : ''}">
-          ${a.cta_label || 'عرض'}
-        </button>
-      </div>`).join('');
+        list.querySelectorAll('.alert-item').forEach(el =>
+            el.addEventListener('click', () => el.classList.toggle('open')));
+        list.querySelectorAll('.alert-cta').forEach(btn =>
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                loadMosqueDetail(parseInt(btn.dataset.mosque));
+            }));
     }
 
     /* ══════════════════════════════════════════════════════════
-       PHASE GANTT
+       PHASE GANTT — الفعلي مقابل المخطط
        ══════════════════════════════════════════════════════════ */
-    function buildPhaseGantt(pkgs) {
+    function buildPhaseGantt(pkg) {
         const el = $('gantt-rows'), monthsEl = $('gantt-months');
         if (!el) return;
-
-        // فقط المرحلة الحالية
-        const currentPkg = pkgs.find(p => p.is_current);
-        if (!currentPkg) {
+        if (!pkg || !pkg.planned_start || !pkg.planned_end) {
             el.innerHTML = `<div style="padding:30px;text-align:center;color:var(--text3)">
-      لا توجد مرحلة نشطة حالياً</div>`;
+                لا توجد مرحلة نشطة بتواريخ محددة</div>`;
+            if (monthsEl) monthsEl.innerHTML = '';
             return;
         }
+        const start = new Date(pkg.planned_start), end = new Date(pkg.planned_end);
+        const total = Math.max(1, end - start);
+        const todayP = Math.min(100, Math.max(0, (Date.now() - start) / total * 100));
 
-        const pStart = new Date('2026-04-01');
-        const pEnd = new Date('2027-04-30');
-        const total = pEnd - pStart;
-        const today = new Date();
-        const todayP = Math.min(100, Math.max(0, (today - pStart) / total * 100));
-
-        // Months header
         if (monthsEl) {
-            monthsEl.innerHTML = '';
-            ['مايو', 'يون', 'يول', 'أغس', 'سبت',
-                'أكت', 'نوف', 'ديس', 'يناير٢٧', 'فبر', 'مارس'].forEach(m => {
-                const d = document.createElement('div');
-                d.className = 'gantt-month';
-                d.textContent = m;
-                monthsEl.appendChild(d);
-            });
+            const names = ['ينا', 'فبر', 'مار', 'أبر', 'ماي', 'يون', 'يول', 'أغس', 'سبت', 'أكت', 'نوف', 'ديس'];
+            const months = [];
+            const d = new Date(start.getFullYear(), start.getMonth(), 1);
+            while (d <= end && months.length < 24) {
+                months.push(names[d.getMonth()] + (d.getMonth() === 0 ? ' ' + String(d.getFullYear()).slice(2) : ''));
+                d.setMonth(d.getMonth() + 1);
+            }
+            monthsEl.innerHTML = months.map(m => `<div class="gantt-month">${m}</div>`).join('');
         }
 
-        // شريط تقدم المرحلة
-        const start = new Date(currentPkg.planned_start);
-        const end = new Date(currentPkg.planned_end);
-        const leftP = Math.max(0, (start - pStart) / total * 100);
-        const widthP = Math.min(100 - leftP, (end - start) / total * 100);
-        const progP = Math.min(100, Math.max(0, (today - start) / (end - start) * 100));
-        const color = '#237292';
+        const mosques = S.mosques.filter(m => m.package_id === pkg.id);
+        const list = mosques.length ? mosques : (pkg.mosques || []);
+        const avg = list.length ? list.reduce((s, m) => s + (m.actual_pct || 0), 0) / list.length : 0;
 
         el.innerHTML = `
-    <!-- شريط التقدم الزمني -->
-    <div style="position:relative;height:28px;margin-bottom:20px">
-      <div style="position:absolute;right:${leftP}%;width:${widthP}%;
-        top:0;bottom:0;background:${color}22;border:1px solid ${color}44;
-        border-radius:8px;overflow:hidden">
-        <div style="width:${progP}%;background:${color};height:100%;
-          border-radius:7px;transition:width 1.2s ease"></div>
-        <span style="position:relative;z-index:1;font-size:10px;font-weight:700;
-          padding:0 10px;line-height:28px;color:${color}">
-          ${currentPkg.avg_kpi}% · ${currentPkg.mosque_count} مسجد
-          · ${currentPkg.planned_start} → ${currentPkg.planned_end}
+      <div style="position:relative;height:30px;margin-bottom:16px;background:var(--surface3);border-radius:8px">
+        <div style="position:absolute;top:0;bottom:0;right:0;width:${todayP}%;
+             background:linear-gradient(90deg,rgba(35,114,146,.25),rgba(35,114,146,.12));border-radius:8px"></div>
+        <span style="position:relative;z-index:1;font-size:10.5px;font-weight:700;padding:0 12px;
+             line-height:30px;color:var(--navy)">
+          ${esc(pkg.name)} · ${list.length} مسجد · متوسط الإنجاز ${Math.round(avg)}% · ${pkg.planned_start} ← ${pkg.planned_end}
         </span>
+        <div class="gantt-today" style="right:${todayP}%"><div class="gantt-today-label">اليوم</div></div>
       </div>
-      <div class="gantt-today" style="right:${todayP}%">
-        <div class="gantt-today-label">اليوم</div>
-      </div>
-    </div>
-
-    <!-- قائمة المساجد -->
-    <div style="display:flex;flex-direction:column;gap:5px">
-      ${(currentPkg.mosques || []).map(m => {
-            const kpiColor = dotColor(m.overall_kpi);
-            const kpiBg = m.overall_kpi >= 70 ? 'rgba(46,204,138,0.08)' :
-                m.overall_kpi >= 50 ? 'rgba(240,165,0,0.08)' :
-                    'rgba(232,85,85,0.08)';
-            const kpiBorder = m.overall_kpi >= 70 ? 'rgba(46,204,138,0.2)' :
-                m.overall_kpi >= 50 ? 'rgba(240,165,0,0.2)' :
-                    'rgba(232,85,85,0.2)';
+      <div style="display:flex;flex-direction:column;gap:6px;max-height:420px;overflow-y:auto">
+        ${list.slice().sort((a, b) => (a.variance ?? 0) - (b.variance ?? 0)).map(m => {
+            const col = statusColor(m.status);
+            const act = Math.min(100, m.actual_pct || 0), plan = Math.min(100, m.planned_pct || 0);
             return `
-          <div onclick="loadMosqueDetailGlobal(${m.id})"
-               style="display:flex;align-items:center;gap:12px;
-                      padding:10px 14px;border-radius:10px;cursor:pointer;
-                      background:${kpiBg};border:1px solid ${kpiBorder};
-                      transition:.15s ease"
-               onmouseover="this.style.transform='translateX(-3px)';this.style.boxShadow='0 4px 12px rgba(27,58,82,0.1)'"
-               onmouseout="this.style.transform='';this.style.boxShadow=''">
-
-            <!-- Dot -->
-            <div style="width:10px;height:10px;border-radius:50%;
-              flex-shrink:0;background:${kpiColor};
-              box-shadow:0 0 0 3px ${kpiColor}30"></div>
-
-            <!-- Code -->
-            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;
-              font-weight:700;color:var(--primary);min-width:60px">
-              ${m.code}
-            </span>
-
-            <!-- Name — كامل -->
-            <span style="flex:1;font-size:12px;font-weight:600;color:var(--text1)">
-              ${m.name}
-            </span>
-
-            <!-- KPI bar -->
-            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-              <div style="width:80px;height:5px;background:var(--surface3);
-                border-radius:3px;overflow:hidden">
-                <div style="width:${m.overall_kpi}%;height:100%;
-                  background:${kpiColor};border-radius:3px;
-                  transition:width 1s ease"></div>
-              </div>
-              <span style="font-size:12px;font-weight:800;color:${kpiColor};
-                min-width:38px;text-align:left">
-                ${m.overall_kpi}%
-              </span>
+          <div class="gantt-mrow" data-id="${m.id}" style="display:flex;align-items:center;gap:10px;padding:8px 12px;
+               border-radius:10px;cursor:pointer;background:#fff;border:1px solid var(--border)">
+            <span style="width:9px;height:9px;border-radius:50%;background:${col};flex-shrink:0"></span>
+            <span style="font-size:10px;font-weight:700;color:var(--primary);min-width:54px">${esc(m.code)}</span>
+            <span style="flex:1;font-size:11.5px;font-weight:600;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(m.name)}</span>
+            <div style="width:110px;height:7px;background:var(--surface3);border-radius:4px;position:relative;flex-shrink:0" title="الفعلي ${act}% · المخطط ${plan}%">
+              <div style="width:${act}%;height:100%;background:${col};border-radius:4px"></div>
+              <div style="position:absolute;top:-3px;right:${plan}%;width:2px;height:13px;background:var(--gold)"></div>
             </div>
-
-            <!-- Delay -->
-            ${m.days_delay > 0 ? `
-              <span style="font-size:10px;font-weight:700;color:var(--red);
-                background:rgba(232,85,85,0.1);padding:2px 8px;
-                border-radius:999px;flex-shrink:0">
-                -${m.days_delay}د
-              </span>` : `
-              <span style="font-size:10px;color:var(--green);flex-shrink:0">✓</span>`}
-
-            <!-- Arrow -->
-            <span style="color:var(--text4);font-size:14px">›</span>
+            <span style="font-size:11.5px;font-weight:800;color:${col};min-width:38px;text-align:left">${Math.round(act)}%</span>
+            ${m.days_delay > 0
+                ? `<span style="font-size:10px;font-weight:700;color:var(--red);background:rgba(217,73,59,.1);padding:1px 8px;border-radius:999px">+${m.days_delay} يوم</span>`
+                : ''}
           </div>`;
         }).join('')}
-    </div>`;
+      </div>`;
+        el.querySelectorAll('.gantt-mrow').forEach(r =>
+            r.addEventListener('click', () => loadMosqueDetail(parseInt(r.dataset.id))));
     }
 
     window.loadMosqueDetailGlobal = id => {
@@ -378,505 +403,307 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     /* ══════════════════════════════════════════════════════════
-       HEATMAP
+       HEATMAP — بيانات حقيقية فقط
        ══════════════════════════════════════════════════════════ */
-    // function buildHeatmap(mosques) {
-    //     const el = $('heatmap-grid');
-    //     if (!el) return;
-    //     el.innerHTML = '';
-    //     mosques.forEach(m => {
-    //         const cell = document.createElement('div');
-    //         cell.className = `hm-cell ${m.kpi_color}`;
-    //         cell.dataset.id = m.id;
-    //         cell.textContent = (m.code || '').replace(/^(RUH|JED|TIF|RFH|AFJ|YRA|GIZ)-0?/, '');
-    //
-    //         const tip = document.createElement('div');
-    //         tip.className = 'hm-tooltip';
-    //         tip.innerHTML = `<strong>${m.code}</strong><br/>${truncate(m.name, 18)}<br/>
-    //     KPI: ${m.overall_kpi}%
-    //     ${m.days_delay > 0
-    //             ? `<br/><span style="color:#F87171">تأخير ${m.days_delay} يوم</span>` : ''}`;
-    //         cell.appendChild(tip);
-    //
-    //         cell.addEventListener('click', function () {
-    //             document.querySelectorAll('.hm-cell').forEach(c => c.classList.remove('active'));
-    //             this.classList.add('active');
-    //             document.querySelectorAll('.sb-mosque').forEach(s =>
-    //                 s.classList.toggle('active', parseInt(s.dataset.id) === m.id));
-    //             loadMosqueDetail(parseInt(this.dataset.id));
-    //         });
-    //         el.appendChild(cell);
-    //     });
-    // }
     function buildHeatmap(mosques) {
         const el = $('heatmap-grid');
         if (!el) return;
-
-        // بيانات افتراضية إذا كانت القائمة فارغة
-        if (mosques || mosques.length) {
-            mosques = [
-                {id:31,  code:'DEMO-01', name:'[DEMO] جامع تجريبي — الملقا',                         city:'riyadh', overall_kpi:39, days_delay:0,  kpi_color:'green'},
-                {id:2,  code:'RUH-09',  name:'جامع الأميرة نورة بنت عبد الله – النخيل',              city:'riyadh', overall_kpi:42, days_delay:0,  kpi_color:'green'},
-                {id:3,  code:'RUH-16',  name:'مسجد الملك عبد الله – الملقا 1',                      city:'riyadh', overall_kpi:29, days_delay:0,  kpi_color:'green'},
-                {id:4,  code:'RUH-17',  name:'مسجد الملك عبد الله – الملقا 2',                      city:'riyadh', overall_kpi:89, days_delay:0,  kpi_color:'green'},
-                {id:5,  code:'RUH-18',  name:'مسجد الملك عبد الله – الطلال',                        city:'riyadh', overall_kpi:94, days_delay:0,  kpi_color:'green'},
-                {id:6,  code:'RUH-20',  name:'مسجد الأميرة فهدة – حي الملك عبدالله',                city:'riyadh', overall_kpi:60, days_delay:3,  kpi_color:'yellow'},
-                {id:7,  code:'JED-01',  name:'جامع الملك عبد الله (أبحر)',                           city:'jeddah', overall_kpi:60, days_delay:5, kpi_color:'yellow'},
-                {id:8,  code:'JED-02',  name:'جامع الملك عبد الله (العزيزية)',                       city:'jeddah', overall_kpi:36, days_delay:0, kpi_color:'green'},
-                {id:9,  code:'RUH-06',  name:'جامع الملك عبد الله (الدار البيضاء 1)',                city:'riyadh', overall_kpi:58, days_delay:5,  kpi_color:'yellow'},
-                {id:10, code:'RUH-07',  name:'مسجد الملك عبد الله – الدار البيضاء 2',               city:'riyadh', overall_kpi:73, days_delay:0,  kpi_color:'green'},
-                {id:11, code:'RUH-08',  name:'جامع الملك عبد الله (عتيقة - الشواعر)',               city:'riyadh', overall_kpi:71, days_delay:0,  kpi_color:'green'},
-                {id:12, code:'RUH-11',  name:'جامع الملك عبد الله (الملز)',                          city:'riyadh', overall_kpi:54, days_delay:6, kpi_color:'yellow'},
-                {id:13, code:'RUH-12',  name:'جامع الملك عبد الله (اليمامة)',                        city:'riyadh', overall_kpi:73, days_delay:0,  kpi_color:'green'},
-                {id:14, code:'RUH-13',  name:'جامع الملك عبد الله (الشميسي)',                        city:'riyadh', overall_kpi:45, days_delay:0, kpi_color:'green'},
-                {id:15, code:'TIF-01',  name:'جامع الأميرة فهدة (الفيصلية)',                         city:'taif',   overall_kpi:34, days_delay:0, kpi_color:'green'},
-                {id:16, code:'TIF-02',  name:'جامع الملك عبد الله (العقيق)',                         city:'taif',   overall_kpi:73, days_delay:0,  kpi_color:'green'},
-                {id:17, code:'RFH-01',  name:'جامع مسلط آل شريم (القادسية)',                         city:'rafha',  overall_kpi:66, days_delay:0,  kpi_color:'green'},
-                {id:18, code:'RFH-02',  name:'جامع الأميرة فهدة (قرية بن شريم)',                     city:'rafha',  overall_kpi:65, days_delay:0,  kpi_color:'green'},
-                {id:19, code:'RUH-01',  name:'جامع قاطع بن شريم (المؤنسية)',                         city:'riyadh', overall_kpi:52, days_delay:5, kpi_color:'yellow'},
-                {id:20, code:'RUH-02',  name:'مسجد الملك عبد الله (الصفوة)',                         city:'riyadh', overall_kpi:75, days_delay:0,  kpi_color:'green'},
-                {id:21, code:'RUH-03',  name:'جامع الملك عبد العزيز (الروضة)',                       city:'riyadh', overall_kpi:42, days_delay:25, kpi_color:'red'},
-                {id:22, code:'RUH-04',  name:'مسجد الملك عبد الله – التوحيد',                       city:'riyadh', overall_kpi:76, days_delay:0,  kpi_color:'green'},
-                {id:23, code:'RUH-05',  name:'جامع الأميرة فهدة (النسيم الغربي)',                    city:'riyadh', overall_kpi:90, days_delay:0,  kpi_color:'green'},
-                {id:24, code:'RUH-10',  name:'جامع الملك عبد الله (الخليج)',                         city:'riyadh', overall_kpi:39, days_delay:12, kpi_color:'red'},
-            ];
-            // دمجها في S.mosques أيضاً للخريطة والبحث
-            if (S.mosques.length) S.mosques = mosques;
-        }
-
-        el.innerHTML = '';
+        const onsiteIds = new Set(S.onsite.map(p => p.mosque_id));
+        const counts = {all: mosques.length, onsite: 0};
         mosques.forEach(m => {
+            counts[m.status] = (counts[m.status] || 0) + 1;
+            if (onsiteIds.has(m.id)) counts.onsite++;
+        });
+        document.querySelectorAll('[data-n]').forEach(n => {
+            n.textContent = counts[n.dataset.n] ? ' ' + counts[n.dataset.n] : '';
+        });
+
+        if (!mosques.length) {
+            el.innerHTML = `<div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--text3)">لا توجد مساجد في هذا النطاق</div>`;
+            return;
+        }
+        el.innerHTML = '';
+        mosques.slice().sort((a, b) => (a.code || '').localeCompare(b.code || '')).forEach(m => {
             const cell = document.createElement('div');
-            cell.className = `hm-cell ${m.kpi_color}`;
+            cell.className = `hm-cell ${m.status || 'not_started'}${onsiteIds.has(m.id) ? ' onsite' : ''}`;
             cell.dataset.id = m.id;
-            cell.textContent = (m.code || '').replace(/^(RUH|JED|TIF|RFH|AFJ|YRA|GIZ|DEMO)-0?/, '');
-
-            const tip = document.createElement('div');
-            tip.className = 'hm-tooltip';
-            tip.innerHTML = `<strong>${m.code}</strong><br/>${truncate(m.name, 18)}<br/>
-                KPI: ${m.overall_kpi}%
-                ${m.days_delay > 0
-                    ? `<br/><span style="color:#F87171">تأخير ${m.days_delay} يوم</span>`
-                    : ''}`;
-            cell.appendChild(tip);
-
-            cell.addEventListener('click', function () {
+            cell.innerHTML = `
+              <span class="hm-code">${esc((m.code || '').replace(/^[A-Z]+-0?/, ''))}</span>
+              <span class="hm-val">${m.status === 'not_started' ? '—' : Math.round(m.actual_pct) + '%'}</span>
+              <div class="hm-tooltip">
+                <strong>${esc(m.code)}</strong> — ${esc(truncate(m.name, 26))}<br/>
+                الفعلي <b>${m.actual_pct}%</b> · المخطط <b>${m.planned_pct}%</b><br/>
+                ${(STATUS[m.status] || STATUS.not_started).label}
+                ${m.days_delay > 0 ? ` · <span style="color:#FFB4A8">تجاوز المدة ${m.days_delay} يوم</span>` : ''}
+                ${onsiteIds.has(m.id) ? '<br/>👷 مستشار في الموقع الآن' : ''}
+              </div>`;
+            cell.addEventListener('click', () => {
                 document.querySelectorAll('.hm-cell').forEach(c => c.classList.remove('active'));
-                this.classList.add('active');
-                loadMosqueDetail(parseInt(this.dataset.id));
+                cell.classList.add('active');
+                focusMosque(m.id);
+                loadMosqueDetail(m.id);
             });
             el.appendChild(cell);
         });
+        applyHeatmapFilter();
     }
-    function initMap(mosques) {
-        const mapEl = document.getElementById('mosque-map');
-        if (!mapEl) return;
 
-        // Load Leaflet CSS
+    function initQuickFilters() {
+        document.querySelectorAll('.qf-btn').forEach(btn =>
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.qf-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                S.hmFilter = this.dataset.filter;
+                applyHeatmapFilter();
+            }));
+    }
+
+    function applyHeatmapFilter() {
+        const f = S.hmFilter;
+        const onsiteIds = new Set(S.onsite.map(p => p.mosque_id));
+        document.querySelectorAll('.hm-cell').forEach(cell => {
+            const m = S.mosques.find(x => x.id === parseInt(cell.dataset.id));
+            if (!m) return;
+            const show = f === 'all' ? true
+                : f === 'onsite' ? onsiteIds.has(m.id)
+                : m.status === f;
+            cell.classList.toggle('dim', !show);
+        });
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       INTERACTIVE MAP + ON-SITE CONSULTANTS
+       ══════════════════════════════════════════════════════════ */
+    function initMap() {
+        const mapEl = $('mosque-map');
+        if (!mapEl) return;
         if (!document.getElementById('leaflet-css')) {
             const css = document.createElement('link');
             css.id = 'leaflet-css';
             css.rel = 'stylesheet';
-            css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            css.href = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';
             document.head.appendChild(css);
         }
-
-        // Load Leaflet JS then build
-        if (!window.L) {
-            const script = document.createElement('script');
-            script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-            script.onload = () => _buildMap(mosques);
-            script.onerror = () => {
-                mapEl.innerHTML = `
-          <div style="display:flex;align-items:center;justify-content:center;
-            height:100%;color:var(--text3);flex-direction:column;gap:8px">
-            <div style="font-size:24px">🗺</div>
-            <div style="font-size:12px">تعذر تحميل الخريطة</div>
-          </div>`;
-            };
-            document.head.appendChild(script);
-        } else {
-            _buildMap(mosques);
-        }
+        const loadCluster = () => {
+            if (L.markerClusterGroup) return _buildMap();
+            const c = document.createElement('script');
+            c.src = 'https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js';
+            c.onload = _buildMap;
+            c.onerror = _buildMap;          // بدون تجميع إن تعذر التحميل
+            document.head.appendChild(c);
+        };
+        if (window.L) return loadCluster();
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
+        script.onload = loadCluster;
+        script.onerror = () => {
+            mapEl.innerHTML = `<div class="mapx-empty">تعذر تحميل الخريطة</div>`;
+        };
+        document.head.appendChild(script);
     }
 
-    function _buildMap(mosques) {
-        const mapEl = document.getElementById('mosque-map');
-        if (!mapEl || !window.L) return;
-
-        if (S.map) {
-            S.map.remove();
-            S.map = null;
-            S.mapMarkers = {};
-        }
-
-        // إنشاء الخريطة — مركز السعودية دائماً
+    function _buildMap() {
+        if (!window.L || !$('mosque-map')) return;
+        if (S.map) { S.map.remove(); S.map = null; }
         S.map = L.map('mosque-map', {
-            center: [23.8859, 45.0792],
-            zoom: 5,
-            zoomControl: true,
-            attributionControl: false,
+            center: [23.8859, 45.0792], zoom: 5, minZoom: 4, maxZoom: 19,
+            zoomControl: true, attributionControl: true,
         });
-
-        // Tile layer داكن
-        // L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        //   maxZoom: 19,
-        //   subdomains: 'abcd',
-        // }).addTo(S.map);
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 19,
+        S.map.attributionControl.setPrefix(false);
+        S.cluster = L.markerClusterGroup ? L.markerClusterGroup({
+            maxClusterRadius: 45, showCoverageOnHover: false, spiderfyOnMaxZoom: true,
+            iconCreateFunction: c => {
+                const ms = c.getAllChildMarkers();
+                const worst = ms.some(x => x.options.status === 'critical') ? 'critical'
+                    : ms.some(x => x.options.status === 'warning') ? 'warning' : 'ok';
+                const people = ms.reduce((n, x) => n + (x.options.people || 0), 0);
+                return L.divIcon({
+                    className: '',
+                    html: `<div class="mk-cluster" style="border-color:${statusColor(worst)}">${ms.length}
+                           ${people ? `<span class="mk-badge">👷${people}</span>` : ''}</div>`,
+                    iconSize: [42, 42], iconAnchor: [21, 21],
+                });
+            },
+        }).addTo(S.map) : null;
+        // خريطة فاتحة بأسماء عربية (OpenStreetMap) — مُلطّفة بالـ CSS لتناسب الهوية
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19, attribution: '© OpenStreetMap',
         }).addTo(S.map);
-
-        // حدود السعودية باللون الأخضر
-        fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
-            .then(r => r.json())
-            .then(data => {
-                const saudi = data.features.find(f =>
-                    f.properties.ISO_A3 === 'SAU' || f.properties.ADMIN === 'Saudi Arabia'
-                );
-                if (!saudi || !S.map) return;
-
-                L.geoJSON(saudi, {
-                    style: {
-                        color: '#2ECC8A',
-                        weight: 2,
-                        fillColor: '#2ECC8A',
-                        fillOpacity: 0.06,
-                        dashArray: '5 3',
-                    },
-                }).addTo(S.map);
-            })
-            .catch(() => {
-            });
-
-        // إضافة markers
-        const withCoords = mosques.filter(m =>
-            m && m.lat && m.lng && m.lat !== 0 && m.lng !== 0
-        );
-
-        if (withCoords.length) {
-            withCoords.forEach(m => _addMapMarker(m));
-        } else {
-            const currentPkg = S.packages.find(p => p.is_current);
-            const currentIds = (currentPkg?.mosques || []).map(m => m.id);
-            const currentMosques = currentIds.length
-                ? mosques.filter(m => currentIds.includes(m.id))
-                : mosques;
-            _addDemoMarkers(currentMosques);
-        }
+        refreshMapMarkers(true);
     }
 
-    function _addMapMarker(m) {
+    // إحداثيات تقريبية للمساجد بدون موقع محفوظ — حول مركز المدينة
+    const CITY_BASE = {
+        riyadh: [24.7136, 46.6753], jeddah: [21.4858, 39.1925], taif: [21.2703, 40.4158],
+        jazan: [16.8892, 42.5511], yara: [18.3059, 42.7337], aflaj: [22.2641, 46.7159],
+        rafha: [29.6267, 43.4914],
+    };
+    function mosqueLatLng(m, idx) {
+        if (m.lat && m.lng) return [m.lat, m.lng];
+        const base = CITY_BASE[(m.city || '').toLowerCase()] || CITY_BASE.riyadh;
+        const a = idx * 2.399963;               // توزيع حلزوني
+        const r = 0.025 + 0.012 * Math.sqrt(idx);
+        return [base[0] + Math.cos(a) * r, base[1] + Math.sin(a) * r];
+    }
+
+    function markerVisible(m, onsiteMap) {
+        const f = S.mapFilter;
+        return f === 'all' ? true
+            : f === 'onsite' ? !!onsiteMap[m.id]
+            : f === 'critical' ? (m.status === 'critical' || m.status === 'warning')
+            : f === 'stream' ? !!S.liveStreams[m.id] : true;
+    }
+
+    function refreshMapMarkers(fit) {
         if (!S.map || !window.L) return;
-        if (!m || m.lat === undefined || m.lng === undefined) return;  // ← أضف
-        if (isNaN(m.lat) || isNaN(m.lng)) return;  // ← أضف
+        const layer = S.cluster || S.map;
+        if (S.cluster) S.cluster.clearLayers();
+        else Object.values(S.mapMarkers).forEach(mk => S.map.removeLayer(mk));
+        S.mapMarkers = {};
+        const onsiteMap = {};
+        S.onsite.forEach(p => { if (p.mosque_id) (onsiteMap[p.mosque_id] = onsiteMap[p.mosque_id] || []).push(p); });
 
-        const kpiColor = m.kpi_color === 'green' ? '#2ECC8A' :
-            m.kpi_color === 'yellow' ? '#F0A500' :
-                m.kpi_color === 'red' ? '#E85555' : '#8FA3B3';
-
-        const hasStream = S.liveStreams ? !!S.liveStreams[m.id] : false;  // ← آمن
-        const hasAlert = S.allAlerts
-            ? S.allAlerts.some(a => a.mosque_id === m.id && a.severity === 'critical')
-            : false;  // ← آمن
-
-        const icon = L.divIcon({
-            className: '',
-            html: `
-        <div style="position:relative;cursor:pointer">
-          <div style="
-            width:36px;height:36px;border-radius:50%;
-            background:${kpiColor};
-            border:3px solid rgba(255,255,255,0.85);
-            display:flex;align-items:center;justify-content:center;
-            font-size:9px;font-weight:800;color:#fff;
-            box-shadow:0 4px 14px rgba(0,0,0,0.35);
-            transition:.15s ease">
-            ${Math.round(m.overall_kpi)}%
-          </div>
-          ${hasStream ? `
-            <div style="position:absolute;top:-3px;right:-3px;
-              width:13px;height:13px;background:#E85555;
-              border-radius:50%;border:2px solid #fff;
-              animation:mapLivePulse 1s infinite"></div>` : ''}
-          ${hasAlert && !hasStream ? `
-            <div style="position:absolute;top:-3px;right:-3px;
-              width:13px;height:13px;background:#F0A500;
-              border-radius:50%;border:2px solid #fff"></div>` : ''}
-        </div>`,
-            iconSize: [36, 36],
-            iconAnchor: [18, 18],
-            popupAnchor: [0, -20],
-        });
-
-        const marker = L.marker([m.lat, m.lng], {icon}).addTo(S.map);
-        marker.bindPopup(_buildMapPopup(m), {
-            maxWidth: 260,
-            className: 'waqf-map-popup',
-        });
-
-        marker.on('popupopen', () => {
-            setTimeout(() => {
-                const btn = document.querySelector('.map-detail-btn');
-                if (btn) btn.addEventListener('click', () => {
-                    marker.closePopup();
-                    loadMosqueDetail(m.id);
+        const cityIdx = {};
+        const pts = [];
+        scopedMosques().forEach(m => {
+            const key = (m.city || 'riyadh').toLowerCase();
+            cityIdx[key] = (cityIdx[key] || 0) + 1;
+            if (!markerVisible(m, onsiteMap)) return;
+            const ll = mosqueLatLng(m, cityIdx[key]);
+            const people = onsiteMap[m.id] || [];
+            const icon = L.divIcon({
+                className: '',
+                html: `<div class="mk${people.length ? ' onsite' : ''}" style="background:${statusColor(m.status)}">
+                         ${m.status === 'not_started' ? '•' : Math.round(m.actual_pct) + '%'}
+                         ${people.length ? `<span class="mk-badge">👷${people.length > 1 ? people.length : ''}</span>` : ''}
+                         ${S.liveStreams[m.id] ? '<span class="mk-live"></span>' : ''}
+                       </div>`,
+                iconSize: [34, 34], iconAnchor: [17, 17], popupAnchor: [0, -18],
+            });
+            const mk = L.marker(ll, {icon, zIndexOffset: people.length ? 500 : 0,
+                                     status: m.status, people: people.length}).addTo(layer);
+            mk.bindPopup(() => _buildMapPopup(m, people), {maxWidth: 280, className: 'waqf-map-popup'});
+            mk.on('popupopen', e => {
+                const node = e.popup.getElement();
+                node?.querySelector('.map-detail-btn')?.addEventListener('click', () => {
+                    mk.closePopup(); loadMosqueDetail(m.id);
                 });
-                const streamBtn = document.querySelector('.map-stream-btn');
-                if (streamBtn) streamBtn.addEventListener('click', () => {
-                    marker.closePopup();
-                    _openMosqueStream(m.id, m.name);
+                node?.querySelector('.map-stream-btn')?.addEventListener('click', () => {
+                    mk.closePopup(); _openMosqueStream(m.id, m.name);
                 });
-            }, 50);
+            });
+            S.mapMarkers[m.id] = mk;
+            pts.push(ll);
         });
-
-        S.mapMarkers[m.id] = marker;
+        if (fit && pts.length) S.map.fitBounds(pts, {padding: [50, 50], maxZoom: 12});
     }
 
-    function _buildMapPopup(m) {
-        const kpiColor = m.kpi_color === 'green' ? '#2ECC8A' :
-            m.kpi_color === 'yellow' ? '#F0A500' :
-                m.kpi_color === 'red' ? '#E85555' : '#8FA3B3';
+    function _buildMapPopup(m, people) {
         const alert = S.allAlerts.find(a => a.mosque_id === m.id);
-        const hasStream = !!S.liveStreams[m.id];
-
+        const col = statusColor(m.status);
         return `
-      <div style="font-family:'IBM Plex Sans Arabic',sans-serif;
-                  direction:rtl;min-width:210px">
-        <div style="font-size:13px;font-weight:800;color:#1B3A52;margin-bottom:3px">
-          ${m.name}
+      <div style="direction:rtl;min-width:220px">
+        <div style="font-size:13px;font-weight:800;color:#1B3A52">${esc(m.name)}</div>
+        <div style="font-size:10px;color:#8C98A2;margin-bottom:9px">${esc(m.code)} · ${esc(m.package || '')}</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:9px">
+          <div style="text-align:center;background:#FBF8F1;border:1px solid #EAE1CE;border-radius:8px;padding:6px 2px">
+            <div style="font-size:15px;font-weight:800;color:${col}">${Math.round(m.actual_pct)}%</div>
+            <div style="font-size:9px;color:#8C98A2">فعلي</div></div>
+          <div style="text-align:center;background:#FBF8F1;border:1px solid #EAE1CE;border-radius:8px;padding:6px 2px">
+            <div style="font-size:15px;font-weight:800;color:#1B3A52">${Math.round(m.planned_pct)}%</div>
+            <div style="font-size:9px;color:#8C98A2">مخطط</div></div>
+          <div style="text-align:center;background:#FBF8F1;border:1px solid #EAE1CE;border-radius:8px;padding:6px 2px">
+            <div style="font-size:13px;font-weight:800;color:${m.days_delay > 0 ? '#D9493B' : '#1F9D6B'}">
+              ${m.days_delay > 0 ? m.days_delay + ' يوم' : '✓'}</div>
+            <div style="font-size:9px;color:#8C98A2">تأخير</div></div>
         </div>
-        <div style="font-size:10px;color:#7A90A4;margin-bottom:10px">
-          ${m.code} · ${m.package || ''}
-        </div>
- 
-        <!-- KPI stats -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);
-                    gap:6px;margin-bottom:10px">
-          <div style="text-align:center;background:#F7F9FC;
-                      border-radius:8px;padding:7px 4px">
-            <div style="font-size:15px;font-weight:800;color:${kpiColor}">
-              ${m.overall_kpi}%
-            </div>
-            <div style="font-size:9px;color:#7A90A4">KPI</div>
-          </div>
-          <div style="text-align:center;background:#F7F9FC;
-                      border-radius:8px;padding:7px 4px">
-            <div style="font-size:15px;font-weight:800;
-                        color:${m.days_delay > 0 ? '#E85555' : '#2ECC8A'}">
-              ${m.days_delay > 0 ? m.days_delay + 'د' : '✓'}
-            </div>
-            <div style="font-size:9px;color:#7A90A4">تأخير</div>
-          </div>
-          <div style="text-align:center;background:#F7F9FC;
-                      border-radius:8px;padding:7px 4px">
-            <div style="font-size:11px;font-weight:700;color:#237292">
-              ${m.state === 'active' ? 'نشط' :
-            m.state === 'draft' ? 'جديد' : (m.state || '—')}
-            </div>
-            <div style="font-size:9px;color:#7A90A4">الحالة</div>
-          </div>
-        </div>
- 
-        <!-- Alert -->
-        ${alert ? `
-          <div style="background:rgba(232,85,85,0.08);
-                      border:1px solid rgba(232,85,85,0.2);
-                      border-radius:8px;padding:7px 9px;
-                      margin-bottom:8px;font-size:11px;color:#E85555">
-            ⚠ ${alert.title}
+        ${people.length ? `
+          <div style="background:rgba(31,157,107,.07);border:1px solid rgba(31,157,107,.2);border-radius:8px;padding:7px 9px;margin-bottom:8px">
+            <div style="font-size:10px;font-weight:800;color:#1F9D6B;margin-bottom:3px">👷 في الموقع الآن</div>
+            ${people.map(p => `<div style="font-size:11px;color:#1B3A52">${esc(p.name)}
+               <span style="color:#8C98A2">· دخول ${esc(p.checkin)} · منذ ${elapsedLabel(p.elapsed_min)}</span></div>`).join('')}
           </div>` : ''}
- 
-        <!-- Live stream button -->
-        ${hasStream ? `
-          <button class="map-stream-btn"
-            style="width:100%;padding:7px;background:#E85555;color:#fff;
-                   border:none;border-radius:8px;font-size:11px;
-                   font-weight:700;cursor:pointer;margin-bottom:6px;
-                   font-family:inherit;display:flex;align-items:center;
-                   justify-content:center;gap:5px">
-            <span style="width:7px;height:7px;background:#fff;
-                         border-radius:50%;display:inline-block;
-                         animation:mapLivePulse 1s infinite"></span>
-            مشاهدة البث المباشر
-          </button>` : ''}
- 
-        <!-- Detail button -->
-        <button class="map-detail-btn"
-          style="width:100%;padding:8px;background:#237292;color:#fff;
-                 border:none;border-radius:8px;font-size:11px;
-                 font-weight:700;cursor:pointer;font-family:inherit">
-          عرض التفاصيل ›
-        </button>
+        ${alert ? `<div style="background:rgba(217,73,59,.07);border:1px solid rgba(217,73,59,.2);border-radius:8px;
+             padding:6px 9px;margin-bottom:8px;font-size:11px;color:#D9493B">⚠ ${esc(alert.title)}</div>` : ''}
+        ${S.liveStreams[m.id] ? `<button class="map-stream-btn" style="width:100%;padding:7px;background:#D9493B;color:#fff;
+             border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;margin-bottom:6px;font-family:inherit">
+             ● مشاهدة البث المباشر</button>` : ''}
+        <button class="map-detail-btn" style="width:100%;padding:8px;background:#237292;color:#fff;border:none;
+             border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">عرض التفاصيل ›</button>
       </div>`;
     }
 
-    function _addDemoMarkers(mosques) {
-        const cityBases = {
-            riyadh: {lat: 24.7136, lng: 46.6753},
-            jeddah: {lat: 21.4858, lng: 39.1925},
-            taif: {lat: 21.2703, lng: 40.4158},
-            jazan: {lat: 16.8892, lng: 42.5511},
-            yara: {lat: 18.3059, lng: 42.7337},
-            aflaj: {lat: 22.2641, lng: 46.7159},
-            rafha: {lat: 29.6267, lng: 43.4914},
-        };
-
-        // أضف دائرة ملونة لكل مدينة فيها مساجد
-        const citiesWithMosques = {};
-        mosques.forEach(m => {
-            if (!m) return;
-            const city = m.city || 'riyadh';
-            if (!citiesWithMosques[city]) citiesWithMosques[city] = [];
-            citiesWithMosques[city].push(m);
-        });
-
-        Object.entries(citiesWithMosques).forEach(([city, cityMosques]) => {
-            const base = cityBases[city] || cityBases.riyadh;
-
-            // دائرة المدينة
-            const avgKpi = cityMosques.reduce((s, m) => s + (m.overall_kpi || 0), 0)
-                / cityMosques.length;
-            const cityColor = avgKpi >= 70 ? '#2ECC8A' :
-                avgKpi >= 50 ? '#F0A500' : '#E85555';
-
-            // إضافة دائرة للمدينة
-            if (S.map && window.L) {
-                L.circle([base.lat, base.lng], {
-                    radius: cityMosques.length * 3000,
-                    color: cityColor,
-                    fillColor: cityColor,
-                    fillOpacity: 0.08,
-                    weight: 1.5,
-                    dashArray: '4 4',
-                }).addTo(S.map).bindTooltip(
-                    `${city === 'riyadh' ? 'الرياض' :
-                        city === 'jeddah' ? 'جدة' :
-                            city === 'taif' ? 'الطائف' :
-                                city === 'jazan' ? 'جازان' :
-                                    city === 'yara' ? 'يرى' :
-                                        city === 'aflaj' ? 'الأفلاج' :
-                                            city === 'rafha' ? 'رفحاء' : city}
-         — ${cityMosques.length} مسجد`,
-                    {direction: 'top', className: 'waqf-city-tooltip'}
-                );
-            }
-
-            // توزيع المساجد داخل المدينة
-            cityMosques.forEach((m, i) => {
-                const total = cityMosques.length;
-                const angle = (i / total) * Math.PI * 2 - Math.PI / 2;
-                const rings = Math.ceil(total / 8);
-                const ring = Math.floor(i / 8);
-                const radius = 0.035 + ring * 0.035;
-
-                const lat = base.lat + Math.cos(angle) * radius;
-                const lng = base.lng + Math.sin(angle) * radius;
-
-                // نمرر الـ mosque مع إحداثيات محسوبة
-                _addMapMarker({...m, lat, lng});
-            });
-        });
-
-        // Fit map على كل المدن
-        if (S.map && window.L) {
-            const allBases = Object.keys(citiesWithMosques)
-                .map(city => cityBases[city] || cityBases.riyadh)
-                .map(b => [b.lat, b.lng]);
-
-            if (allBases.length === 1) {
-                S.map.setView(allBases[0], 11);
-            } else if (allBases.length > 1) {
-                S.map.fitBounds(allBases, {padding: [60, 60]});
-            }
-        }
-    }
-
-    function filterMapByPackage(pkgId) {
-        if (!S.map || !window.L) return;
-        if (!pkgId) {
-            Object.values(S.mapMarkers).forEach(m => {
-                if (!S.map.hasLayer(m)) m.addTo(S.map);
+    function focusMosque(id) {
+        const mk = S.mapMarkers[id];
+        if (!S.map || !mk) return;
+        if (S.cluster) {
+            S.cluster.zoomToShowLayer(mk, () => {
+                S.map.flyTo(mk.getLatLng(), Math.max(S.map.getZoom(), 14), {duration: .6});
+                setTimeout(() => mk.openPopup(), 650);
             });
             return;
         }
-        const pkg = S.packages.find(p => p.id === pkgId);
-        if (!pkg) return;
-        const mosqueIds = (pkg.mosques || []).map(m => m.id);
-        Object.entries(S.mapMarkers).forEach(([id, marker]) => {
-            if (mosqueIds.includes(parseInt(id))) {
-                if (!S.map.hasLayer(marker)) marker.addTo(S.map);
-            } else {
-                if (S.map.hasLayer(marker)) S.map.removeLayer(marker);
-            }
+        S.map.flyTo(mk.getLatLng(), Math.max(S.map.getZoom(), 13), {duration: .8});
+        setTimeout(() => mk.openPopup(), 850);
+    }
+
+    function initMapFilters() {
+        document.querySelectorAll('.mapx-filter').forEach(btn =>
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.mapx-filter').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                S.mapFilter = this.dataset.f;
+                refreshMapMarkers(true);
+            }));
+        $('onsite-top-badge')?.addEventListener('click', () => {
+            $('map-card')?.scrollIntoView({behavior: 'smooth', block: 'start'});
         });
     }
 
-    function updateMapMarkers() {
-        if (!S.map || !window.L) return;
-        Object.entries(S.mapMarkers).forEach(([id, marker]) => {
-            S.map.removeLayer(marker);
-        });
-        S.mapMarkers = {};
-        S.mosques.forEach(m => {
-            if (m.lat && m.lng && m.lat !== 0 && m.lng !== 0) {
-                _addMapMarker(m);
-            }
-        });
+    function renderOnsite(list) {
+        S.onsite = list || [];
+        const n = S.onsite.length;
+        const badge = $('onsite-count-badge');
+        if (badge) badge.textContent = `${n} في الموقع`;
+        const cnt = $('onsite-count');
+        if (cnt) cnt.textContent = n;
+        const box = $('onsite-list');
+        if (!box) return;
+        if (!n) {
+            box.innerHTML = `<div class="mapx-empty">لا يوجد مستشارون في المواقع حالياً</div>`;
+            return;
+        }
+        box.innerHTML = S.onsite.map(p => `
+          <div class="onsite-card" data-mosque="${p.mosque_id || ''}">
+            <div class="onsite-av">${esc((p.name || 'م')[0])}</div>
+            <div class="onsite-info">
+              <div class="onsite-nm">${esc(p.name)}</div>
+              <div class="onsite-ms">🕌 ${esc(p.mosque)}${p.code ? ' · ' + esc(p.code) : ''}</div>
+              <span class="onsite-flag ${p.validated || p.gps ? 'ok' : 'no'}">
+                ${p.validated || p.gps ? '✓ موقع موثّق' : 'غير موثّق'}</span>
+            </div>
+            <div class="onsite-tm">
+              <b>${esc(p.checkin)}</b>
+              <span>منذ ${elapsedLabel(p.elapsed_min || 0)}</span>
+            </div>
+          </div>`).join('');
+        box.querySelectorAll('.onsite-card').forEach(c =>
+            c.addEventListener('click', () => {
+                const id = parseInt(c.dataset.mosque);
+                if (!id) return;
+                box.querySelectorAll('.onsite-card').forEach(x => x.classList.remove('active'));
+                c.classList.add('active');
+                $('map-card')?.scrollIntoView({behavior: 'smooth', block: 'center'});
+                focusMosque(id);
+            }));
+        const upd = $('onsite-updated');
+        if (upd) upd.textContent = 'اضغط على المستشار لتحديد موقعه على الخريطة';
     }
 
     function _openMosqueStream(mosqueId, mosqueName) {
         const url = S.liveStreams[mosqueId];
         if (!url) return;
-        const titleEl = document.getElementById('stream-modal-title');
-        if (titleEl) titleEl.textContent = mosqueName || 'بث مباشر';
-        const embed = document.getElementById('stream-embed');
-        if (!embed) return;
-        if (url.includes('.m3u8')) {
-            embed.innerHTML = `
-        <video id="live-video" autoplay muted playsinline controls
-               style="width:100%;height:100%;background:#000"
-               src="${url}"></video>`;
-            const s = document.createElement('script');
-            s.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js';
-            s.onload = () => {
-                const video = document.getElementById('live-video');
-                if (window.Hls?.isSupported()) {
-                    const hls = new Hls({lowLatencyMode: true});
-                    hls.loadSource(url);
-                    hls.attachMedia(video);
-                }
-            };
-            document.head.appendChild(s);
-        } else {
-            embed.innerHTML = `
-        <iframe src="${url}" allowfullscreen
-                allow="camera;microphone;autoplay"
-                style="width:100%;height:100%;border:none"></iframe>`;
-        }
-        document.getElementById('modal-stream')?.classList.add('show');
-    }
-
-
-    function initQuickFilters() {
-        document.querySelectorAll('.qf-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                document.querySelectorAll('.qf-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                const f = this.dataset.filter;
-                document.querySelectorAll('.hm-cell').forEach(cell => {
-                    const m = S.mosques.find(x => x.id === parseInt(cell.dataset.id));
-                    if (!m) return;
-                    const show = f === 'all' ? true :
-                        f === 'ok' ? m.overall_kpi >= 70 :
-                            f === 'warn' ? m.overall_kpi >= 50 && m.overall_kpi < 70 :
-                                f === 'critical' ? m.overall_kpi < 50 && m.overall_kpi > 0 :
-                                    f === 'delayed' ? m.days_delay > 0 : true;
-                    cell.style.opacity = show ? '1' : '0.2';
-                    cell.style.transform = show ? '' : 'scale(0.85)';
-                });
-            });
-        });
+        openLiveStream({name: mosqueName, url});
     }
 
     /* ══════════════════════════════════════════════════════════
@@ -1212,50 +1039,33 @@ document.addEventListener('DOMContentLoaded', function () {
         const container = $('sb-packages');
         if (!container) return;
         container.innerHTML = '';
-
         pkgs.forEach(pkg => {
-            const isCurrent = pkg.is_current;
-            const isPast = pkg.is_past;
-            const color = isCurrent ? '#237292' : isPast ? '#2ECC8A' : '#8FA3B3';
-            const delayedCount = (pkg.mosques || []).filter(m => m.days_delay > 0).length;
-
+            const color = pkg.is_current ? '#237292' : pkg.is_past ? '#1F9D6B' : '#B9AE96';
             const card = document.createElement('div');
-            card.className = `sb-pkg-card ${isCurrent ? 'current' : isPast ? 'past' : 'future'}`;
+            card.className = `sb-pkg-card ${pkg.is_current ? 'current' : pkg.is_past ? 'past' : 'future'}`;
             card.dataset.pkgId = pkg.id;
             card.innerHTML = `
-      <div class="sb-pkg-card-inner" onclick="loadMosqueDetailGlobal(${pkg.mosques?.[0]?.id || 0})">
+      <div class="sb-pkg-card-inner">
         <div class="sb-pkg-top">
           <div class="sb-pkg-dot" style="background:${color}"></div>
           <div style="flex:1;min-width:0">
-            <div class="sb-pkg-code">${pkg.code}</div>
-            <div class="sb-pkg-name">${pkg.name}</div>
+            <div class="sb-pkg-code">${esc(pkg.code || '')}</div>
+            <div class="sb-pkg-name">${esc(pkg.name)}</div>
           </div>
-          ${isCurrent ? '<div class="sb-pkg-live">● نشط</div>' : ''}
-          ${isPast ? '<div class="sb-pkg-done">✓</div>' : ''}
+          ${pkg.is_current ? '<div class="sb-pkg-live">● الحالية</div>' : ''}
+          ${pkg.is_past ? '<div class="sb-pkg-done">✓</div>' : ''}
         </div>
         <div class="sb-pkg-stats">
-          <div class="sb-pkg-stat">
-            <span class="sb-pkg-stat-val" style="color:${color}">${pkg.avg_kpi}%</span>
-            <span class="sb-pkg-stat-lbl">KPI</span>
-          </div>
-          <div class="sb-pkg-stat">
-            <span class="sb-pkg-stat-val">${pkg.mosque_count}</span>
-            <span class="sb-pkg-stat-lbl">مسجد</span>
-          </div>
-          ${delayedCount > 0 ? `
-          <div class="sb-pkg-stat">
-            <span class="sb-pkg-stat-val" style="color:var(--red)">${delayedCount}</span>
-            <span class="sb-pkg-stat-lbl">متأخر</span>
-          </div>` : ''}
+          <div class="sb-pkg-stat"><span class="sb-pkg-stat-val">${pkg.avg_kpi}%</span><span class="sb-pkg-stat-lbl">إنجاز</span></div>
+          <div class="sb-pkg-stat"><span class="sb-pkg-stat-val">${pkg.mosque_count}</span><span class="sb-pkg-stat-lbl">مسجد</span></div>
+          ${pkg.delayed_count ? `<div class="sb-pkg-stat"><span class="sb-pkg-stat-val" style="color:var(--red)">${pkg.delayed_count}</span><span class="sb-pkg-stat-lbl">حرج</span></div>` : ''}
         </div>
-        <div class="sb-pkg-bar">
-          <div class="sb-pkg-bar-fill"
-               style="width:${pkg.avg_kpi}%;background:${color}"></div>
-        </div>
+        <div class="sb-pkg-bar"><div class="sb-pkg-bar-fill" style="width:${Math.min(100, pkg.avg_kpi)}%;background:${color}"></div></div>
       </div>`;
-
+            card.addEventListener('click', () => { S.scopePkgId = pkg.id; applyScope(); refreshMapMarkers(true); });
             container.appendChild(card);
         });
+        $('sb-scope-all')?.addEventListener('click', () => { S.scopePkgId = null; applyScope(); refreshMapMarkers(true); });
     }
 
     /* ══════════════════════════════════════════════════════════
@@ -1279,8 +1089,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 m.code?.toLowerCase().includes(q)
             ).slice(0, 6).forEach(m => results.push({
                 type: 'mosque', label: m.name,
-                meta: `${m.code} · KPI ${m.overall_kpi}%`,
-                color: dotColor(m.overall_kpi), id: m.id,
+                meta: `${m.code} · الإنجاز ${Math.round(m.actual_pct || 0)}%`,
+                color: statusColor(m.status), id: m.id,
             }));
 
             S.packages.filter(p =>
@@ -1288,7 +1098,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 p.code?.toLowerCase().includes(q)
             ).slice(0, 3).forEach(p => results.push({
                 type: 'package', label: p.name,
-                meta: `${p.mosque_count} مساجد · KPI ${p.avg_kpi}%`,
+                meta: `${p.mosque_count} مساجد · الإنجاز ${p.avg_kpi}%`,
                 color: 'var(--primary)', id: p.id,
             }));
 
@@ -1312,6 +1122,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     input.value = '';
                     if (this.dataset.type === 'mosque')
                         loadMosqueDetail(parseInt(this.dataset.id));
+                    else { S.scopePkgId = parseInt(this.dataset.id); applyScope(); refreshMapMarkers(true); }
                 });
             });
             dropdown.classList.add('show');
@@ -1332,19 +1143,19 @@ document.addEventListener('DOMContentLoaded', function () {
     /* ══════════════════════════════════════════════════════════
        MOSQUE DETAIL — PRESERVED WITH ALL FEATURES
        ══════════════════════════════════════════════════════════ */
-    async function loadMosqueDetail(mosqueId) {
+    async function loadMosqueDetail(mosqueId, silent) {
         S.activeMosqueId = mosqueId;
         const mosque = S.mosques.find(m => m.id === mosqueId);
 
         if (mosque) {
             $('topbar-title').textContent = mosque.name;
             $('topbar-sub').textContent =
-                `${mosque.code} · ${mosque.package || ''} · ${stateLabel(mosque.state)}` +
+                `${mosque.code} · ${mosque.package || ''} · ${stateLabel(mosque.state)} · الإنجاز ${Math.round(mosque.actual_pct || 0)}%` +
                 (mosque.days_delay > 0 ? ` · ⚠ تأخير ${mosque.days_delay} يوم` : '');
         }
 
         const content = $('mosque-detail-content');
-        if (content) {
+        if (content && !silent) {
             content.innerHTML = `
         <div style="padding:40px;text-align:center">
           <div class="loading-spinner" style="width:32px;height:32px;margin:0 auto"></div>
@@ -1355,7 +1166,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const data = await apiGet(`/dashboard/api/mosque/${mosqueId}`);
-        if (!data.mosque) return;
+        if (!data || !data.mosque) return;
 
         const m = data.mosque;
         S.mosqueContext = {
@@ -1373,7 +1184,7 @@ document.addEventListener('DOMContentLoaded', function () {
             drawBoqChart(data.boq_categories);
         }
 
-        $('section-mosque')?.scrollIntoView({behavior: 'smooth', block: 'start'});
+        if (!silent) $('section-mosque')?.scrollIntoView({behavior: 'smooth', block: 'start'});
     }
 
     window.toggleBOQCat = function (id) {
@@ -2330,22 +2141,10 @@ ${ai.forecast_finish ? `
        ══════════════════════════════════════════════════════════ */
     async function loadOnSite() {
         const data = await apiGet('/dashboard/api/onsite');
-        const badge = $('onsite-count-badge');
-        if (badge) badge.textContent = `${data.length} في الموقع`;
-        const list = $('onsite-list');
-        if (!list) return;
-        list.innerHTML = data.length
-            ? data.map(p => `
-          <div class="onsite-item">
-            <div class="onsite-avatar">${(p.name || 'م')[0]}</div>
-            <div>
-              <div class="onsite-name">${p.name}</div>
-              <div class="onsite-mosque">${p.mosque} · ${p.code}</div>
-            </div>
-            <div class="onsite-time">منذ ${p.checkin}</div>
-          </div>`).join('')
-            : `<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">
-           لا يوجد مستشارون في المواقع حالياً</div>`;
+        if (!Array.isArray(data)) return;
+        renderOnsite(data);
+        buildHeatmap(scopedMosques());
+        refreshMapMarkers(false);
     }
 
     /* ══════════════════════════════════════════════════════════
@@ -2465,19 +2264,21 @@ ${ai.forecast_finish ? `
        AUTO REFRESH
        ══════════════════════════════════════════════════════════ */
     function startRefresh() {
-        const interval = (CONFIG.refresh_interval || 60) * 1000;
+        const interval = Math.max(30, CONFIG.refresh_interval || 60) * 1000;
         S.refreshTimer = setInterval(async () => {
-            loadOnSite();
             checkLiveStream();
-            const [sum, alerts, insights] = await Promise.all([
+            const [mosques, sum, alerts, onsite] = await Promise.all([
+                apiGet('/dashboard/api/mosques'),
                 apiGet('/dashboard/api/summary'),
                 apiGet('/dashboard/api/alerts'),
-                apiGet('/dashboard/api/ai_insights'),
+                apiGet('/dashboard/api/onsite'),
             ]);
-            renderSummary(sum);
-            renderAlerts(alerts);
-            renderAIInsights(insights);
-            if (S.activeMosqueId) loadMosqueDetail(S.activeMosqueId);
+            if (Array.isArray(mosques)) setMosques(mosques);
+            if (sum) S.summary = sum;
+            if (alerts) renderAlerts(alerts);
+            if (Array.isArray(onsite)) renderOnsite(onsite);
+            applyScope();
+            if (S.activeMosqueId) loadMosqueDetail(S.activeMosqueId, true);
         }, interval);
     }
 

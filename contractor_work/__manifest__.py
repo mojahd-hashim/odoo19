@@ -8,6 +8,7 @@
         'security/ir.model.access.csv',
         'security/work_order_record_rules.xml',
         'data/config_data.xml',
+        'data/backfill_executed.xml',
         'views/work_order_views.xml',
         'views/qualification_views.xml',
         'views/material_submittal_views.xml',

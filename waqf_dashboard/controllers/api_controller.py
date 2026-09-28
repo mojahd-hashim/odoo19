@@ -3,6 +3,11 @@ from odoo import http
 from odoo.http import request
 from datetime import date, datetime, timedelta
 
+from .helpers import (
+    mosque_domain, mosque_perf, onsite_list, current_package,
+    riyadh_today, fmt_riyadh, to_riyadh,
+)
+
 
 def _json(data):
     return request.make_response(
@@ -18,193 +23,167 @@ class WaqfDashboardAPI(http.Controller):
     # ══════════════════════════════════════════════════════
     @http.route('/dashboard/api/summary', type='http', auth='user', csrf=False)
     def api_summary(self, **kw):
-        Mosque = request.env['mosque.mosque'].sudo()
-        Cert = request.env['mosque.certificate'].sudo()
-        CO = request.env['mosque.change.order'].sudo()
+        """Global counters. Progress KPIs are computed client-side from
+        /dashboard/api/mosques so they follow the selected phase."""
+        env = request.env
+        Cert = env['mosque.certificate'].sudo()
+        CO = env['mosque.change.order'].sudo()
 
-        mosques = Mosque.search([('package_id', '=', 1)])
-        total_value = sum(mosques.mapped('total_boq_value'))
-        avg_kpi = sum(mosques.mapped('overall_kpi')) / len(mosques) if mosques else 0
-        delayed = mosques.filtered(lambda m: m.days_delay > 0)
-        critical = mosques.filtered(lambda m: m.overall_kpi < 50 and m.overall_kpi > 0)
+        pending = {
+            'certs': Cert.search_count([('state', 'in', ['submitted', 'consultant_approved'])]),
+            'cos': CO.search_count([('state', '=', 'review')]),
+            'work_orders': 0,
+            'claims': 0,
+        }
+        if 'contractor.work.order' in env:
+            pending['work_orders'] = env['contractor.work.order'].sudo().search_count(
+                [('state', 'in', ['submitted', 'delivered'])])
+        if 'waqf.payment.claim' in env:
+            pending['claims'] = env['waqf.payment.claim'].sudo().search_count(
+                [('state', 'in', ['submitted', 'reviewed'])])
 
-        # Pending certs & COs
-        pending_certs = Cert.search_count(
-            [('state', 'in', ['submitted', 'consultant_approved'])])
-        pending_cos = CO.search_count([('state', '=', 'review')])
-        co_value = sum(CO.search([('state', 'not in', ['rejected'])]).mapped('amount'))
+        cos = CO.search([('state', 'not in', ['rejected'])])
+        co_value = sum(cos.mapped('amount'))
+        co_pending_value = sum(cos.filtered(lambda c: c.state == 'review').mapped('amount'))
 
-        # Total delay days
-        total_delay = sum(delayed.mapped('days_delay'))
-
-        # On-time mosques
-        on_time = len(mosques) - len(delayed)
-
-        # Financial progress avg
-        avg_financial = (sum(mosques.mapped('financial_progress')) / len(mosques)
-                         if mosques else 0)
-
-        # Compare vs last week — from AI snapshots if available
-        prev_avg_kpi = avg_kpi
-        prev_critical = len(critical)
-        prev_pending = pending_certs
-        has_ai = 'waqf.ai.snapshot.run' in request.env
-
-        if has_ai:
-            Snap = request.env['waqf.ai.mosque.snapshot'].sudo()
-            Alert = request.env['waqf.ai.alert'].sudo() if 'waqf.ai.alert' in request.env else False
-
-            latest_run = request.env['waqf.ai.snapshot.run'].sudo().search(
-                [('status', 'in', ['done', 'done_with_ai_error'])],
-                order='run_datetime desc',
-                limit=1
-            )
-
-            domain = [('run_id', '=', latest_run.id)] if latest_run else []
-
-            for s in Snap.search(domain):
-                latest_alert = Alert.search([
-                    ('mosque_id', '=', s.mosque_id.id),
-                    ('active', '=', True),
-                    ('status', 'in', ['new', 'acknowledged', 'in_progress']),
-                ], order='priority_score desc, create_date desc', limit=1) if Alert else False
-
-                impact = latest_alert.impact_score if latest_alert else max(
-                    0,
-                    min(100, 100 - (s.overall_kpi or 0))
-                )
-
-                probability = latest_alert.probability_score if latest_alert else max(
-                    0,
-                    min(100, (s.days_delay or 0) * 2 + abs((s.financial_progress or 0) - (s.time_progress or 0)))
-                )
-
-                risk_level = latest_alert.severity if latest_alert else (
-                    'critical' if impact >= 75 and probability >= 60 else
-                    'high' if impact >= 60 or probability >= 60 else
-                    'medium' if impact >= 35 or probability >= 35 else
-                    'low'
-                )
-
-                # points.append({
-                #     'mosque_id': s.mosque_id.id,
-                #     'mosque_name': s.mosque_id.name,
-                #     'mosque_code': s.mosque_id.code,
-                #     'impact': round(impact, 1),
-                #     'probability': round(probability, 1),
-                #     'size': s.contract_value or s.mosque_id.contract_value,
-                #     'kpi': round(s.overall_kpi or 0, 1),
-                #     'risk_level': risk_level,
-                # })
-
+        pkg = current_package(env)
         return _json({
-            'total_contract_value': total_value,
-            'avg_kpi': round(avg_kpi, 1),
-            'avg_kpi_delta': round(avg_kpi - prev_avg_kpi, 1),
-            'delayed_count': len(delayed),
-            'critical_count': len(critical),
-            'critical_delta': len(critical) - prev_critical,
-            'total_delay_days': total_delay,
-            'pending_certs': pending_certs,
-            'pending_certs_delta': pending_certs - prev_pending,
-            'pending_cos': pending_cos,
+            'pending': pending,
+            'pending_total': sum(pending.values()),
             'co_value': co_value,
-            'on_time_count': on_time,
-            'mosque_count': len(mosques),
-            'avg_financial': round(avg_financial, 1),
+            'co_pending_value': co_pending_value,
+            'onsite_count': len(onsite_list(env)),
+            'current_package_id': pkg.id if pkg else None,
+            'current_package_name': pkg.name if pkg else '',
+            'today': str(riyadh_today()),
         })
 
     # ══════════════════════════════════════════════════════
     # SMART ALERTS — from AI Risk Center
     # ══════════════════════════════════════════════════════
+    # alert_type → dashboard filter group
+    ALERT_GROUPS = {
+        'financial': 'financial', 'payment_execution_impact': 'financial',
+        'change_order': 'financial', 'approval': 'financial',
+        'delay': 'delay', 'boq': 'delay', 'silent_project': 'delay',
+        'contractor': 'delay', 'risk': 'delay',
+        'quality': 'quality', 'supervision': 'quality', 'data_conflict': 'quality',
+    }
+    SEV_ORDER = {'critical': 0, 'high': 1, 'medium': 2, 'low': 3}
+
     @http.route('/dashboard/api/alerts', type='http', auth='user', csrf=False)
-    def api_alerts(self, severity=None, category=None, **kw):
+    def api_alerts(self, **kw):
         """
-        Primary source: waqf.ai.alert (AI Risk Center)
-        Fallback: compute alerts from raw data if AI module absent
+        Primary source: waqf.ai.alert (AI Risk Center) — only alerts that are
+        still open and belong to the latest successful run (older runs keep
+        stale 'new' alerts forever), de-duplicated per mosque/type/title.
+        Fallback: rule-based alerts computed from live data.
         """
-        has_ai = 'waqf.ai.alert' in request.env
+        env = request.env
+        has_ai = 'waqf.ai.alert' in env
         alerts = []
+        last_run_at = ''
 
         if has_ai:
-            Alert = request.env['waqf.ai.alert'].sudo()
-            domain = [('status', 'in', ['new', 'acknowledged'])]
-            if severity:
-                domain.append(('severity', '=', severity))
-            if category:
-                domain.append(('category', '=', category))
+            Alert = env['waqf.ai.alert'].sudo()
+            domain = [('status', 'in', ['new', 'acknowledged', 'in_progress'])]
+            last_run = env['waqf.ai.snapshot.run'].sudo().search(
+                [('status', 'in', ['done', 'done_with_ai_error'])],
+                order='run_datetime desc', limit=1)
+            if last_run:
+                domain.append(('run_id', 'in', [last_run.id, False]))
+                last_run_at = fmt_riyadh(last_run.run_datetime, '%Y-%m-%d %H:%M')
 
-            # استبدله بهذا
-            sev_map = {'critical': 0, 'high': 1, 'medium': 2, 'low': 3}
-            alerts_raw = Alert.search(domain, order='priority_score desc, create_date desc', limit=25)
-            alerts_raw = sorted(alerts_raw, key=lambda a: sev_map.get(a.severity, 9))
-            for a in alerts_raw:
+            seen = set()
+            for a in Alert.search(domain, order='priority_score desc, create_date desc', limit=200):
+                key = (a.mosque_id.id, a.alert_type, a.title)
+                if key in seen:
+                    continue
+                seen.add(key)
                 alerts.append({
                     'id': a.id,
                     'title': a.title,
                     'description': a.summary or '',
+                    'root_cause': a.root_cause or '',
+                    'recommendation': a.recommendation or '',
                     'severity': a.severity,
                     'category': a.alert_type,
-                    'mosque_id': a.mosque_id.id if a.mosque_id else None,
-                    'mosque_name': a.mosque_id.name if a.mosque_id else '',
-                    'mosque_code': a.mosque_id.code if a.mosque_id else '',
-                    'cta_label': 'عرض التفاصيل',
+                    'group': self.ALERT_GROUPS.get(a.alert_type, 'delay'),
+                    'source': a.source,
+                    'confidence': round((a.confidence or 0) * 100),
+                    'mosque_id': a.mosque_id.id or None,
+                    'mosque_name': a.mosque_id.name or a.contractor or '',
+                    'mosque_code': a.mosque_id.code or '',
                     'state': a.status,
-                    'created_at': str(a.create_date),
-                })
-        else:
-            # ── Fallback: compute from raw data ──────────────
-            Mosque = request.env['mosque.mosque'].sudo()
-            Cert = request.env['mosque.certificate'].sudo()
-            CO = request.env['mosque.change.order'].sudo()
-
-            # Critical mosques
-            for m in Mosque.search([('overall_kpi', '<', 45), ('overall_kpi', '>', 0),
-                                    ('is_demo', '=', False)]):
-                alerts.append({
-                    'id': m.id, 'severity': 'critical', 'category': 'delay',
-                    'title': f'{m.name} — KPI حرج {round(m.overall_kpi)}%',
-                    'description': f'تأخير {m.days_delay} يوم · يحتاج تدخل فوري',
-                    'mosque_id': m.id, 'mosque_name': m.name, 'mosque_code': m.code,
-                    'cta_label': 'فتح المسجد', 'state': 'new', 'created_at': '',
+                    'created_at': fmt_riyadh(a.create_date, '%Y-%m-%d %H:%M'),
                 })
 
-            # Pending certs > 7 days
-            cutoff = datetime.now() - timedelta(days=7)
-            for c in Cert.search([('state', 'in', ['submitted', 'consultant_approved']),
-                                  ('create_date', '<', cutoff)]):
-                alerts.append({
-                    'id': 10000 + c.id, 'severity': 'high', 'category': 'financial',
-                    'title': f'مستخلص #{c.cert_number} معلق منذ أكثر من 7 أيام',
-                    'description': f'{c.mosque_id.name} · {round(c.certified_amount or 0):,} ريال',
-                    'mosque_id': c.mosque_id.id if c.mosque_id else None,
-                    'mosque_name': c.mosque_id.name if c.mosque_id else '',
-                    'mosque_code': c.mosque_id.code if c.mosque_id else '',
-                    'cta_label': 'مراجعة', 'state': 'new', 'created_at': '',
-                })
+        from_ai = bool(alerts)
+        if not alerts:
+            alerts = self._computed_alerts(env)
 
-            # High value COs pending
-            for co in CO.search([('state', '=', 'review'), ('amount', '>', 100000)]):
-                alerts.append({
-                    'id': 20000 + co.id, 'severity': 'high', 'category': 'financial',
-                    'title': f'أمر تغيير {co.name} بقيمة عالية — {round(co.amount):,} ريال',
-                    'description': f'{co.mosque_id.name} · {co.reason or ""}',
-                    'mosque_id': co.mosque_id.id if co.mosque_id else None,
-                    'mosque_name': co.mosque_id.name if co.mosque_id else '',
-                    'mosque_code': co.mosque_id.code if co.mosque_id else '',
-                    'cta_label': 'اعتماد', 'state': 'new', 'created_at': '',
-                })
-
-            # Sort by severity
-            sev_order = {'critical': 0, 'high': 1, 'medium': 2, 'low': 3}
-            alerts.sort(key=lambda a: sev_order.get(a['severity'], 9))
-            alerts = alerts[:20]
+        alerts.sort(key=lambda a: self.SEV_ORDER.get(a['severity'], 9))
+        counts = {'all': len(alerts), 'critical': 0, 'financial': 0, 'delay': 0, 'quality': 0}
+        for a in alerts:
+            if a['severity'] == 'critical':
+                counts['critical'] += 1
+            counts[a['group']] = counts.get(a['group'], 0) + 1
 
         return _json({
-            'alerts': alerts,
+            'alerts': alerts[:60],
             'total': len(alerts),
-            'source': 'ai_center' if has_ai else 'computed',
+            'counts': counts,
+            'source': 'ai_center' if from_ai else 'computed',
+            'last_run': last_run_at,
         })
+
+    def _computed_alerts(self, env):
+        """Rule-based alerts from live data (used when the AI center has none)."""
+        today = riyadh_today()
+        alerts = []
+
+        def add(sev, group, title, desc, m=None, rec=''):
+            alerts.append({
+                'id': len(alerts) + 1, 'severity': sev, 'category': group, 'group': group,
+                'title': title, 'description': desc, 'root_cause': '', 'recommendation': rec,
+                'source': 'computed', 'confidence': 0,
+                'mosque_id': m.id if m else None,
+                'mosque_name': m.name if m else '', 'mosque_code': m.code if m else '',
+                'state': 'new', 'created_at': '',
+            })
+
+        week_ago = datetime.utcnow() - timedelta(days=7)
+        Att = env['mosque.attendance'].sudo()
+        for m in env['mosque.mosque'].sudo().search(mosque_domain(env)):
+            p = mosque_perf(m, today)
+            if p['status'] == 'critical':
+                if p['days_delay'] > 0:
+                    add('critical', 'delay', f'{m.name} — متأخر {p["days_delay"]} يوم',
+                        f'الإنجاز الفعلي {p["actual_pct"]}% وانتهت المدة المخططة.', m,
+                        'اجتماع عاجل مع المقاول واعتماد خطة تعافٍ بجدول زمني.')
+                else:
+                    add('critical', 'delay', f'{m.name} — انحراف كبير عن الخطة',
+                        f'الفعلي {p["actual_pct"]}% مقابل المخطط {p["planned_pct"]}%.', m,
+                        'مراجعة الموارد في الموقع وأوامر العمل المتوقفة.')
+            elif p['status'] == 'warning':
+                add('high', 'delay', f'{m.name} — تأخر عن الخطة',
+                    f'الفعلي {p["actual_pct"]}% مقابل المخطط {p["planned_pct"]}%.', m)
+            if m.state == 'active' and not Att.search_count(
+                    [('mosque_id', '=', m.id), ('check_in', '>=', week_ago)]):
+                add('medium', 'quality', f'{m.name} — لا زيارات إشرافية منذ 7 أيام',
+                    'لم يُسجَّل حضور للاستشاري خلال الأسبوع الماضي.', m,
+                    'جدولة زيارة ميدانية وتوثيقها بالموقع الجغرافي.')
+
+        cutoff = datetime.utcnow() - timedelta(days=7)
+        for c in env['mosque.certificate'].sudo().search(
+                [('state', 'in', ['submitted', 'consultant_approved']), ('create_date', '<', cutoff)]):
+            add('high', 'financial', f'مستخلص #{c.cert_number} معلّق منذ أكثر من 7 أيام',
+                f'{c.mosque_id.name or ""} · {round(c.certified_amount or 0):,} ريال', c.mosque_id)
+        for co in env['mosque.change.order'].sudo().search(
+                [('state', '=', 'review'), ('amount', '>', 100000)]):
+            add('high', 'financial', f'أمر تغيير {co.name} بقيمة {round(co.amount):,} ريال',
+                co.reason or '', co.mosque_id)
+        return alerts
 
     # ══════════════════════════════════════════════════════
     # AI INSIGHTS — Executive Summaries
@@ -587,10 +566,23 @@ class WaqfDashboardAPI(http.Controller):
     # ══════════════════════════════════════════════════════
     @http.route('/dashboard/api/mosques', type='http', auth='user', csrf=False)
     def api_mosques(self, **kw):
-        mosques = request.env['mosque.mosque'].sudo().search(
-            [('is_demo', '=', False)], order='code')
+        env = request.env
+        today = riyadh_today()
+        mosques = env['mosque.mosque'].sudo().search(mosque_domain(env), order='code')
+
+        onsite = {}
+        for p in onsite_list(env):
+            if p['mosque_id']:
+                onsite.setdefault(p['mosque_id'], []).append(p['name'])
+
+        streams = {}
+        for st in env['waqf.live.stream'].sudo().search(
+                [('is_active', '=', True), ('mosque_id', '!=', False)]):
+            streams.setdefault(st.mosque_id.id, st.stream_url)
+
         result = []
         for m in mosques:
+            perf = mosque_perf(m, today)
             result.append({
                 'id': m.id,
                 'code': m.code,
@@ -598,20 +590,19 @@ class WaqfDashboardAPI(http.Controller):
                 'city': m.city,
                 'district': m.district or '',
                 'state': m.state,
+                'contractor': m.contractor or '',
                 'package': m.package_id.name if m.package_id else '',
                 'package_id': m.package_id.id if m.package_id else 0,
                 'overall_kpi': round(m.overall_kpi, 1),
-                'financial_pct': round(m.financial_progress, 1),
-                'time_pct': round(m.time_progress, 1),
-                'days_delay': m.days_delay,
-                'contract_value': m.contract_value,
+                'financial_pct': perf['actual_pct'],
+                'time_pct': perf['planned_pct'],
                 'planned_start': str(m.planned_start) if m.planned_start else '',
                 'planned_end': str(m.planned_end) if m.planned_end else '',
                 'lat': m.latitude,
                 'lng': m.longitude,
-                'kpi_color': ('green' if m.overall_kpi >= 70 else
-                              'yellow' if m.overall_kpi >= 50 else
-                              'red' if m.overall_kpi > 0 else 'gray'),
+                'onsite': onsite.get(m.id, []),
+                'stream_url': streams.get(m.id, ''),
+                **perf,
             })
         return _json(result)
 
@@ -836,8 +827,8 @@ class WaqfDashboardAPI(http.Controller):
             attendance.append({
                 'id': att.id,
                 'engineer': att.engineer_id.name if att.engineer_id else '',
-                'check_in': str(att.check_in.strftime('%Y-%m-%d %H:%M')) if att.check_in else '',
-                'check_out': str(att.check_out.strftime('%H:%M')) if att.check_out else None,
+                'check_in': fmt_riyadh(att.check_in, '%Y-%m-%d %H:%M'),
+                'check_out': fmt_riyadh(att.check_out, '%H:%M') or None,
                 'duration': att.duration,
                 'validated': att.is_validated,
             })
@@ -884,6 +875,7 @@ class WaqfDashboardAPI(http.Controller):
                                             1) if (latest_alert or latest_prediction) else 0,
                 }
 
+        perf = mosque_perf(m)
         return _json({
             'mosque': {
                 'id': m.id,
@@ -894,9 +886,11 @@ class WaqfDashboardAPI(http.Controller):
                 'state': m.state,
                 'overall_kpi': round(m.overall_kpi, 1),
                 'financial_kpi': round(m.financial_progress, 1),
-                'time_kpi': round(m.time_progress, 1),
+                'time_kpi': perf['planned_pct'],
                 'visit_compliance': round(m.visit_compliance, 1),
-                'days_delay': m.days_delay,
+                'days_delay': perf['days_delay'],
+                'status': perf['status'],
+                'executed_value': perf['executed_value'],
                 'contract_value': m.contract_value,
                 'planned_start': str(m.planned_start) if m.planned_start else '',
                 'planned_end': str(m.planned_end) if m.planned_end else '',
@@ -916,23 +910,8 @@ class WaqfDashboardAPI(http.Controller):
     # ══════════════════════════════════════════════════════
     @http.route('/dashboard/api/onsite', type='http', auth='user', csrf=False)
     def api_onsite(self, **kw):
-        today_start = datetime.combine(date.today(), datetime.min.time())
-        result = []
-        for a in request.env['mosque.attendance'].sudo().search([
-            ('check_in', '>=', today_start),
-            ('check_out', '=', False),
-        ]):
-            elapsed = ((datetime.now() - a.check_in).total_seconds() / 3600
-                       if a.check_in else 0)
-            result.append({
-                'name': a.engineer_id.name if a.engineer_id else '',
-                'mosque': a.mosque_id.name if a.mosque_id else '',
-                'code': a.mosque_id.code if a.mosque_id else '',
-                'checkin': a.check_in.strftime('%H:%M') if a.check_in else '',
-                'elapsed': round(elapsed, 1),
-                'validated': a.is_validated,
-            })
-        return _json(result)
+        """Consultants currently checked in — times in Riyadh (UTC+3)."""
+        return _json(onsite_list(request.env))
 
     # ══════════════════════════════════════════════════════
     # LIVE STREAM

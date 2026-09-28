@@ -154,6 +154,11 @@ class ContractorWorkOrder(models.Model):
     total_qty_lines = fields.Integer(
         compute='_compute_totals', string='عدد البنود')
 
+    # هل أُضيفت كميات هذا الأمر إلى المنفذ في جدول الكميات؟
+    boq_executed_posted = fields.Boolean(
+        string='مُرحّل للمنفذ', copy=False, readonly=True,
+        help='يُضاف المنفذ مرة واحدة عند قبول التسليم بتقييم A أو B')
+
     @api.depends('boq_line_ids.line_value')
     def _compute_totals(self):
         for rec in self:
@@ -194,6 +199,49 @@ class ContractorWorkOrder(models.Model):
                 vals['name'] = self.env['ir.sequence'].next_by_code(
                     'contractor.work.order') or 'جديد'
         return super().create(vals_list)
+
+    # ── المنفذ: ترحيل الكميات المقبولة إلى جدول الكميات ─────────
+    ACCEPTED_STATES = ('graded', 'testing', 'warranty', 'closed')
+
+    def write(self, vals):
+        res = super().write(vals)
+        if 'grade' in vals or 'state' in vals:
+            self._post_executed_qty()
+        return res
+
+    def _post_executed_qty(self):
+        """أمر العمل المقبول (A/B) يضيف كمياته إلى executed_qty مرة واحدة فقط.
+        يُستدعى من write فيشمل التقييم من الواجهة الخلفية وتطبيق الجوال."""
+        todo = self.filtered(lambda r: not r.boq_executed_posted
+                             and r.grade in ('a', 'b')
+                             and r.state in self.ACCEPTED_STATES)
+        for rec in todo:
+            capped = []
+            for line in rec.boq_line_ids:
+                boq = line.boq_id.sudo()   # المستشار قد لا يملك صلاحية تعديل BOQ
+                qty = line.qty_requested
+                if not boq.is_variation:
+                    # لا يتجاوز 110% من التعاقدية (قيد mosque.boq)
+                    room = max(0.0, boq.contracted_qty * 1.1 - boq.executed_qty)
+                    if qty > room:
+                        capped.append(boq.item_code or boq.description[:30])
+                        qty = room
+                if qty > 0:
+                    boq.executed_qty += qty
+            super(ContractorWorkOrder, rec).write({'boq_executed_posted': True})
+            body = '📐 تم ترحيل كميات الأمر إلى المنفذ في جدول الكميات'
+            if capped:
+                body += ' — تم تقييد بنود تجاوزت 110%%: %s' % '، '.join(capped)
+            rec.message_post(body=body)
+
+    @api.model
+    def _backfill_executed_qty(self):
+        """ترحيل أوامر العمل المقبولة سابقاً (يُستدعى عند تحديث المديول)."""
+        self.search([
+            ('boq_executed_posted', '=', False),
+            ('grade', 'in', ['a', 'b']),
+            ('state', 'in', list(self.ACCEPTED_STATES)),
+        ])._post_executed_qty()
 
     # ── Actions / Workflow ─────────────────────────────────────
     def action_submit_commencement(self):

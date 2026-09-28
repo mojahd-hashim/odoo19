@@ -4,53 +4,11 @@
 <t t-call="web.layout">
 <t t-set="head">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>لوحة الإدارة — منصة مآذن</title>
   <link rel="stylesheet" href="/waqf_dashboard/static/src/css/dashboard.css"/>
-  <style>
-    .sb-nav-section{padding:10px 14px 6px;font-size:9px;font-weight:700;color:rgba(255,255,255,0.2);letter-spacing:1.2px;text-transform:uppercase}
-    .pkg-card{margin:6px 10px;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.07);transition:.22s;cursor:pointer}
-    .pkg-card:hover{border-color:rgba(255,255,255,0.15)}
-    .pkg-card.expanded{border-color:rgba(35,114,146,0.5);box-shadow:0 0 0 2px rgba(35,114,146,0.2)}
-    .pkg-card-current{background:rgba(35,114,146,0.18)}
-    .pkg-card-past{background:rgba(46,204,138,0.10)}
-    .pkg-card-future{background:rgba(255,255,255,0.04)}
-    .pkg-card-header{display:flex;align-items:center;gap:10px;padding:12px 14px}
-    .pkg-card-indicator{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-    .pkg-card-info{flex:1;min-width:0}
-    .pkg-card-code{font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:0.5px;margin-bottom:2px}
-    .pkg-card-name{font-size:12px;font-weight:700;color:rgba(255,255,255,0.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .pkg-card-live-badge{font-size:9px;font-weight:800;color:#2ECC8A;background:rgba(46,204,138,0.15);padding:2px 8px;border-radius:999px;animation:livePulse 2s infinite;flex-shrink:0}
-    .pkg-card-done-badge{font-size:9px;font-weight:700;color:rgba(46,204,138,0.7);flex-shrink:0}
-    .pkg-card-stats{display:flex;gap:0;border-top:1px solid rgba(255,255,255,0.06);padding:8px 14px}
-    .pkg-card-stat{flex:1;text-align:center}
-    .pkg-card-stat-val{font-size:16px;font-weight:800;color:#fff;line-height:1}
-    .pkg-card-stat-lbl{font-size:9px;color:rgba(255,255,255,0.3);margin-top:2px}
-    .pkg-card-progress{height:3px;background:rgba(255,255,255,0.08);margin:0 14px 10px;border-radius:2px;overflow:hidden}
-    .pkg-card-progress-fill{height:100%;border-radius:2px;transition:width 1s ease}
-    .pkg-card-mosques{border-top:1px solid rgba(255,255,255,0.06);padding:6px 8px;max-height:220px;overflow-y:auto}
-    .pkg-card-mosques::-webkit-scrollbar{width:3px}
-    .pkg-card-mosques::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1)}
-    .pkg-mosque-item{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:8px;cursor:pointer;transition:.12s}
-    .pkg-mosque-item:hover{background:rgba(255,255,255,0.07)}
-    .pkg-mosque-item.active{background:rgba(35,114,146,0.3)}
-    .pkg-mosque-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-    .pkg-mosque-name{flex:1;font-size:11px;color:rgba(255,255,255,0.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .pkg-mosque-kpi{font-size:10px;font-weight:700;flex-shrink:0}
-    .merged-tab{padding:8px 16px;font-size:11px;font-weight:700;color:var(--text3);border:none;background:none;cursor:pointer;font-family:inherit;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s}
-    .merged-tab:hover{color:var(--text1)}
-    .merged-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
-    .merged-panel-content{display:none}
-    .merged-panel-content.active{display:block}
-    #mosque-map{width:100%;height:380px;border-radius:var(--r-lg);overflow:hidden;z-index:0}
-    .leaflet-popup-content-wrapper{border-radius:16px!important;box-shadow:0 8px 30px rgba(0,0,0,0.15)!important;font-family:'IBM Plex Sans Arabic',sans-serif!important}
-    .leaflet-popup-content{margin:14px!important;direction:rtl}
-    .leaflet-popup-tip{display:none}
-    .leaflet-control-zoom a{background:rgba(27,58,82,0.9)!important;color:#fff!important;border-color:rgba(255,255,255,0.1)!important}
-    @keyframes livePulse{0%,100%{opacity:1}50%{opacity:0.5}}
-  </style>
   <div id="waqf-data" style="display:none"
        t-att-data-config="json.dumps(config)"
        t-att-data-packages="packages_json"
-       t-att-data-summary="json.dumps(summary)"
        t-att-data-onsite="json.dumps(on_site)"
        t-att-data-has-ai="'1' if has_ai_module else '0'"/>
 </t>
@@ -60,35 +18,15 @@
   <!-- SIDEBAR -->
   <div class="wd-sidebar">
     <div class="sb-brand">
-      <div class="sb-logo">
-        <t t-if="company and company.logo">
-          <img t-att-src="'/web/image/res.company/%d/logo' % company.id"
-               t-att-alt="company.name"/>
-        </t>
-        <t t-else=""><span class="sb-logo-fallback">و</span></t>
-      </div>
+      <img class="sb-brand-logo" src="/waqf_dashboard/static/src/img/kawaqf_logo.png" alt="وقف الملك عبدالله"/>
       <div class="sb-brand-text">
-        <div class="sb-brand-name" t-esc="company.name"/>
-        <div class="sb-brand-tag">لوحة إدارة التأهيل</div>
+        <div class="sb-brand-name">منصة مآذن</div>
+        <div class="sb-brand-tag">لوحة إدارة تأهيل المساجد</div>
       </div>
     </div>
-    <div class="sb-nav-section">المراحل</div>
+    <div class="sb-nav-section">نطاق العرض</div>
+    <button class="sb-scope-all" id="sb-scope-all" type="button">كل المراحل</button>
     <div id="sb-packages"/>
-    <div class="sb-nav-section">في الموقع الآن</div>
-    <div style="padding:0 10px 8px">
-      <t t-foreach="on_site" t-as="p">
-        <div class="sb-mosque" style="cursor:default">
-          <div class="sb-mosque-dot" style="background:#2ECC8A"/>
-          <span class="sb-mosque-name"><t t-esc="(p.get('name') or '')[:16]"/></span>
-          <span class="sb-mosque-code" t-esc="p.get('code','')"/>
-        </div>
-      </t>
-      <t t-if="not on_site">
-        <div style="padding:6px 10px;font-size:10px;color:rgba(255,255,255,.2)">
-          لا يوجد مستشارون في المواقع
-        </div>
-      </t>
-    </div>
     <div class="sb-footer">
       <div class="sb-user">
         <div class="sb-avatar"><t t-esc="(user.name or 'م')[0]"/></div>
@@ -106,30 +44,27 @@
         <div class="topbar-page" id="topbar-title">نظرة عامة</div>
         <div class="topbar-sep">·</div>
         <div class="topbar-sub" id="topbar-sub">
-          <t t-esc="company.name"/> · <t t-esc="mosque_count"/> مسجداً وجامعاً
+          <t t-esc="mosque_count"/> مسجداً وجامعاً
         </div>
+        <span class="scope-chip" id="scope-chip">—</span>
       </div>
       <div class="search-wrap">
         <input id="global-search" class="tb-search" type="text"
-               placeholder="بحث عن مسجد أو مشروع..." autocomplete="off"/>
+               placeholder="بحث عن مسجد أو مرحلة..." autocomplete="off"/>
         <div id="search-dropdown" class="search-dropdown"/>
       </div>
       <div class="topbar-actions">
+        <div class="tb-clock" title="توقيت الرياض">
+          <span>الرياض</span><b id="riyadh-clock">--:--</b><small>UTC+3</small>
+        </div>
         <div class="tb-badge live" id="live-pill" style="display:none">
           <div class="tb-live-dot"/>
           <span>بث مباشر</span>
         </div>
-        <div class="tb-badge success" style="cursor:pointer"
-             onclick="document.getElementById('modal-onsite').classList.add('show')">
+        <div class="tb-badge success" style="cursor:pointer" id="onsite-top-badge">
           <span id="onsite-count-badge"><t t-esc="on_site_count"/> في الموقع</span>
         </div>
-        <t t-if="summary.get('pending_certs', 0) > 0">
-          <div class="tb-badge danger">📋 <t t-esc="summary.get('pending_certs')"/></div>
-        </t>
-        <t t-if="summary.get('pending_cos', 0) > 0">
-          <div class="tb-badge warning">🔄 <t t-esc="summary.get('pending_cos')"/></div>
-        </t>
-        <button class="tb-btn primary" onclick="window.location.reload()">↺</button>
+        <button class="tb-btn primary" onclick="window.location.reload()" title="تحديث">↺</button>
       </div>
     </div>
 
@@ -139,49 +74,62 @@
       <!-- KPI STRIP -->
       <div class="exec-strip">
         <div class="exec-kpi primary">
-          <div class="exec-kpi-label">إجمالي قيمة المشاريع</div>
-          <div class="exec-kpi-value"><span id="kpi-total-value">10</span><span class="unit">م ر</span></div>
-          <div class="exec-kpi-trend flat" id="kpi-total-trend"><span class="arrow">→</span></div>
+          <div class="exec-kpi-head">
+            <div class="exec-kpi-label">قيمة العقود</div>
+            <div class="exec-kpi-ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="2" stroke="#237292" stroke-width="1.4"/><path d="M2 7h12" stroke="#237292" stroke-width="1.4"/><circle cx="11" cy="10" r="1" fill="#C8A454"/></svg></div>
+          </div>
+          <div class="exec-kpi-value"><span id="kpi-total-value">—</span><span class="unit" id="kpi-total-unit">م ر</span></div>
+          <div class="exec-kpi-sub" id="kpi-total-sub">&#160;</div>
         </div>
         <div class="exec-kpi gold">
-          <div class="exec-kpi-label">نسبة التقدم</div>
-          <div class="exec-kpi-value"><span id="kpi-avg-kpi">—</span><span class="unit">%</span></div>
-          <div class="exec-kpi-trend flat" id="kpi-avg-trend"><span class="arrow">→</span></div>
-        </div>
-<!--        <div class="exec-kpi warning">-->
-<!--          <div class="exec-kpi-label">إجمالي التأخير</div>-->
-<!--          <div class="exec-kpi-value"><span id="kpi-total-delay">—</span><span class="unit">يوم</span></div>-->
-<!--          <div class="exec-kpi-trend flat" id="kpi-delay-trend"><span class="arrow">→</span></div>-->
-<!--        </div>-->
-        <div class="exec-kpi purple">
-          <div class="exec-kpi-label">قيمة أوامر التغيير</div>
-          <div class="exec-kpi-value"><span id="kpi-co-value">60</span><span class="unit">ألف</span></div>
-          <div class="exec-kpi-trend flat"><span class="arrow">→</span></div>
-        </div>
-        <div class="exec-kpi navy">
-          <div class="exec-kpi-label">اعتمادات معلّقة</div>
-          <div class="exec-kpi-value" id="kpi-pending">—</div>
-          <div class="exec-kpi-trend flat" id="kpi-pending-trend"><span class="arrow">→</span></div>
+          <div class="exec-kpi-head">
+            <div class="exec-kpi-label">الإنجاز الفعلي</div>
+            <div class="exec-kpi-ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 13h12M4 11V8M7 11V5M10 11V7M13 11V3" stroke="#237292" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+          </div>
+          <div class="exec-kpi-value"><span id="kpi-actual">—</span><span class="unit">%</span></div>
+          <div class="exec-kpi-meter"><div class="fill" id="kpi-actual-bar" style="width:0"/><div class="plan" id="kpi-plan-mark" style="right:0"/></div>
+          <div class="exec-kpi-sub" id="kpi-actual-sub">&#160;</div>
         </div>
         <div class="exec-kpi green">
-          <div class="exec-kpi-label">مشاريع في الموعد</div>
-          <div class="exec-kpi-value" id="kpi-ontime">3</div>
-          <div class="exec-kpi-trend up"><span class="arrow">↑</span> جيد</div>
+          <div class="exec-kpi-head">
+            <div class="exec-kpi-label">قيمة الأعمال المنفذة</div>
+            <div class="exec-kpi-ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3 3 7-7" stroke="#1F9D6B" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="exec-kpi-value"><span id="kpi-executed">—</span><span class="unit" id="kpi-executed-unit">م ر</span></div>
+          <div class="exec-kpi-sub" id="kpi-executed-sub">&#160;</div>
         </div>
-          <div class="exec-kpi danger">
-          <div class="exec-kpi-label">مشاريع حرجة</div>
-          <div class="exec-kpi-value" id="kpi-critical">1</div>
-          <div class="exec-kpi-trend flat" id="kpi-critical-trend"><span class="arrow">→</span></div>
+        <div class="exec-kpi navy">
+          <div class="exec-kpi-head">
+            <div class="exec-kpi-label">في الموعد</div>
+            <div class="exec-kpi-ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.8" stroke="#1B3A52" stroke-width="1.4"/><path d="M8 5v3.2l2 1.3" stroke="#1B3A52" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+          </div>
+          <div class="exec-kpi-value"><span id="kpi-ontime">—</span><span class="unit" id="kpi-ontime-of"/></div>
+          <div class="exec-kpi-sub" id="kpi-ontime-sub">&#160;</div>
+        </div>
+        <div class="exec-kpi danger">
+          <div class="exec-kpi-head">
+            <div class="exec-kpi-label">متأخرة / حرجة</div>
+            <div class="exec-kpi-ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2.5l6 10.5H2z" stroke="#D9493B" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 7v2.5" stroke="#D9493B" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11.2" r=".8" fill="#D9493B"/></svg></div>
+          </div>
+          <div class="exec-kpi-value"><span id="kpi-critical">—</span></div>
+          <div class="exec-kpi-sub" id="kpi-critical-sub">&#160;</div>
+        </div>
+        <div class="exec-kpi warning">
+          <div class="exec-kpi-head">
+            <div class="exec-kpi-label">اعتمادات معلّقة</div>
+            <div class="exec-kpi-ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3.5" y="2.5" width="9" height="11" rx="1.5" stroke="#D98A0B" stroke-width="1.4"/><path d="M6 6h4M6 9h3" stroke="#D98A0B" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+          </div>
+          <div class="exec-kpi-value"><span id="kpi-pending">—</span></div>
+          <div class="exec-kpi-sub" id="kpi-pending-sub">&#160;</div>
         </div>
       </div>
-
 
       <!-- GANTT + HEATMAP -->
       <div class="grid-2">
         <div class="card accent-primary">
           <div class="card-hdr">
-            <div class="card-title"><span class="card-title-icon">📅</span>المخطط الزمني — المراحل النشطة</div>
-            <span style="font-size:9px;color:var(--text3)">المراحل الجارية فقط</span>
+            <div class="card-title"><span class="card-title-icon">📅</span>المخطط الزمني — المرحلة الحالية</div>
+            <span class="card-note" id="gantt-note">الفعلي مقابل المخطط لكل مسجد</span>
           </div>
           <div class="card-body" style="overflow-x:auto">
             <div id="gantt-months" class="gantt-months"/>
@@ -190,46 +138,75 @@
         </div>
         <div class="card accent-green">
           <div class="card-hdr">
-            <div class="card-title"><span class="card-title-icon">🗺</span>خريطة أداء المساجد</div>
+            <div class="card-title"><span class="card-title-icon">🗺</span>الخريطة الحرارية — أداء المساجد</div>
+            <span class="card-note">الرقم = الإنجاز الفعلي · اللون = مقارنةً بالخطة</span>
           </div>
           <div class="card-body">
-            <div class="qf-row">
-              <button class="qf-btn active" data-filter="all">الكل</button>
-              <button class="qf-btn" data-filter="ok">جيد</button>
-              <button class="qf-btn" data-filter="warn">متوسط</button>
-              <button class="qf-btn" data-filter="critical">ضعيف</button>
-              <button class="qf-btn" data-filter="delayed">متأخر</button>
+            <div class="qf-row" id="hm-filters">
+              <button class="qf-btn active" data-filter="all">الكل<span class="n" data-n="all"/></button>
+              <button class="qf-btn" data-filter="ok">في الموعد<span class="n" data-n="ok"/></button>
+              <button class="qf-btn" data-filter="warning">تأخر بسيط<span class="n" data-n="warning"/></button>
+              <button class="qf-btn" data-filter="critical">حرج / متأخر<span class="n" data-n="critical"/></button>
+              <button class="qf-btn" data-filter="done">مكتمل<span class="n" data-n="done"/></button>
+              <button class="qf-btn" data-filter="onsite">بها مستشار الآن<span class="n" data-n="onsite"/></button>
             </div>
             <div class="hm-grid" id="heatmap-grid"/>
-            <div style="display:flex;gap:10px;margin-top:9px;flex-wrap:wrap;font-size:9px;color:var(--text3)">
-              <span><span style="display:inline-block;width:8px;height:8px;background:var(--green);border-radius:2px;margin-left:3px"/>≥70%</span>
-              <span><span style="display:inline-block;width:8px;height:8px;background:var(--orange);border-radius:2px;margin-left:3px"/>50-70%</span>
-              <span><span style="display:inline-block;width:8px;height:8px;background:var(--red);border-radius:2px;margin-left:3px"/>أقل 50%</span>
-              <span><span style="display:inline-block;width:8px;height:8px;background:#B0C0CC;border-radius:2px;margin-left:3px"/>لم يبدأ</span>
+            <div class="hm-legend">
+              <span><i style="background:#25A874"/>في الموعد</span>
+              <span><i style="background:#E0A12A"/>متأخر 10–20%</span>
+              <span><i style="background:#DE5B4C"/>متأخر أكثر من 20% أو تجاوز المدة</span>
+              <span><i style="background:#2E8FB5"/>مكتمل / استلام</span>
+              <span><i style="background:#EFE8D8;border:1px dashed #D9CDB3"/>لم يبدأ</span>
+              <span>● مستشار في الموقع</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- INTERACTIVE MAP -->
-      <div class="card" style="margin-bottom:14px">
+      <!-- INTERACTIVE MAP + ON-SITE -->
+      <div class="card" style="margin-bottom:14px" id="map-card">
         <div class="card-hdr">
-          <div class="card-title"><span class="card-title-icon">🌍</span>الخريطة التفاعلية — توزيع المساجد</div>
-          <div class="card-hdr-actions">
-            <span style="font-size:9px;color:var(--text3)">🔴 بث مباشر &#160; 🟠 تنبيه &#160; 🟢 جيد</span>
-          </div>
+          <div class="card-title"><span class="card-title-icon">🌍</span>الخريطة التفاعلية والمستشارون في المواقع</div>
+          <span class="card-note">الأوقات بتوقيت الرياض (UTC+3) · تحديث تلقائي</span>
         </div>
-        <div class="card-body" style="padding:0">
-          <div id="mosque-map">&#160;</div>
+        <div class="mapx">
+          <div class="mapx-map">
+            <div class="mapx-filters" id="map-filters">
+              <button class="mapx-filter active" data-f="all">كل المساجد</button>
+              <button class="mapx-filter" data-f="onsite">في الموقع الآن</button>
+              <button class="mapx-filter" data-f="critical">متأخرة</button>
+              <button class="mapx-filter" data-f="stream">بث مباشر</button>
+            </div>
+            <div id="mosque-map">&#160;</div>
+            <div class="mapx-legend">
+              <span><i style="background:#25A874"/>في الموعد</span>
+              <span><i style="background:#E0A12A"/>تأخر بسيط</span>
+              <span><i style="background:#DE5B4C"/>حرج</span>
+              <span><i style="background:#2E8FB5"/>مكتمل</span>
+              <span><i style="background:#1F9D6B;box-shadow:0 0 0 3px rgba(31,157,107,.3)"/>مستشار في الموقع</span>
+            </div>
+          </div>
+          <div class="mapx-side">
+            <div class="mapx-side-hdr">
+              <div class="mapx-side-title">
+                <span class="live"/>المستشارون في المواقع الآن
+                <span class="mapx-count" id="onsite-count"><t t-esc="on_site_count"/></span>
+              </div>
+              <div class="mapx-side-sub" id="onsite-updated">اضغط على المستشار لتحديد موقعه على الخريطة</div>
+            </div>
+            <div class="mapx-list" id="onsite-list">
+              <div class="mapx-empty">جاري التحميل...</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- RISK MATRIX + CONTRACTORS -->
+      <!-- RISK MATRIX + ALERTS -->
       <div class="grid-2">
         <div class="card accent-gold">
           <div class="card-hdr">
             <div class="card-title"><span class="card-title-icon">⚖️</span>مصفوفة المخاطر</div>
-            <span style="font-size:9px;color:var(--text3)">احتمالية × تأثير</span>
+            <span class="card-note">احتمالية × تأثير</span>
           </div>
           <div class="card-body">
             <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-bottom:4px">
@@ -246,48 +223,31 @@
             </div>
           </div>
         </div>
-        <div class="card" style="">
-          <!-- SMART ALERT CENTER -->
-      <div class="alert-center" style="margin-bottom:14px">
-        <div class="alert-center-hdr">
-          <div class="alert-center-title">
-            🚨 مركز التنبيهات الذكي
-            <span class="alert-count-badge" id="alert-count">—</span>
-          </div>
-          <div class="alert-filters">
-            <button class="alert-filter active" data-filter="all">الكل</button>
-            <button class="alert-filter" data-filter="critical">حرج</button>
-            <button class="alert-filter" data-filter="financial">مالي</button>
-            <button class="alert-filter" data-filter="delay">تأخير</button>
-            <button class="alert-filter" data-filter="quality">جودة</button>
-          </div>
-          <span id="alert-source-badge" style="font-size:9px;color:var(--text3);margin-right:auto"/>
-        </div>
-        <div class="alert-list" id="alert-list">
-          <div style="padding:20px;text-align:center;color:var(--text3)">
-            <div class="loading-spinner" style="width:18px;height:18px;margin:0 auto 8px"/>
-            جاري تحميل التنبيهات...
+        <div class="card">
+          <div class="alert-center">
+            <div class="alert-center-hdr">
+              <div class="alert-center-title">
+                🚨 مركز التنبيهات الذكي
+                <span class="alert-count-badge" id="alert-count">—</span>
+              </div>
+              <div class="alert-filters">
+                <button class="alert-filter active" data-filter="all">الكل<span class="n" data-an="all"/></button>
+                <button class="alert-filter" data-filter="critical">حرج<span class="n" data-an="critical"/></button>
+                <button class="alert-filter" data-filter="financial">مالي<span class="n" data-an="financial"/></button>
+                <button class="alert-filter" data-filter="delay">تأخير<span class="n" data-an="delay"/></button>
+                <button class="alert-filter" data-filter="quality">جودة وإشراف<span class="n" data-an="quality"/></button>
+              </div>
+              <div class="alert-meta"><span id="alert-source-badge"/><span id="alert-run"/></div>
+            </div>
+            <div class="alert-list" id="alert-list">
+              <div style="padding:20px;text-align:center;color:var(--text3)">
+                <div class="loading-spinner" style="width:18px;height:18px;margin:0 auto 8px"/>
+                جاري تحميل التنبيهات...
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
-        </div>
-  <!-- MERGED: AI + Quality + Forecast -->
-<!--      <div class="card" style="margin-bottom:14px">-->
-<!--        <div class="card-hdr">-->
-<!--          <div class="card-title"><span class="card-title-icon">🤖</span>مركز التحليل الذكي</div>-->
-<!--          <span id="ai-last-updated" style="font-size:9px;color:var(&#45;&#45;text3)"/>-->
-<!--        </div>-->
-<!--        <div class="card-body" id="merged-panel">-->
-<!--          <div style="padding:20px;text-align:center;color:var(&#45;&#45;text3)">-->
-<!--            <div class="loading-spinner" style="width:20px;height:20px;margin:0 auto 8px"/>-->
-<!--            جاري تحليل البيانات...-->
-<!--          </div>-->
-<!--        </div>-->
-<!--      </div>-->
-      </div>
-
-
 
       <!-- MOSQUE DETAIL -->
       <div id="section-mosque">
@@ -355,20 +315,6 @@
       <button class="modal-close" onclick="closeModal('modal-visit')">✕</button>
     </div>
     <div class="modal-body" id="modal-visit-body"/>
-  </div>
-</div>
-
-<div class="modal-overlay" id="modal-onsite">
-  <div class="modal" style="max-width:400px">
-    <div class="modal-hdr">
-      <div class="modal-title">المستشارون في المواقع الآن</div>
-      <button class="modal-close" onclick="closeModal('modal-onsite')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div id="onsite-list">
-        <div style="text-align:center;padding:20px;color:var(--text3)">جاري التحميل...</div>
-      </div>
-    </div>
   </div>
 </div>
 

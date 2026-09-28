@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- ترحيل كميات أوامر العمل المقبولة سابقاً إلى المنفذ (آمن للتكرار) -->
+  <function model="contractor.work.order" name="_backfill_executed_qty"/>
+</odoo>
