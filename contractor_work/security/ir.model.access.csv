@@ -8,7 +8,8 @@ access_work_order_test,work.order.test,model_contractor_work_order_test,base.gro
 access_work_order_warranty,work.order.warranty,model_contractor_work_order_warranty,base.group_user,1,1,1,0
 access_qualification_admin,qualification admin,model_contractor_qualification,base.group_system,1,1,1,1
 access_qualification_user,qualification user,model_contractor_qualification,base.group_user,1,1,1,0
+access_qualification_waqf_supervisor,qualification waqf supervisor,model_contractor_qualification,contractor_work.group_waqf_supervisor,1,0,0,0
 access_submittal_admin,submittal admin,model_contractor_material_submittal,base.group_system,1,1,1,1
 access_submittal_user,submittal user,model_contractor_material_submittal,base.group_user,1,1,1,0
+access_submittal_waqf_supervisor,submittal waqf supervisor,model_contractor_material_submittal,contractor_work.group_waqf_supervisor,1,0,0,0
 access_contractor_submittal_revision,submittal user,model_contractor_submittal_revision,base.group_user,1,1,1,0
-

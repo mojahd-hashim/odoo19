@@ -42,21 +42,6 @@
 
 
                     <!-- اعتماد الوقف -->
-                    <button name="action_waqf_supervisor_approve"
-                            type="object"
-                            string="قبول مشرف الوقف"
-                            class="btn-primary"
-                            groups="contractor_work.group_waqf_supervisor"
-                            invisible="state != 'senior_done'"/>
-
-                    <!-- إرجاع مشرف الوقف -->
-                    <button name="action_waqf_supervisor_return"
-                            type="object"
-                            string="إرجاع للخطوة السابقة"
-                            class="btn-warning"
-                            groups="contractor_work.group_waqf_supervisor"
-                            invisible="state != 'senior_done'"/>
-
                     <!-- اعتماد الوقف النهائي -->
                     <button name="action_waqf_approve"
                             type="object"
