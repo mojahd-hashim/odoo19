@@ -48,9 +48,9 @@ class ContractorQualification(models.Model):
     state = fields.Selection([
         ('draft',            'مسودة'),
         ('submitted',        'بانتظار المهندس المسؤول'),
-        ('engineer_done',    'أنهى المهندس — بانتظار كبير المهندسين'),
-        ('senior_done',      'أنهى كبير المهندسين — بانتظار مشرف الوقف'),
-        ('waqf_supervisor_done', 'أنهى مشرف الوقف — بانتظار اعتماد الوقف النهائي'),
+        ('engineer_done',    'بانتظار كبير المهندسين'),
+        ('senior_done',      'بانتظار مشرف الوقف'),
+        ('waqf_supervisor_done', 'بانتظار اعتماد الوقف النهائي'),
         ('approved',         'معتمد نهائياً ✅'),
         ('rejected',         'مرفوض ❌'),
     ], string='الحالة', default='draft', tracking=True, index=True)
