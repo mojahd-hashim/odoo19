@@ -23,13 +23,19 @@
                 confirm="هل تريد اعتماد التقييم المحدد؟"/>
 
         <button name="action_grade_wagf" type="object"
-                string="اعتماد التقييم" class="btn-primary"
+                string="اعتماد الوقف النهائي" class="btn-success"
                 invisible="state != 'submitted_waqf'"
                 groups="contractor_work.group_waqf_admin"
                 confirm="هل تريد اعتماد التقييم المحدد؟"/>
 
+        <button name="action_grade_waqf_supervisor" type="object"
+                string="تسجيل قرار مشرف الوقف" class="btn-primary"
+                invisible="state != 'submitted_waqf_supervisor'"
+                groups="contractor_work.group_waqf_supervisor"
+                confirm="هل تريد تسجيل قرار مشرف الوقف؟"/>
+
         <field name="state" widget="statusbar"
-               statusbar_visible="draft,submitted,submitted_chief,submitted_waqf,approved"/>
+               statusbar_visible="draft,submitted,submitted_chief,submitted_waqf_supervisor,submitted_waqf,approved"/>
       </header>
 
       <sheet>
@@ -83,6 +89,23 @@
             <field name="reviewed_by" readonly="1"/>
             <field name="review_date" readonly="1"/>
             <field name="revision" readonly="1"/>
+            <field name="waqf_supervisor_decision" widget="radio"
+                   invisible="state != 'submitted_waqf_supervisor'"/>
+            <field name="waqf_supervisor_notes"
+                   invisible="state != 'submitted_waqf_supervisor'"
+                   placeholder="ملاحظات مشرف الوقف، ومطلوبة عند الإرجاع"/>
+            <field name="waqf_supervisor_by" readonly="1"
+                   invisible="not waqf_supervisor_by"/>
+            <field name="waqf_supervisor_date" readonly="1"
+                   invisible="not waqf_supervisor_date"/>
+            <field name="waqf_grade" widget="radio"
+                   invisible="state != 'submitted_waqf'"
+                   required="state == 'submitted_waqf'"/>
+            <field name="waqf_notes"
+                   invisible="state != 'submitted_waqf'"
+                   placeholder="ملاحظات اعتماد الوقف النهائي..."/>
+            <field name="waqf_by" readonly="1" invisible="not waqf_by"/>
+            <field name="waqf_date" readonly="1" invisible="not waqf_date"/>
           </group>
         </group>
 

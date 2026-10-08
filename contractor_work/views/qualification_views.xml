@@ -30,7 +30,7 @@
                             string="اعتماد كبير المستشارين"
                             class="btn-success"
                             groups="contractor_work.group_consultant_all"
-                            invisible="state in ['draft','submitted','senior_done','approved','rejected']"/>
+                            invisible="state != 'engineer_done'"/>
 
                     <!-- رفض كبير المهندسين -->
                     <button name="action_reject"
@@ -38,16 +38,32 @@
                             string="رفض"
                             class="btn-danger"
                             groups="contractor_work.group_consultant_all"
-                            invisible="state in ['draft','submitted','senior_done','approved','rejected']"/>
+                            invisible="state != 'engineer_done'"/>
 
 
                     <!-- اعتماد الوقف -->
+                    <button name="action_waqf_supervisor_approve"
+                            type="object"
+                            string="قبول مشرف الوقف"
+                            class="btn-primary"
+                            groups="contractor_work.group_waqf_supervisor"
+                            invisible="state != 'senior_done'"/>
+
+                    <!-- إرجاع مشرف الوقف -->
+                    <button name="action_waqf_supervisor_return"
+                            type="object"
+                            string="إرجاع للخطوة السابقة"
+                            class="btn-warning"
+                            groups="contractor_work.group_waqf_supervisor"
+                            invisible="state != 'senior_done'"/>
+
+                    <!-- اعتماد الوقف النهائي -->
                     <button name="action_waqf_approve"
                             type="object"
                             string="اعتماد الوقف"
                             class="btn-success"
                             groups="contractor_work.group_waqf_admin"
-                             invisible="state in ['draft','submitted','engineer_done','approved','rejected']"/>
+                             invisible="state != 'waqf_supervisor_done'"/>
 
                     <!-- رفض الوقف -->
                     <button name="action_reject"
@@ -55,12 +71,12 @@
                             string="رفض"
                             class="btn-danger"
                             groups="contractor_work.group_waqf_admin"
-                             invisible="state in ['draft','submitted','engineer_done','approved','rejected']"/>
+                             invisible="state != 'waqf_supervisor_done'"/>
 
 
                     <field name="state"
                            widget="statusbar"
-                           statusbar_visible="draft,submitted,engineer_done,senior_done,approved"/>
+                           statusbar_visible="draft,submitted,engineer_done,senior_done,waqf_supervisor_done,approved"/>
 
                 </header>
 
@@ -147,6 +163,21 @@
 
                             </group>
 
+                        </page>
+
+                        <!-- مشرف الوقف -->
+                        <page string="مراجعة مشرف الوقف">
+                            <group>
+                                <group>
+                                    <field name="waqf_supervisor_decision" widget="radio"/>
+                                    <field name="waqf_supervisor_notes"
+                                           placeholder="ملاحظات المشرف، ومطلوبة عند الإرجاع"/>
+                                </group>
+                                <group>
+                                    <field name="waqf_supervisor_by" readonly="1"/>
+                                    <field name="waqf_supervisor_date" readonly="1"/>
+                                </group>
+                            </group>
                         </page>
 
                         <!-- الوقف -->

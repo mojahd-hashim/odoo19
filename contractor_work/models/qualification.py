@@ -49,7 +49,8 @@ class ContractorQualification(models.Model):
         ('draft',            'مسودة'),
         ('submitted',        'بانتظار المهندس المسؤول'),
         ('engineer_done',    'أنهى المهندس — بانتظار كبير المهندسين'),
-        ('senior_done',      'أنهى كبير المهندسين — بانتظار الوقف'),
+        ('senior_done',      'أنهى كبير المهندسين — بانتظار مشرف الوقف'),
+        ('waqf_supervisor_done', 'أنهى مشرف الوقف — بانتظار اعتماد الوقف النهائي'),
         ('approved',         'معتمد نهائياً ✅'),
         ('rejected',         'مرفوض ❌'),
     ], string='الحالة', default='draft', tracking=True, index=True)
@@ -83,6 +84,17 @@ class ContractorQualification(models.Model):
         'res.users', string='كبير المهندسين', readonly=True)
     senior_date = fields.Date(
         string='تاريخ تقييم كبير المهندسين', readonly=True)
+
+    # ── مشرف الوقف (مراجعة قبل الاعتماد النهائي) ───────────
+    waqf_supervisor_decision = fields.Selection([
+        ('approved', 'مقبول — إحالة للاعتماد النهائي'),
+        ('returned', 'إرجاع للخطوة السابقة'),
+    ], string='قرار مشرف الوقف', tracking=True)
+    waqf_supervisor_notes = fields.Text(string='ملاحظات مشرف الوقف')
+    waqf_supervisor_by = fields.Many2one(
+        'res.users', string='مشرف الوقف', readonly=True)
+    waqf_supervisor_date = fields.Date(
+        string='تاريخ مراجعة مشرف الوقف', readonly=True)
 
     # ── الوقف (الاعتماد النهائي) ──────────────────────────
     waqf_grade = fields.Selection(
@@ -192,9 +204,40 @@ class ContractorQualification(models.Model):
                 body=_('✅ كبير المهندسين — تقييم %s')
                 %rec.senior_notes if rec.senior_notes else '')
 
+    # ── مشرف الوقف يراجع قبل الاعتماد النهائي ──────────────
+    def action_waqf_supervisor_approve(self):
+        for rec in self:
+            if rec.state != 'senior_done':
+                raise UserError(_('لا يمكن مراجعة الطلب في هذه المرحلة.'))
+            if rec.waqf_supervisor_decision != 'approved':
+                raise UserError(_('يرجى اختيار قرار مشرف الوقف: قبول أو إرجاع.'))
+            rec.write({
+                'state': 'waqf_supervisor_done',
+                'waqf_supervisor_by': self.env.user.id,
+                'waqf_supervisor_date': fields.Date.today(),
+            })
+            rec.message_post(body=_('✅ مشرف الوقف قبل الطلب وأحاله للاعتماد النهائي'))
+
+    def action_waqf_supervisor_return(self):
+        for rec in self:
+            if rec.state != 'senior_done':
+                raise UserError(_('لا يمكن إرجاع الطلب في هذه المرحلة.'))
+            if not (rec.waqf_supervisor_notes or '').strip():
+                raise UserError(_('يرجى كتابة ملاحظات مشرف الوقف عند الإرجاع.'))
+            rec.write({
+                'state': 'engineer_done',
+                'waqf_supervisor_decision': 'returned',
+                'waqf_supervisor_by': self.env.user.id,
+                'waqf_supervisor_date': fields.Date.today(),
+            })
+            rec.message_post(body=_('↩️ مشرف الوقف أعاد الطلب للخطوة السابقة: %s')
+                             % rec.waqf_supervisor_notes)
+
     # ── الوقف يعتمد نهائياً ──────────────────────────────
     def action_waqf_approve(self):
         for rec in self:
+            if rec.state != 'waqf_supervisor_done':
+                raise UserError(_('لا يمكن اعتماد الطلب نهائياً قبل قبول مشرف الوقف.'))
             rec.write({
                 'state':     'approved',
                 'waqf_by':   self.env.user.id,
@@ -222,6 +265,9 @@ class ContractorQualification(models.Model):
             'engineer_by': False, 'engineer_date': False,
             'senior_grade': False, 'senior_notes': False,
             'senior_by': False, 'senior_date': False,
+            'waqf_supervisor_decision': False,
+            'waqf_supervisor_notes': False,
+            'waqf_supervisor_by': False, 'waqf_supervisor_date': False,
             'waqf_grade': False, 'waqf_notes': False,
             'waqf_by': False, 'waqf_date': False,
             'reject_reason': False,

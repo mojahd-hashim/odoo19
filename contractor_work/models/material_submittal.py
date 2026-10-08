@@ -43,7 +43,8 @@ class ContractorMaterialSubmittal(models.Model):
         ('draft', 'مسودة'),
         ('submitted', 'بانتظار المراجعة'),
         ('submitted_chief', 'اعتماد المراجعة'),
-        ('submitted_waqf', 'بانتظار اعتماد الوقف'),
+        ('submitted_waqf_supervisor', 'بانتظار مراجعة مشرف الوقف'),
+        ('submitted_waqf', 'بانتظار اعتماد الوقف النهائي'),
         ('approved', 'معتمد — A'),
         ('approved_b', 'معتمد مع ملاحظات — B'),
         ('revision', 'يلزم تعديل — C (إعادة إرسال)'),
@@ -69,6 +70,26 @@ class ContractorMaterialSubmittal(models.Model):
         'res.users', string='راجع بواسطة', readonly=True)
     review_date = fields.Datetime(
         string='تاريخ المراجعة', readonly=True)
+
+    # ── مشرف الوقف (قبل الاعتماد النهائي) ──────────────────
+    waqf_supervisor_decision = fields.Selection([
+        ('approved', 'مقبول — إحالة للاعتماد النهائي'),
+        ('returned', 'إرجاع للخطوة السابقة'),
+    ], string='قرار مشرف الوقف', tracking=True)
+    waqf_supervisor_notes = fields.Text(string='ملاحظات مشرف الوقف')
+    waqf_supervisor_by = fields.Many2one(
+        'res.users', string='مشرف الوقف', readonly=True)
+    waqf_supervisor_date = fields.Datetime(
+        string='تاريخ مراجعة مشرف الوقف', readonly=True)
+
+    # ── اعتماد الوقف النهائي ────────────────────────────────
+    waqf_grade = fields.Selection(
+        GRADE_SELECTION, string='تقييم الوقف النهائي', tracking=True)
+    waqf_notes = fields.Text(string='ملاحظات اعتماد الوقف النهائي')
+    waqf_by = fields.Many2one(
+        'res.users', string='معتمد الوقف النهائي', readonly=True)
+    waqf_date = fields.Datetime(
+        string='تاريخ اعتماد الوقف النهائي', readonly=True)
 
     # ══════════════════════════════════════════════════════════
     #  المراجعات (Revisions)
@@ -99,6 +120,14 @@ class ContractorMaterialSubmittal(models.Model):
                 'review_notes': False,
                 'reviewed_by': False,
                 'review_date': False,
+                'waqf_supervisor_decision': False,
+                'waqf_supervisor_notes': False,
+                'waqf_supervisor_by': False,
+                'waqf_supervisor_date': False,
+                'waqf_grade': False,
+                'waqf_notes': False,
+                'waqf_by': False,
+                'waqf_date': False,
             })
             rec.message_post(
                 body='🔄 إعادة إرسال — إصدار %d\n📝 %s'
@@ -135,7 +164,51 @@ class ContractorMaterialSubmittal(models.Model):
     def action_grade_chief_engineer(self):
         self.action_grade()
     def action_grade_wagf(self):
-        self.action_grade()
+        self.action_grade_waqf_final()
+
+    def action_grade_waqf_supervisor(self):
+        """مشرف الوقف يقبل العينة أو يعيدها لكبير المهندسين."""
+        for rec in self:
+            if rec.state != 'submitted_waqf_supervisor':
+                raise UserError(_('لا يمكن مراجعة العينة في هذه المرحلة.'))
+            if rec.waqf_supervisor_decision == 'approved':
+                rec.write({
+                    'state': 'submitted_waqf',
+                    'waqf_supervisor_by': self.env.user.id,
+                    'waqf_supervisor_date': fields.Datetime.now(),
+                })
+                rec.message_post(body=_('✅ مشرف الوقف قبل العينة وأحالها للاعتماد النهائي'))
+            elif rec.waqf_supervisor_decision == 'returned':
+                if not (rec.waqf_supervisor_notes or '').strip():
+                    raise UserError(_('يرجى كتابة ملاحظات مشرف الوقف عند الإرجاع.'))
+                rec.write({
+                    'state': 'submitted_chief',
+                    'waqf_supervisor_by': self.env.user.id,
+                    'waqf_supervisor_date': fields.Datetime.now(),
+                })
+                rec.message_post(body=_('↩️ مشرف الوقف أعاد العينة لكبير المهندسين: %s')
+                                 % rec.waqf_supervisor_notes)
+            else:
+                raise UserError(_('يرجى اختيار قرار مشرف الوقف: قبول أو إرجاع.'))
+
+    def action_grade_waqf_final(self):
+        """اعتماد الوقف النهائي بعد قبول مشرف الوقف."""
+        for rec in self:
+            if rec.state != 'submitted_waqf':
+                raise UserError(_('لا يمكن اعتماد العينة نهائياً في هذه المرحلة.'))
+            if not rec.waqf_grade:
+                raise UserError(_('يرجى اختيار التقييم النهائي للوقف.'))
+            if rec.waqf_grade in ('b', 'c', 'd') and not (rec.waqf_notes or '').strip():
+                raise UserError(_('التقييم %s يتطلب كتابة الملاحظات.') % rec.waqf_grade.upper())
+            state_map = {'a': 'approved', 'b': 'approved_b', 'c': 'revision', 'd': 'rejected'}
+            rec.write({
+                'state': state_map[rec.waqf_grade],
+                'waqf_by': self.env.user.id,
+                'waqf_date': fields.Datetime.now(),
+            })
+            rec.message_post(body=_('✅ اعتماد الوقف النهائي: %s%s') % (
+                rec.waqf_grade.upper(),
+                '\n' + rec.waqf_notes if rec.waqf_notes else ''))
     def action_grade(self):
         """الاستشاري يقيّم العينة بـ A/B/C/D."""
         for rec in self:
@@ -184,9 +257,7 @@ class ContractorMaterialSubmittal(models.Model):
                         'state': state_map[rec.grade],
                     })
                 else:
-                    rec.write({
-                        'state': 'submitted_waqf',
-                    })
+                    rec.write({'state': 'submitted_waqf_supervisor'})
                 # سجّل في log المراجعات
                 self.env['contractor.submittal.revision'].create({
                     'submittal_id': rec.id,
@@ -237,6 +308,14 @@ class ContractorMaterialSubmittal(models.Model):
                 'review_notes': False,
                 'reviewed_by': False,
                 'review_date': False,
+                'waqf_supervisor_decision': False,
+                'waqf_supervisor_notes': False,
+                'waqf_supervisor_by': False,
+                'waqf_supervisor_date': False,
+                'waqf_grade': False,
+                'waqf_notes': False,
+                'waqf_by': False,
+                'waqf_date': False,
             })
             rec.message_post(
                 body=_('🔄 تم إعادة الإرسال — إصدار %d') % rec.revision)
@@ -262,4 +341,3 @@ class ContractorMaterialSubmittal(models.Model):
         # ── ملخص التعديلات التي أجراها المقاول ──
         contractor_changes = fields.Text(
             string='ملخص التعديلات')
-
