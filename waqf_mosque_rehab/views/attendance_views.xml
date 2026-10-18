@@ -45,7 +45,7 @@
                         domain="[('check_in', '>=', context_today().strftime('%Y-%m-%d 00:00:00')), ('check_in', '&lt;', (context_today() + relativedelta(days=1)).strftime('%Y-%m-%d 00:00:00'))]"/>
                 <filter name="this_month" string="هذا الشهر"
                         domain="[('check_in', '&gt;=', context_today().strftime('%Y-%m-01 00:00:00'))]"/>
-                <group string="تجميع حسب">
+                <group>
                     <filter name="group_mosque" string="المسجد"
                             context="{'group_by': 'mosque_id'}"/>
                     <filter name="group_portal_user" string="مستخدم البوابة"
