@@ -38,6 +38,23 @@
              RECORD RULES — أوامر العمل
         ══════════════════════════════════════════════════ -->
 
+        <!-- صلاحية كاملة على جميع أوامر العمل للجهات الإشرافية والوقفية -->
+        <record id="rule_wo_full_access_supervision_and_waqf" model="ir.rule">
+            <field name="name">أوامر العمل: كامل الصلاحية للإشراف والوقف</field>
+            <field name="model_id" ref="model_contractor_work_order"/>
+            <field name="groups" eval="[
+                (4, ref('base.group_system')),
+                (4, ref('waqf_mosque_rehab.group_supervision_senior_engineer')),
+                (4, ref('group_waqf_admin')),
+                (4, ref('group_waqf_supervisor'))
+            ]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
         <!-- مستخدم لديه صلاحية على المسجد يستطيع تعديل أمر العمل،
              دون ربط الوصول بالتخصص. -->
         <record id="rule_wo_user_assigned_mosque_write" model="ir.rule">
