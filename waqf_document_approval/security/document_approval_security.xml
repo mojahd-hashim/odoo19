@@ -24,6 +24,24 @@
              RECORD RULES — طلبات اعتماد الوثائق
         ══════════════════════════════════════════════════ -->
 
+        <!-- أي مستخدم داخلي لديه صلاحية على المسجد يستطيع تعديل الطلب
+             بغض النظر عن نوع العمل/التخصص. الاعتماد النهائي يبقى محكوماً
+             بمجموعات أزرار الاعتماد في الواجهة. -->
+        <record id="rule_doc_user_assigned_mosque_write" model="ir.rule">
+            <field name="name">الوثائق: مستخدمو المساجد المسموحة</field>
+            <field name="model_id" ref="model_waqf_document_approval"/>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="domain_force">
+                [('mosque_id', 'in',
+                    user.waqf_portal_user_id.effective_mosque_ids.ids
+                    if user.waqf_portal_user_id else [])]
+            </field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
         <!-- ② استشاري المسجد — يرى ويعتمد طلبات مساجده فقط -->
         <record id="rule_doc_consultant_mosque" model="ir.rule">
             <field name="name">الوثائق: استشاري المسجد — مساجده فقط</field>
@@ -67,6 +85,21 @@
         <!-- ══════════════════════════════════════════════════
              RECORD RULES — ملفات الطلبات (نفس صلاحية الطلب)
         ══════════════════════════════════════════════════ -->
+
+        <record id="rule_doc_file_user_assigned_mosque_write" model="ir.rule">
+            <field name="name">ملفات الوثائق: مستخدمو المساجد المسموحة</field>
+            <field name="model_id" ref="model_waqf_document_approval_file"/>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="domain_force">
+                [('approval_id.mosque_id', 'in',
+                    user.waqf_portal_user_id.effective_mosque_ids.ids
+                    if user.waqf_portal_user_id else [])]
+            </field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
 
 
         <!-- استشاري المسجد: ملفات مساجده -->
