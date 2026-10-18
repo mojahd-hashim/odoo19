@@ -1,4 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Attendance views defined in supervision_views.xml -->
+    <!-- سجل الزيارات الميدانية -->
+    <record id="view_mosque_attendance_list" model="ir.ui.view">
+        <field name="name">mosque.attendance.list</field>
+        <field name="model">mosque.attendance</field>
+        <field name="arch" type="xml">
+            <list string="سجل الزيارات الميدانية"
+                  decoration-success="is_validated"
+                  decoration-warning="not check_out">
+                <field name="mosque_id"/>
+                <field name="portal_user_id" string="مستخدم البوابة"/>
+                <field name="engineer_id" optional="show"/>
+                <field name="visit_type"/>
+                <field name="check_in" string="تسجيل الدخول"/>
+                <field name="check_out" string="تسجيل الخروج"/>
+                <field name="duration" string="المدة (ساعة)" sum="إجمالي الساعات"/>
+                <field name="is_validated" string="متحقق" widget="boolean"/>
+                <field name="distance_m" string="المسافة (م)" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_mosque_attendance_search" model="ir.ui.view">
+        <field name="name">mosque.attendance.search</field>
+        <field name="model">mosque.attendance</field>
+        <field name="arch" type="xml">
+            <search string="بحث الزيارات الميدانية">
+                <field name="mosque_id"/>
+                <field name="portal_user_id" string="مستخدم البوابة"/>
+                <field name="engineer_id"/>
+                <field name="visit_type"/>
+                <field name="check_in"/>
+                <separator/>
+                <filter name="active_visits" string="زيارات مفتوحة"
+                        domain="[('check_out', '=', False)]"/>
+                <filter name="completed_visits" string="زيارات مكتملة"
+                        domain="[('check_out', '!=', False)]"/>
+                <filter name="validated_visits" string="زيارات متحققة"
+                        domain="[('is_validated', '=', True)]"/>
+                <filter name="unvalidated_visits" string="غير متحققة"
+                        domain="[('is_validated', '=', False)]"/>
+                <separator/>
+                <filter name="today" string="اليوم"
+                        domain="[('check_in', '>=', context_today().strftime('%Y-%m-%d 00:00:00')), ('check_in', '&lt;', (context_today() + relativedelta(days=1)).strftime('%Y-%m-%d 00:00:00'))]"/>
+                <filter name="this_month" string="هذا الشهر"
+                        domain="[('check_in', '&gt;=', context_today().strftime('%Y-%m-01 00:00:00'))]"/>
+                <group expand="0" string="تجميع حسب">
+                    <filter name="group_mosque" string="المسجد"
+                            context="{'group_by': 'mosque_id'}"/>
+                    <filter name="group_portal_user" string="مستخدم البوابة"
+                            context="{'group_by': 'portal_user_id'}"/>
+                    <filter name="group_engineer" string="المهندس"
+                            context="{'group_by': 'engineer_id'}"/>
+                    <filter name="group_visit_type" string="نوع الزيارة"
+                            context="{'group_by': 'visit_type'}"/>
+                    <filter name="group_validation" string="حالة التحقق"
+                            context="{'group_by': 'is_validated'}"/>
+                    <filter name="group_day" string="اليوم"
+                            context="{'group_by': 'check_in:day'}"/>
+                    <filter name="group_month" string="الشهر"
+                            context="{'group_by': 'check_in:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
 </odoo>
