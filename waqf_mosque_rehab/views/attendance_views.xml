@@ -10,12 +10,9 @@
                   decoration-warning="not check_out">
                 <field name="mosque_id"/>
                 <field name="portal_user_id" string="مستخدم البوابة"/>
-                <field name="engineer_id" optional="show"/>
-                <field name="visit_type"/>
                 <field name="check_in" string="تسجيل الدخول"/>
                 <field name="check_out" string="تسجيل الخروج"/>
                 <field name="duration" string="المدة (ساعة)" sum="إجمالي الساعات"/>
-                <field name="is_validated" string="متحقق" widget="boolean"/>
                 <field name="distance_m" string="المسافة (م)" optional="hide"/>
             </list>
         </field>
