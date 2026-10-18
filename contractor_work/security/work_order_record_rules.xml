@@ -38,6 +38,23 @@
              RECORD RULES — أوامر العمل
         ══════════════════════════════════════════════════ -->
 
+        <!-- مستخدم لديه صلاحية على المسجد يستطيع تعديل أمر العمل،
+             دون ربط الوصول بالتخصص. -->
+        <record id="rule_wo_user_assigned_mosque_write" model="ir.rule">
+            <field name="name">أوامر العمل: مستخدمو المساجد المسموحة</field>
+            <field name="model_id" ref="model_contractor_work_order"/>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="domain_force">
+                [('mosque_id', 'in',
+                    user.waqf_portal_user_id.effective_mosque_ids.ids
+                    if user.waqf_portal_user_id else [])]
+            </field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
         <!-- ① المقاول يرى فقط أوامر مساجده المخوّلة -->
         <record id="rule_wo_contractor_own_mosques" model="ir.rule">
             <field name="name">أوامر العمل: مساجد المستشار المخوّلة فقط</field>
@@ -111,6 +128,24 @@
         <!-- ══════════════════════════════════════════════════
              RECORD RULES — التأهيلات
         ══════════════════════════════════════════════════ -->
+
+        <!-- التأهيل مرتبط بالمسجد فقط؛ نوع العمل لا يقيّد الوصول. -->
+        <record id="rule_qual_user_assigned_mosque_write" model="ir.rule">
+            <field name="name">التأهيلات: مستخدمو المساجد المسموحة</field>
+            <field name="model_id" ref="model_contractor_qualification"/>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="domain_force">
+                ['|',
+                ('scope', '=', 'all'),
+                ('mosque_ids', 'in',
+                    user.waqf_portal_user_id.effective_mosque_ids.ids
+                    if user.waqf_portal_user_id else [])]
+            </field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
         <record id="rule_qual_contractor_own" model="ir.rule">
             <field name="name">التأهيلات: المستشار يرى تأهيلاته فقط</field>
             <field name="model_id" ref="model_contractor_qualification"/>
