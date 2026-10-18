@@ -150,6 +150,34 @@ class ContractorMaterialSubmittal(models.Model):
                     'contractor.material.submittal') or 'جديد'
         return super().create(vals_list)
 
+    def write(self, vals):
+        """ترحيل العينة تلقائياً عند حفظ قرار مشرف الوقف."""
+        result = super().write(vals)
+        if 'waqf_supervisor_decision' not in vals:
+            return result
+
+        for rec in self:
+            if rec.state != 'submitted_waqf_supervisor':
+                continue
+            if rec.waqf_supervisor_decision == 'approved':
+                super(ContractorMaterialSubmittal, rec).write({
+                    'state': 'submitted_waqf',
+                    'waqf_supervisor_by': self.env.user.id,
+                    'waqf_supervisor_date': fields.Datetime.now(),
+                })
+                rec.message_post(body=_('✅ مشرف الوقف قبل العينة وأحالها للاعتماد النهائي'))
+            elif rec.waqf_supervisor_decision == 'returned':
+                if not (rec.waqf_supervisor_notes or '').strip():
+                    raise UserError(_('يرجى كتابة ملاحظات مشرف الوقف عند الإرجاع.'))
+                super(ContractorMaterialSubmittal, rec).write({
+                    'state': 'submitted_chief',
+                    'waqf_supervisor_by': self.env.user.id,
+                    'waqf_supervisor_date': fields.Datetime.now(),
+                })
+                rec.message_post(body=_('↩️ مشرف الوقف أعاد العينة لكبير المهندسين: %s')
+                                 % rec.waqf_supervisor_notes)
+        return result
+
         # ══════════════════════════════════════════════════════════
         #  Actions
         # ══════════════════════════════════════════════════════════

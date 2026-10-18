@@ -141,6 +141,34 @@ class ContractorQualification(models.Model):
                     'contractor.qualification') or 'جديد'
         return super().create(vals_list)
 
+    def write(self, vals):
+        """ترحيل التأهيل تلقائياً عند حفظ قرار مشرف الوقف."""
+        result = super().write(vals)
+        if 'waqf_supervisor_decision' not in vals:
+            return result
+
+        for rec in self:
+            if rec.state != 'senior_done':
+                continue
+            if rec.waqf_supervisor_decision == 'approved':
+                super(ContractorQualification, rec).write({
+                    'state': 'waqf_supervisor_done',
+                    'waqf_supervisor_by': self.env.user.id,
+                    'waqf_supervisor_date': fields.Date.today(),
+                })
+                rec.message_post(body=_('✅ مشرف الوقف قبل الطلب وأحاله للاعتماد النهائي'))
+            elif rec.waqf_supervisor_decision == 'returned':
+                if not (rec.waqf_supervisor_notes or '').strip():
+                    raise UserError(_('يرجى كتابة ملاحظات مشرف الوقف عند الإرجاع.'))
+                super(ContractorQualification, rec).write({
+                    'state': 'engineer_done',
+                    'waqf_supervisor_by': self.env.user.id,
+                    'waqf_supervisor_date': fields.Date.today(),
+                })
+                rec.message_post(body=_('↩️ مشرف الوقف أعاد الطلب للخطوة السابقة: %s')
+                                 % rec.waqf_supervisor_notes)
+        return result
+
     # ══════════════════════════════════════════════════════════
     #  دالة مساعدة للتحقق من التقييم
     # ══════════════════════════════════════════════════════════
