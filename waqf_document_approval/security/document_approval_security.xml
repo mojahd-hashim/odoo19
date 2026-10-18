@@ -24,6 +24,23 @@
              RECORD RULES — طلبات اعتماد الوثائق
         ══════════════════════════════════════════════════ -->
 
+        <!-- الجهات الإشرافية والوقفية ترى جميع الطلبات -->
+        <record id="rule_doc_full_access_oversight" model="ir.rule">
+            <field name="name">الوثائق: كامل الطلبات للجهات الإشرافية والوقفية</field>
+            <field name="model_id" ref="model_waqf_document_approval"/>
+            <field name="groups" eval="[
+                (4, ref('base.group_system')),
+                (4, ref('waqf_mosque_rehab.group_supervision_senior_engineer')),
+                (4, ref('contractor_work.group_waqf_supervisor')),
+                (4, ref('contractor_work.group_waqf_admin'))
+            ]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
         <!-- أي مستخدم داخلي لديه صلاحية على المسجد يستطيع تعديل الطلب
              بغض النظر عن نوع العمل/التخصص. الاعتماد النهائي يبقى محكوماً
              بمجموعات أزرار الاعتماد في الواجهة. -->
@@ -85,6 +102,22 @@
         <!-- ══════════════════════════════════════════════════
              RECORD RULES — ملفات الطلبات (نفس صلاحية الطلب)
         ══════════════════════════════════════════════════ -->
+
+        <record id="rule_doc_file_full_access_oversight" model="ir.rule">
+            <field name="name">ملفات الوثائق: الجهات الإشرافية والوقفية</field>
+            <field name="model_id" ref="model_waqf_document_approval_file"/>
+            <field name="groups" eval="[
+                (4, ref('base.group_system')),
+                (4, ref('waqf_mosque_rehab.group_supervision_senior_engineer')),
+                (4, ref('contractor_work.group_waqf_supervisor')),
+                (4, ref('contractor_work.group_waqf_admin'))
+            ]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
 
         <record id="rule_doc_file_user_assigned_mosque_write" model="ir.rule">
             <field name="name">ملفات الوثائق: مستخدمو المساجد المسموحة</field>

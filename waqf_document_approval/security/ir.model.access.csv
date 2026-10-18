@@ -1,5 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_doc_approval_user,doc.approval.user,model_waqf_document_approval,base.group_user,1,1,1,0
-access_doc_approval_file_user,doc.approval.file.user,model_waqf_document_approval_file,base.group_user,1,1,1,1
+access_doc_approval_user,doc.approval.user,model_waqf_document_approval,base.group_user,1,1,0,0
+access_doc_approval_admin,doc.approval.admin,model_waqf_document_approval,base.group_system,1,1,1,1
+access_doc_approval_file_user,doc.approval.file.user,model_waqf_document_approval_file,base.group_user,1,1,0,0
+access_doc_approval_file_admin,doc.approval.file.admin,model_waqf_document_approval_file,base.group_system,1,1,1,1
 access_doc_type_user,doc.type.user,model_waqf_document_type,base.group_user,1,0,0,0
 access_doc_type_mgr,doc.type.mgr,model_waqf_document_type,group_doc_consultant_all,1,1,1,0
