@@ -82,6 +82,11 @@
                 <field name="approval_notes" placeholder="ملاحظات الاعتماد..."
                        readonly="state != 'reviewed'"/>
               </group>
+              <group string="بيانات الرفض" colspan="3">
+                <field name="reject_reason"
+                       placeholder="اكتب سبب الرفض هنا قبل الضغط على زر رفض..."
+                       readonly="state not in ('submitted','reviewed')"/>
+              </group>
             </group>
           </page>
           <page string="المستندات" name="docs">
