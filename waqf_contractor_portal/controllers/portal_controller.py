@@ -38,6 +38,14 @@ class ContractorPortal(http.Controller):
             return None
         return partner
 
+    def _can_submit_certificate(self, portal_user=None):
+        """Return whether the current contractor may create a certificate."""
+        portal_user = portal_user or self._get_portal_user()
+        if not portal_user:
+            return False
+        permission = portal_user.permission_id[:1]
+        return bool(permission and permission.can_submit_certificate)
+
     def _check_mosque_access(self, mosque_id):
         """Verify supervisor has granted BOQ access to this mosque."""
         supervisor = self._get_supervisor()
@@ -143,6 +151,7 @@ class ContractorPortal(http.Controller):
             'rework_orders': rework_orders,
             'rejected_subs': rejected_subs,
             'rejected_docs': rejected_docs,
+            'can_submit_certificate': self._can_submit_certificate(portal_user),
         })
 
     def _resolve_mosque(self, mosque_id):
@@ -279,6 +288,7 @@ class ContractorPortal(http.Controller):
             'qual_pending_count': qual_pending_count,
             'sub_approved_count': sub_approved_count,
             'sub_pending_count': sub_pending_count,
+            'can_submit_certificate': self._can_submit_certificate(portal_user),
         })
 
     # ══════════════════════════════════════════════════════
@@ -724,9 +734,15 @@ class ContractorPortal(http.Controller):
     @http.route('/contractor/certificate/new', type='http',
                 auth='user', website=True)
     def certificate_form(self, **kwargs):
+        portal_user = self._get_portal_user()
+        if not self._can_submit_certificate(portal_user):
+            return request.redirect('/contractor?error=certificate_permission')
+
         supervisor = self._get_supervisor()
         mosque = supervisor.assigned_mosque_id if supervisor else None
-        if not mosque or not self._check_mosque_access(mosque.id):
+        if (not mosque or
+                mosque not in portal_user.effective_mosque_ids or
+                not self._check_mosque_access(mosque.id)):
             return request.redirect('/contractor')
 
         # Last cert number
@@ -752,11 +768,31 @@ class ContractorPortal(http.Controller):
     @http.route('/contractor/certificate/submit', type='http',
                 auth='user', website=True, methods=['POST'])
     def submit_certificate(self, **post):
+        portal_user = self._get_portal_user()
+        if not self._can_submit_certificate(portal_user):
+            return request.redirect('/contractor?error=certificate_permission')
+
         supervisor = self._get_supervisor()
-        mosque = supervisor.assigned_mosque_id
+        mosque = supervisor.assigned_mosque_id if supervisor else None
+        if (not mosque or mosque not in portal_user.effective_mosque_ids or
+                not self._check_mosque_access(mosque.id)):
+            return request.redirect('/contractor')
+
+        if not post.get('period_from') or not post.get('period_to'):
+            return request.redirect('/contractor/certificate/new?error=period')
 
         Cert = request.env['mosque.certificate'].sudo()
         CertLine = request.env['mosque.certificate.line'].sudo()
+
+        log_ids = request.httprequest.form.getlist('log_ids')
+        logs = request.env['contractor.work.log'].sudo().search([
+            ('id', 'in', [int(log_id) for log_id in log_ids if str(log_id).isdigit()]),
+            ('mosque_id', '=', mosque.id),
+            ('supervisor_id', '=', supervisor.id),
+            ('state', '=', 'approved'),
+        ])
+        if not logs:
+            return request.redirect('/contractor/certificate/new?error=no_logs')
 
         cert = Cert.create({
             'mosque_id': mosque.id,
@@ -767,10 +803,8 @@ class ContractorPortal(http.Controller):
         })
 
         # Add lines from selected logs
-        log_ids = request.httprequest.form.getlist('log_ids')
-        for log_id in log_ids:
-            log = request.env['contractor.work.log'].sudo().browse(int(log_id))
-            if log.exists() and log.boq_id:
+        for log in logs:
+            if log.boq_id:
                 CertLine.create({
                     'certificate_id': cert.id,
                     'boq_id': log.boq_id.id,
